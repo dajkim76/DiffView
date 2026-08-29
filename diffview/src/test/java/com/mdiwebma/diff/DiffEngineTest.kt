@@ -1054,5 +1054,101 @@ class DiffEngineTest {
         assertEquals("이전 코드", customLabels.originalHeader)
         assertEquals("접힘: 10줄 (L1~L10 ~ R1~R10)", customLabels.foldedBannerFormatter(10, "L1~L10", "R1~R10"))
     }
+
+    @Test
+    fun testKotlinSampleOutput() = runTest {
+        val orig = """
+package com.example.splitdiff
+
+import java.util.Date
+
+class UserProfile(
+    val id: Long,
+    val name: String,
+    val age: Int,
+    val city: String = "Seoul"
+) {
+    fun printInfo() {
+        println("User: ${'$'}name, Age: ${'$'}age")
+        println("Created at: ${'$'}{Date()}")
+    }
+
+    fun helper1() = 1
+    fun helper2() = 2
+    fun helper3() = 3
+    fun helper4() = 4
+    fun helper5() = 5
+    fun helper6() = 6
+    fun helper7() = 7
+    fun helper8() = 8
+    fun helper9() = 9
+    fun helper10() = 10
+
+    fun calculateDiscount(price: Double): Double {
+        val discountRate = 0.10
+        val finalPrice = price * (1.0 - discountRate)
+        println("Old discount logic")
+        return finalPrice
+    }
+}
+        """.trimIndent()
+
+        val mod = """
+package com.example.splitdiff
+
+import java.util.Date
+import java.time.Instant
+
+data class UserProfile(
+    val id: Long,
+    val name: String,
+    val age: Int,
+    val email: String? = null,
+    val city: String = "Jeju"
+) {
+    fun printInfo() {
+        println("User: ${'$'}name, Age: ${'$'}age, Email: ${'$'}email")
+        println("Created at: ${'$'}{Instant.now()}")
+    }
+
+    fun helper1() = 1
+    fun helper2() = 2
+    fun helper3() = 3
+    fun helper4() = 4
+    fun helper5() = 5
+    fun helper6() = 6
+    fun helper7() = 7
+    fun helper8() = 8
+    fun helper9() = 9
+    fun helper10() = 10
+
+    fun calculateDiscount(price: Double, isVip: Boolean = false): Double {
+        val discountRate = if (isVip) 0.20 else 0.10
+        val finalPrice = price * (1.0 - discountRate)
+        return finalPrice
+    }
+}
+        """.trimIndent()
+
+        val diff = engine.calculateDiff(orig, mod, enableInlineDiff = true)
+        println("--- DIFF ROWS ---")
+        diff.rows.forEachIndexed { i, row ->
+            val lNum = row.left?.lineNumber?.toString() ?: "  "
+            val rNum = row.right?.lineNumber?.toString() ?: "  "
+            val lText = row.left?.content ?: ""
+            val rText = row.right?.content ?: ""
+            println("Row ${i + 1} [${row.type}] L$lNum: '$lText' | R$rNum: '$rText'")
+        }
+    }
+
+    @Test
+    fun testFormatWrappedText_LeadingSpacesReplacedWithNbsp() {
+        val input = "        println(\"Hello\")"
+        val formatted = com.mdiwebma.diffview.formatWrappedText(input)
+        assertEquals("\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0println(\"Hello\")", formatted.toString())
+
+        val noIndent = "val x = 10"
+        assertEquals("val x = 10", com.mdiwebma.diffview.formatWrappedText(noIndent).toString())
+    }
 }
 

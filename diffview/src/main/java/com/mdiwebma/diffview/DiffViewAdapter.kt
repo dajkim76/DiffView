@@ -10,6 +10,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.os.Build
+import android.text.Spannable
+import android.text.SpannableStringBuilder
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -193,7 +196,9 @@ class DiffRowViewHolder(
         rightScrollView.isLineWrap = isLineWrap
 
         leftCodeText.isSingleLine = !isLineWrap
+        leftCodeText.gravity = Gravity.TOP or Gravity.START
         rightCodeText.isSingleLine = !isLineWrap
+        rightCodeText.gravity = Gravity.TOP or Gravity.START
 
         leftScrollView.syncGroup = if (isLineWrap) null else leftSyncGroup
         rightScrollView.syncGroup = if (isLineWrap) null else rightSyncGroup
@@ -267,6 +272,7 @@ class DiffRowViewHolder(
             colors = colors,
             highlighter = highlighter,
             isDark = isDark,
+            isLineWrap = isLineWrap,
             sideLabel = "Original"
         )
 
@@ -281,6 +287,7 @@ class DiffRowViewHolder(
             colors = colors,
             highlighter = highlighter,
             isDark = isDark,
+            isLineWrap = isLineWrap,
             sideLabel = "Modified"
         )
     }
@@ -296,6 +303,7 @@ class DiffRowViewHolder(
         colors: DiffColors,
         highlighter: SyntaxHighlighter,
         isDark: Boolean,
+        isLineWrap: Boolean,
         sideLabel: String
     ) {
         container.setBackgroundColor(bgColor)
@@ -311,7 +319,7 @@ class DiffRowViewHolder(
                 highlightBgColor = highlightColor,
                 isDark = isDark
             )
-            codeText.text = highlighted
+            codeText.text = if (isLineWrap) formatWrappedText(highlighted) else highlighted
             container.contentDescription = "$sideLabel line ${line.lineNumber}: ${line.content}"
         } else {
             gutterText.text = ""
@@ -339,12 +347,14 @@ class DiffRowViewHolder(
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
                 orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.TOP
                 isBaselineAligned = false
             }
 
             val leftContainer = LinearLayout(context).apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.TOP
             }
             val leftGutterText = TextView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -358,8 +368,10 @@ class DiffRowViewHolder(
             val leftCodeText = TextView(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    Gravity.TOP or Gravity.START
                 )
+                gravity = Gravity.TOP or Gravity.START
                 typeface = Typeface.MONOSPACE
                 setSingleLine(true)
                 setTextIsSelectable(true)
@@ -382,6 +394,7 @@ class DiffRowViewHolder(
             val rightContainer = LinearLayout(context).apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.TOP
             }
             val rightGutterText = TextView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -395,8 +408,10 @@ class DiffRowViewHolder(
             val rightCodeText = TextView(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    Gravity.TOP or Gravity.START
                 )
+                gravity = Gravity.TOP or Gravity.START
                 typeface = Typeface.MONOSPACE
                 setSingleLine(true)
                 setTextIsSelectable(true)
@@ -461,6 +476,7 @@ class UnifiedRowViewHolder(
     ) {
         scrollView.isLineWrap = isLineWrap
         codeText.isSingleLine = !isLineWrap
+        codeText.gravity = Gravity.TOP or Gravity.START
 
         scrollView.syncGroup = if (isLineWrap) null else unifiedSyncGroup
         if (!isLineWrap) {
@@ -529,7 +545,7 @@ class UnifiedRowViewHolder(
             highlightBgColor = highlightBg,
             isDark = isDark
         )
-        codeText.text = highlighted
+        codeText.text = if (isLineWrap) formatWrappedText(highlighted) else highlighted
 
         val typeDesc = when (item.type) {
             DiffRowType.DELETED -> "deleted"
@@ -558,6 +574,7 @@ class UnifiedRowViewHolder(
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
                 orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.TOP
                 isBaselineAligned = false
             }
 
@@ -589,8 +606,10 @@ class UnifiedRowViewHolder(
             val codeText = TextView(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    Gravity.TOP or Gravity.START
                 )
+                gravity = Gravity.TOP or Gravity.START
                 typeface = Typeface.MONOSPACE
                 setSingleLine(true)
                 setTextIsSelectable(true)
@@ -694,3 +713,33 @@ class FoldedHeaderViewHolder(
         }
     }
 }
+
+/**
+ * 줄 바꿈(Line Wrap) 시 Android TextView가 들여쓰기 공백 뒤에서 줄을 바꿔 첫 행이 비어 보이는 현상을 방지하기 위해
+ * 앞쪽의 연속된 공백 문자들을 Non-Breaking Space(\u00A0)로 치환합니다.
+ */
+internal fun formatWrappedText(text: CharSequence): CharSequence {
+    var leadingSpaceCount = 0
+    while (leadingSpaceCount < text.length && text[leadingSpaceCount] == ' ') {
+        leadingSpaceCount++
+    }
+    if (leadingSpaceCount == 0) return text
+
+    val nonBreakingLeading = "\u00A0".repeat(leadingSpaceCount)
+    return when (text) {
+        is Spannable -> {
+            val ssb = SpannableStringBuilder(text)
+            ssb.replace(0, leadingSpaceCount, nonBreakingLeading)
+            ssb
+        }
+        is String -> {
+            nonBreakingLeading + text.substring(leadingSpaceCount)
+        }
+        else -> {
+            val ssb = SpannableStringBuilder(text)
+            ssb.replace(0, leadingSpaceCount, nonBreakingLeading)
+            ssb
+        }
+    }
+}
+

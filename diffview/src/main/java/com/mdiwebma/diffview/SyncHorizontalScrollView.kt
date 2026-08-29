@@ -133,21 +133,23 @@ class SyncHorizontalScrollView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (isLineWrap) {
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            val width = MeasureSpec.getSize(widthMeasureSpec)
+            val availableWidth = (width - paddingLeft - paddingRight).coerceAtLeast(0)
+            var desiredHeight = paddingTop + paddingBottom
             if (childCount > 0) {
                 val child = getChildAt(0)
                 if (child.minimumWidth != 0) {
                     child.minimumWidth = 0
                 }
-                val availableWidth = measuredWidth - paddingLeft - paddingRight
-                if (availableWidth > 0) {
-                    val childWidthSpec = MeasureSpec.makeMeasureSpec(availableWidth, MeasureSpec.EXACTLY)
-                    val childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
-                    child.measure(childWidthSpec, childHeightSpec)
-                    val desiredHeight = child.measuredHeight + paddingTop + paddingBottom
-                    setMeasuredDimension(measuredWidth, resolveSize(desiredHeight, heightMeasureSpec))
-                }
+                val childWidthSpec = MeasureSpec.makeMeasureSpec(availableWidth, MeasureSpec.EXACTLY)
+                val childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+                child.measure(childWidthSpec, childHeightSpec)
+                desiredHeight = child.measuredHeight + paddingTop + paddingBottom
             }
+            setMeasuredDimension(
+                resolveSize(width, widthMeasureSpec),
+                resolveSize(desiredHeight, heightMeasureSpec)
+            )
             return
         }
 
@@ -168,6 +170,19 @@ class SyncHorizontalScrollView @JvmOverloads constructor(
             val childMeasuredWidth = child.measuredWidth
             syncGroup?.reportContentWidth(childMeasuredWidth)
         }
+    }
+
+    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        if (isLineWrap) {
+            if (childCount > 0) {
+                val child = getChildAt(0)
+                val childLeft = paddingLeft
+                val childTop = paddingTop
+                child.layout(childLeft, childTop, childLeft + child.measuredWidth, childTop + child.measuredHeight)
+            }
+            return
+        }
+        super.onLayout(changed, l, t, r, b)
     }
 
     override fun computeHorizontalScrollRange(): Int {
