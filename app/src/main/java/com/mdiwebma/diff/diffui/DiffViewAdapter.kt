@@ -1,4 +1,4 @@
-package com.example.splitdiff.diffui
+package com.mdiwebma.diff.diffui
 
 import android.content.Context
 import android.graphics.Color
@@ -13,10 +13,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.splitdiff.model.DiffDisplayItem
-import com.example.splitdiff.model.DiffLine
-import com.example.splitdiff.model.DiffRow
-import com.example.splitdiff.model.DiffRowType
+import com.mdiwebma.diff.model.DiffDisplayItem
+import com.mdiwebma.diff.model.DiffLine
+import com.mdiwebma.diff.model.DiffRow
+import com.mdiwebma.diff.model.DiffRowType
 
 /**
  * Side-by-Side 및 Unified 모드를 모두 지원하며,
@@ -126,7 +126,7 @@ class DiffViewAdapter(
 }
 
 /**
- * Side-by-Side (Split) 모드용 ViewHolder (좌/우 독립적 뷰 단위 가로 스크롤).
+ * Side-by-Side (Split) 모드용 ViewHolder.
  */
 class DiffRowViewHolder(
     itemView: View,
@@ -152,7 +152,6 @@ class DiffRowViewHolder(
         textSizeSp: Float,
         isDark: Boolean
     ) {
-        // SyncGroup 연결 및 현재 스크롤 위치 동기화
         leftScrollView.syncGroup = leftSyncGroup
         rightScrollView.syncGroup = rightSyncGroup
         leftScrollView.scrollTo(leftSyncGroup.currentScrollX, 0)
@@ -274,7 +273,6 @@ class DiffRowViewHolder(
                 isBaselineAligned = false
             }
 
-            // Left Container
             val leftContainer = LinearLayout(context).apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 orientation = LinearLayout.HORIZONTAL
@@ -308,12 +306,10 @@ class DiffRowViewHolder(
             leftContainer.addView(leftGutterDivider)
             leftContainer.addView(leftScrollView)
 
-            // Center Divider
             val centerDivider = View(context).apply {
                 layoutParams = LinearLayout.LayoutParams(dividerPx, ViewGroup.LayoutParams.MATCH_PARENT)
             }
 
-            // Right Container
             val rightContainer = LinearLayout(context).apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 orientation = LinearLayout.HORIZONTAL
@@ -372,7 +368,7 @@ class DiffRowViewHolder(
 }
 
 /**
- * Unified (통합 단일 열) 모드용 ViewHolder (전체 라인 가로 스크롤 동기화).
+ * Unified (통합 단일 열) 모드용 ViewHolder.
  */
 class UnifiedRowViewHolder(
     itemView: View,

@@ -1,4 +1,4 @@
-package com.example.splitdiff.diffui
+package com.mdiwebma.diff.diffui
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -8,7 +8,7 @@ import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import androidx.annotation.ColorInt
-import com.example.splitdiff.model.TextSpan
+import com.mdiwebma.diff.model.TextSpan
 import java.util.regex.Pattern
 
 /**
@@ -95,7 +95,7 @@ class DefaultKotlinSyntaxHighlighter : SyntaxHighlighter {
         val fullText = fullTextBuilder.toString()
         val ssb = SpannableStringBuilder(fullText)
 
-        // 1. 전체 기본 텍스트 색상 적용 (다크/라이트 테마 일관성 보장)
+        // 1. 전체 기본 텍스트 색상 적용
         if (fullText.isNotEmpty()) {
             ssb.setSpan(
                 ForegroundColorSpan(defaultTextColor),

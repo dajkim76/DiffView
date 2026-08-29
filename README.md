@@ -50,10 +50,10 @@ dependencies {
 
 ## 📁 프로젝트에 복사해야 할 파일 목록
 
-다른 프로젝트에 본 컴포넌트를 적용하려면 아래 **10개 파일**을 복사하여 사용하시면 됩니다:
+다른 프로젝트에 본 컴포넌트를 적용하려면 아래 **`com.mdiwebma.diff` 패키지의 10개 파일**을 복사하여 사용하시면 됩니다:
 
 ```text
-com.example.splitdiff
+com.mdiwebma.diff
 ├── model/
 │   └── DiffModels.kt                 # DiffRow, DiffLine, DiffRowType, DiffMode 등 데이터 모델
 ├── engine/
@@ -76,7 +76,7 @@ com.example.splitdiff
 ### 1. XML 레이아웃에 추가
 
 ```xml
-<com.example.splitdiff.diffui.DiffView
+<com.mdiwebma.diff.diffui.DiffView
     android:id="@+id/diffView"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
@@ -85,6 +85,11 @@ com.example.splitdiff
 ### 2. Kotlin 코드에서 제어
 
 ```kotlin
+import com.mdiwebma.diff.diffui.DiffColors
+import com.mdiwebma.diff.diffui.DiffView
+import com.mdiwebma.diff.diffui.DefaultKotlinSyntaxHighlighter
+import com.mdiwebma.diff.model.DiffMode
+
 val diffView = findViewById<DiffView>(R.id.diffView)
 
 // 1. 원본 및 수정본 소스 코드 설정 (비동기 계산 및 렌더링)

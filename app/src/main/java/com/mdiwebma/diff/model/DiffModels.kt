@@ -1,4 +1,4 @@
-package com.example.splitdiff.model
+package com.mdiwebma.diff.model
 
 /**
  * Diff 표시 모드 (Side-by-Side 분할 뷰 vs Unified 단일 통합 뷰)

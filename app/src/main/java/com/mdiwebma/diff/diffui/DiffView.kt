@@ -1,4 +1,4 @@
-package com.example.splitdiff.diffui
+package com.mdiwebma.diff.diffui
 
 import android.content.Context
 import android.graphics.Color
@@ -15,11 +15,11 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.splitdiff.engine.DiffEngine
-import com.example.splitdiff.engine.KotlinDiffEngine
-import com.example.splitdiff.model.DiffDisplayItem
-import com.example.splitdiff.model.DiffMode
-import com.example.splitdiff.model.DiffResult
+import com.mdiwebma.diff.engine.DiffEngine
+import com.mdiwebma.diff.engine.KotlinDiffEngine
+import com.mdiwebma.diff.model.DiffDisplayItem
+import com.mdiwebma.diff.model.DiffMode
+import com.mdiwebma.diff.model.DiffResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

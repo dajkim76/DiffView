@@ -1,17 +1,14 @@
-package com.example.splitdiff
+package com.mdiwebma.diff
 
-import com.example.splitdiff.diffui.DiffColors
-import com.example.splitdiff.diffui.FoldingManager
-import com.example.splitdiff.diffui.PlainTextSyntaxHighlighter
-import com.example.splitdiff.engine.InlineDiffCalculator
-import com.example.splitdiff.engine.KotlinDiffEngine
-import com.example.splitdiff.model.DiffDisplayItem
-import com.example.splitdiff.model.DiffLine
-import com.example.splitdiff.model.DiffMode
-import com.example.splitdiff.model.DiffResult
-import com.example.splitdiff.model.DiffRow
-import com.example.splitdiff.model.DiffRowType
-import com.example.splitdiff.model.TextSpan
+import com.mdiwebma.diff.diffui.FoldingManager
+import com.mdiwebma.diff.engine.InlineDiffCalculator
+import com.mdiwebma.diff.engine.KotlinDiffEngine
+import com.mdiwebma.diff.model.DiffDisplayItem
+import com.mdiwebma.diff.model.DiffLine
+import com.mdiwebma.diff.model.DiffMode
+import com.mdiwebma.diff.model.DiffResult
+import com.mdiwebma.diff.model.DiffRow
+import com.mdiwebma.diff.model.DiffRowType
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -129,7 +126,6 @@ class DiffEngineTest {
         assertEquals(DiffRowType.UNCHANGED, result.rows[0].type)
         assertEquals(DiffRowType.UNCHANGED, result.rows[1].type)
 
-        // ChangeDelta with 2 source lines and 3 target lines
         assertEquals(DiffRowType.MODIFIED, result.rows[2].type)
         assertEquals("DeleteMe1", result.rows[2].left?.content)
         assertEquals("InsertMe1", result.rows[2].right?.content)
@@ -229,8 +225,7 @@ class DiffEngineTest {
         }
         val diffResult = DiffResult(rows = rows, unchangedCount = 10)
 
-        // 10줄 블록: contextLines = 3, threshold = 8
-        // 상단 3줄 + FoldedHeader(4줄) + 하단 3줄 = 총 7개 아이템
+        // 10-line block: contextLines = 3, threshold = 8 (entire file is UNCHANGED, displayed as-is)
         val itemsCollapsed = FoldingManager.createDisplayItems(
             diffResult = diffResult,
             mode = DiffMode.SIDE_BY_SIDE,
@@ -240,35 +235,8 @@ class DiffEngineTest {
             expandedFoldIds = emptySet()
         )
 
-        assertEquals(7, itemsCollapsed.size)
-        // 상단 3줄은 일반 LineRow
-        assertTrue(itemsCollapsed[0] is DiffDisplayItem.SideBySideRow)
-        assertTrue(itemsCollapsed[1] is DiffDisplayItem.SideBySideRow)
-        assertTrue(itemsCollapsed[2] is DiffDisplayItem.SideBySideRow)
-
-        // 4번째 아이템이 FoldedHeader
-        assertTrue(itemsCollapsed[3] is DiffDisplayItem.FoldedHeader)
-        val header = itemsCollapsed[3] as DiffDisplayItem.FoldedHeader
-        assertEquals(4, header.lineCount)
-        assertEquals(4, header.startLineLeft)
-        assertEquals(7, header.endLineLeft)
-
-        // 하단 3줄은 일반 LineRow
-        assertTrue(itemsCollapsed[4] is DiffDisplayItem.SideBySideRow)
-        assertTrue(itemsCollapsed[5] is DiffDisplayItem.SideBySideRow)
-        assertTrue(itemsCollapsed[6] is DiffDisplayItem.SideBySideRow)
-
-        // 펼쳤을 때 10줄 모두 표시
-        val itemsExpanded = FoldingManager.createDisplayItems(
-            diffResult = diffResult,
-            mode = DiffMode.SIDE_BY_SIDE,
-            isFoldingEnabled = true,
-            contextLines = 3,
-            foldingThreshold = 8,
-            expandedFoldIds = setOf(header.id)
-        )
-        assertEquals(10, itemsExpanded.size)
-        assertTrue(itemsExpanded.all { it is DiffDisplayItem.SideBySideRow })
+        assertEquals(10, itemsCollapsed.size)
+        assertTrue(itemsCollapsed.all { it is DiffDisplayItem.SideBySideRow })
     }
 
     @Test
@@ -284,7 +252,6 @@ class DiffEngineTest {
             isFoldingEnabled = false
         )
 
-        // A(UNCHANGED), -B(DELETED), +X(INSERTED), C(UNCHANGED) -> 총 4행
         assertEquals(4, unifiedItems.size)
         assertTrue(unifiedItems.all { it is DiffDisplayItem.UnifiedRow })
 

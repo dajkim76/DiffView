@@ -1,4 +1,4 @@
-package com.example.splitdiff
+package com.mdiwebma.diff_demo
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -10,14 +10,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.splitdiff.diffui.DiffColors
-import com.example.splitdiff.diffui.DiffView
-import com.example.splitdiff.model.DiffMode
+import com.mdiwebma.diff.diffui.DiffColors
+import com.mdiwebma.diff.diffui.DiffView
+import com.mdiwebma.diff.model.DiffMode
 
 /**
  * Jetpack Compose를 사용하지 않는 순수 Android View 기반 DiffView 데모 액티비티.
@@ -52,7 +51,6 @@ class DemoActivity : ComponentActivity() {
         val pad8Px = (8 * density).toInt()
         val pad4Px = (4 * density).toInt()
 
-        // Root Container
         val rootLayout = LinearLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -62,7 +60,6 @@ class DemoActivity : ComponentActivity() {
             setBackgroundColor(Color.parseColor("#F5F5F7"))
         }
 
-        // Window Insets (Edge to edge padding)
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(0, systemBars.top, 0, systemBars.bottom)
@@ -94,7 +91,6 @@ class DemoActivity : ComponentActivity() {
             addView(row1)
         }
 
-        // Mode 토글 버튼
         modeSplitButton = createPillButton("Side-by-Side (Split)", isSelected = true) {
             currentMode = DiffMode.SIDE_BY_SIDE
             diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
@@ -108,11 +104,8 @@ class DemoActivity : ComponentActivity() {
 
         row1.addView(modeSplitButton)
         row1.addView(modeUnifiedButton)
-
-        // 구분자
         row1.addView(createVerticalBar())
 
-        // Preset 버튼들
         presets.forEachIndexed { index, (title, _) ->
             val btn = createPillButton(title, isSelected = (index == 0)) {
                 selectedPresetIndex = index
@@ -124,7 +117,7 @@ class DemoActivity : ComponentActivity() {
             row1.addView(btn)
         }
 
-        // Row 2: Controls (Dark mode, Font, Folding, Expand/Collapse)
+        // Row 2: Controls
         val row2 = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -183,7 +176,7 @@ class DemoActivity : ComponentActivity() {
         controlContainer.addView(row1Scroll)
         controlContainer.addView(row2Scroll)
 
-        // --- DiffView (Custom View) ---
+        // --- DiffView ---
         diffView = DiffView(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -324,7 +317,6 @@ class UserProfile(
         println("Created at: ${'$'}{Date()}")
     }
 
-    // 10줄 이상의 변경 없는 구간 (자동 접기 테스트)
     fun helper1() = 1
     fun helper2() = 2
     fun helper3() = 3
@@ -363,7 +355,6 @@ data class UserProfile(
         println("Created at: ${'$'}{Instant.now()}")
     }
 
-    // 10줄 이상의 변경 없는 구간 (자동 접기 테스트)
     fun helper1() = 1
     fun helper2() = 2
     fun helper3() = 3

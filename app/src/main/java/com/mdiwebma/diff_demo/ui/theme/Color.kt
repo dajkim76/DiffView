@@ -1,4 +1,4 @@
-package com.example.splitdiff.ui.theme
+package com.mdiwebma.diff_demo.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

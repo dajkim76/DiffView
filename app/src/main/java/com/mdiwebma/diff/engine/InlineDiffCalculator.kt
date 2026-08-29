@@ -1,6 +1,6 @@
-package com.example.splitdiff.engine
+package com.mdiwebma.diff.engine
 
-import com.example.splitdiff.model.TextSpan
+import com.mdiwebma.diff.model.TextSpan
 import kotlin.math.max
 import kotlin.math.min
 
@@ -33,7 +33,7 @@ object InlineDiffCalculator {
             return listOf(TextSpan(left, true)) to emptyList()
         }
 
-        // 성능 보호: 너무 긴 라인(예: 3000자 초과)은 단순 prefix/suffix 매칭으로 고속 처리
+        // 성능 보호: 너무 긴 라인(예: 2000자 초과)은 prefix/suffix 매칭으로 고속 처리
         if (left.length > 2000 || right.length > 2000) {
             return calculatePrefixSuffixDiff(left, right)
         }
@@ -96,7 +96,6 @@ object InlineDiffCalculator {
         val n = left.length
         val m = right.length
 
-        // LCS 행렬 계산
         val dp = Array(n + 1) { IntArray(m + 1) }
         for (i in 1..n) {
             for (j in 1..m) {
@@ -108,7 +107,6 @@ object InlineDiffCalculator {
             }
         }
 
-        // 역추적으로 매칭 식별
         val leftMatched = BooleanArray(n)
         val rightMatched = BooleanArray(m)
 

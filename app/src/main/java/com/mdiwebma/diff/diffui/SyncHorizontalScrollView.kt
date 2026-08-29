@@ -1,4 +1,4 @@
-package com.example.splitdiff.diffui
+package com.mdiwebma.diff.diffui
 
 import android.content.Context
 import android.util.AttributeSet

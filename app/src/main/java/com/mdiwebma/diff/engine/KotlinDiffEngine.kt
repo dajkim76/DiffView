@@ -1,14 +1,13 @@
-package com.example.splitdiff.engine
+package com.mdiwebma.diff.engine
 
-import com.example.splitdiff.model.DiffLine
-import com.example.splitdiff.model.DiffResult
-import com.example.splitdiff.model.DiffRow
-import com.example.splitdiff.model.DiffRowType
-import com.example.splitdiff.model.TextSpan
+import com.mdiwebma.diff.model.DiffLine
+import com.mdiwebma.diff.model.DiffResult
+import com.mdiwebma.diff.model.DiffRow
+import com.mdiwebma.diff.model.DiffRowType
+import com.mdiwebma.diff.model.TextSpan
 import io.github.petertrr.diffutils.diff
 import io.github.petertrr.diffutils.patch.ChangeDelta
 import io.github.petertrr.diffutils.patch.DeleteDelta
-import io.github.petertrr.diffutils.patch.Delta
 import io.github.petertrr.diffutils.patch.InsertDelta
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -155,7 +154,6 @@ class KotlinDiffEngine(
                     }
                 }
                 else -> {
-                    // EqualDelta 등 기타 델타 처리
                     val origChunk = delta.source.lines
                     for (lineText in origChunk) {
                         val leftLine = DiffLine(
@@ -205,7 +203,6 @@ class KotlinDiffEngine(
 
     private fun splitLines(text: String): List<String> {
         if (text.isEmpty()) return emptyList()
-        // \r\n, \r, \n 모두 안전하게 라인 분할
         val normalized = text.replace("\r\n", "\n").replace("\r", "\n")
         return normalized.split("\n")
     }

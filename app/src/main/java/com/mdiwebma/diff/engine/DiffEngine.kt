@@ -1,6 +1,6 @@
-package com.example.splitdiff.engine
+package com.mdiwebma.diff.engine
 
-import com.example.splitdiff.model.DiffResult
+import com.mdiwebma.diff.model.DiffResult
 
 /**
  * 텍스트 간의 Diff를 계산하는 엔진 인터페이스.

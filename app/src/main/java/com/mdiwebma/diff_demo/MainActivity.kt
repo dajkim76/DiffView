@@ -1,4 +1,4 @@
-package com.example.splitdiff
+package com.mdiwebma.diff_demo
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -32,10 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.splitdiff.diffui.DiffColors
-import com.example.splitdiff.diffui.DiffView
-import com.example.splitdiff.model.DiffMode
-import com.example.splitdiff.ui.theme.SplitDiffTheme
+import com.mdiwebma.diff.diffui.DiffColors
+import com.mdiwebma.diff.diffui.DiffView
+import com.mdiwebma.diff.model.DiffMode
+import com.mdiwebma.diff_demo.ui.theme.SplitDiffTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -81,13 +81,11 @@ fun DiffDemoScreen(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        // 상단 컨트롤 바
         Surface(
             modifier = Modifier.fillMaxWidth(),
             tonalElevation = 2.dp
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
-                // 프리셋 칩 목록 & 뷰 모드 전환
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -95,7 +93,6 @@ fun DiffDemoScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 모드 선택 칩 (Split vs Unified)
                     FilterChip(
                         selected = diffMode == DiffMode.SIDE_BY_SIDE,
                         onClick = {
@@ -131,7 +128,6 @@ fun DiffDemoScreen(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // 조작 버튼 (다크모드, 폰트크기, 접기/펼치기)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -193,7 +189,6 @@ fun DiffDemoScreen(
             }
         }
 
-        // Android View 기반 DiffView 임베딩
         AndroidView(
             modifier = Modifier
                 .fillMaxWidth()
@@ -222,8 +217,6 @@ fun DiffDemoScreen(
     }
 }
 
-// --- 샘플 데이터 정의 ---
-
 private val SAMPLE_ORIGINAL = """
 package com.example.splitdiff
 
@@ -240,7 +233,6 @@ class UserProfile(
         println("Created at: ${'$'}{Date()}")
     }
 
-    // 10줄 이상의 변경 없는 구간 (자동 접기 테스트)
     fun helper1() = 1
     fun helper2() = 2
     fun helper3() = 3
@@ -279,7 +271,6 @@ data class UserProfile(
         println("Created at: ${'$'}{Instant.now()}")
     }
 
-    // 10줄 이상의 변경 없는 구간 (자동 접기 테스트)
     fun helper1() = 1
     fun helper2() = 2
     fun helper3() = 3
