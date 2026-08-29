@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.splitdiff.engine.DiffEngine
 import com.example.splitdiff.engine.KotlinDiffEngine
 import com.example.splitdiff.model.DiffDisplayItem
+import com.example.splitdiff.model.DiffMode
 import com.example.splitdiff.model.DiffResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Android Studio 스타일의 Side-by-Side DiffView Android 커스텀 뷰 컴포넌트.
+ * Side-by-Side (Split) 및 Unified (통합 단일 열) 모드를 모두 지원하는
+ * Android Studio 스타일의 DiffView 커스텀 뷰.
  */
 class DiffView @JvmOverloads constructor(
     context: Context,
@@ -37,6 +39,7 @@ class DiffView @JvmOverloads constructor(
     private var diffEngine: DiffEngine = KotlinDiffEngine()
     private val viewScope = CoroutineScope(Dispatchers.Main + Job())
 
+    private var diffMode: DiffMode = DiffMode.SIDE_BY_SIDE
     private var originalTitleText: String = "Original"
     private var modifiedTitleText: String = "Modified"
 
@@ -50,8 +53,13 @@ class DiffView @JvmOverloads constructor(
 
     // UI Elements
     private val headerLayout: LinearLayout
+    private val leftHeaderBox: LinearLayout
     private val leftHeaderTitle: TextView
+    private val rightHeaderBox: LinearLayout
     private val rightHeaderTitle: TextView
+    private val unifiedHeaderBox: LinearLayout
+    private val unifiedHeaderTitle: TextView
+
     private val statsLayout: LinearLayout
     private val addedBadge: TextView
     private val deletedBadge: TextView
@@ -87,8 +95,8 @@ class DiffView @JvmOverloads constructor(
             gravity = Gravity.CENTER_VERTICAL
         }
 
-        // Left Header
-        val leftHeaderBox = LinearLayout(context).apply {
+        // --- Side-by-Side Left Header ---
+        leftHeaderBox = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -109,8 +117,8 @@ class DiffView @JvmOverloads constructor(
             layoutParams = LinearLayout.LayoutParams(dividerPx, (18 * density).toInt())
         }
 
-        // Right Header
-        val rightHeaderBox = LinearLayout(context).apply {
+        // --- Side-by-Side Right Header ---
+        rightHeaderBox = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -124,6 +132,48 @@ class DiffView @JvmOverloads constructor(
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding(padHorizontalPx, 0, 0, 0)
         }
+        val rightHeaderInner = LinearLayout(context).apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        rightHeaderInner.addView(rightHeaderTitle)
+        rightHeaderBox.addView(rightSpacer)
+        rightHeaderBox.addView(rightHeaderInner)
+
+        // --- Unified Mode Header ---
+        unifiedHeaderBox = LinearLayout(context).apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            visibility = GONE
+        }
+        val oldGutterSpacer = TextView(context).apply {
+            layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.WRAP_CONTENT)
+            text = "Old"
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+        }
+        val newGutterSpacer = TextView(context).apply {
+            layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.WRAP_CONTENT)
+            text = "New"
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+        }
+        unifiedHeaderTitle = TextView(context).apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            text = "Unified Changes (+ / -)"
+            typeface = Typeface.DEFAULT_BOLD
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            setPadding((20 * density).toInt(), 0, 0, 0)
+        }
+        unifiedHeaderBox.addView(oldGutterSpacer)
+        unifiedHeaderBox.addView(newGutterSpacer)
+        unifiedHeaderBox.addView(unifiedHeaderTitle)
+
+        // Stats Badges (+ / - / ~)
         statsLayout = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -141,24 +191,11 @@ class DiffView @JvmOverloads constructor(
         statsLayout.addView(deletedBadge)
         statsLayout.addView(modifiedBadge)
 
-        val rightHeaderInner = LinearLayout(context).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                0,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                1f
-            )
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        rightHeaderInner.addView(rightHeaderTitle)
-
-        rightHeaderBox.addView(rightSpacer)
-        rightHeaderBox.addView(rightHeaderInner)
-        rightHeaderBox.addView(statsLayout)
-
         headerLayout.addView(leftHeaderBox)
         headerLayout.addView(centerHeaderDivider)
         headerLayout.addView(rightHeaderBox)
+        headerLayout.addView(unifiedHeaderBox)
+        headerLayout.addView(statsLayout)
 
         headerDivider = View(context).apply {
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dividerPx)
@@ -198,6 +235,7 @@ class DiffView @JvmOverloads constructor(
         addView(contentContainer)
         addView(progressBar)
 
+        updateHeaderMode()
         applyColors()
     }
 
@@ -214,6 +252,33 @@ class DiffView @JvmOverloads constructor(
             typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
             visibility = GONE
+        }
+    }
+
+    /**
+     * Diff 표시 모드 설정 ([DiffMode.SIDE_BY_SIDE] vs [DiffMode.UNIFIED]).
+     */
+    fun setDiffMode(mode: DiffMode) {
+        if (this.diffMode != mode) {
+            this.diffMode = mode
+            updateHeaderMode()
+            updateDisplayItems()
+        }
+    }
+
+    fun getDiffMode(): DiffMode = diffMode
+
+    private fun updateHeaderMode() {
+        if (diffMode == DiffMode.SIDE_BY_SIDE) {
+            leftHeaderBox.visibility = VISIBLE
+            centerHeaderDivider.visibility = VISIBLE
+            rightHeaderBox.visibility = VISIBLE
+            unifiedHeaderBox.visibility = GONE
+        } else {
+            leftHeaderBox.visibility = GONE
+            centerHeaderDivider.visibility = GONE
+            rightHeaderBox.visibility = GONE
+            unifiedHeaderBox.visibility = VISIBLE
         }
     }
 
@@ -294,6 +359,7 @@ class DiffView @JvmOverloads constructor(
         val result = currentDiffResult ?: return
         val items = FoldingManager.createDisplayItems(
             diffResult = result,
+            mode = diffMode,
             isFoldingEnabled = true,
             foldingThreshold = foldingThreshold,
             expandedFoldIds = emptySet()
@@ -323,6 +389,7 @@ class DiffView @JvmOverloads constructor(
     private fun updateDisplayItems() {
         val items = FoldingManager.createDisplayItems(
             diffResult = currentDiffResult,
+            mode = diffMode,
             isFoldingEnabled = isFoldingEnabled,
             foldingThreshold = foldingThreshold,
             expandedFoldIds = expandedFoldIds
@@ -358,6 +425,7 @@ class DiffView @JvmOverloads constructor(
         headerLayout.setBackgroundColor(diffColors.headerBackground)
         leftHeaderTitle.setTextColor(diffColors.headerTextColor)
         rightHeaderTitle.setTextColor(diffColors.headerTextColor)
+        unifiedHeaderTitle.setTextColor(diffColors.headerTextColor)
         headerDivider.setBackgroundColor(diffColors.dividerColor)
         centerHeaderDivider.setBackgroundColor(diffColors.dividerColor)
 

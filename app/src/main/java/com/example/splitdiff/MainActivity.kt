@@ -1,14 +1,11 @@
 package com.example.splitdiff
 
 import android.os.Bundle
-import android.widget.LinearLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,12 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -34,12 +29,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.splitdiff.diffui.DiffColors
 import com.example.splitdiff.diffui.DiffView
+import com.example.splitdiff.model.DiffMode
 import com.example.splitdiff.ui.theme.SplitDiffTheme
 
 class MainActivity : ComponentActivity() {
@@ -71,6 +66,7 @@ fun DiffDemoScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedPreset by remember { mutableStateOf(0) }
+    var diffMode by remember { mutableStateOf(DiffMode.SIDE_BY_SIDE) }
     var textSizeSp by remember { mutableFloatStateOf(12.5f) }
     var isFoldingEnabled by remember { mutableStateOf(true) }
     var diffViewInstance by remember { mutableStateOf<DiffView?>(null) }
@@ -91,13 +87,35 @@ fun DiffDemoScreen(
             tonalElevation = 2.dp
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
-                // 프리셋 칩 목록
+                // 프리셋 칩 목록 & 뷰 모드 전환
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // 모드 선택 칩 (Split vs Unified)
+                    FilterChip(
+                        selected = diffMode == DiffMode.SIDE_BY_SIDE,
+                        onClick = {
+                            diffMode = DiffMode.SIDE_BY_SIDE
+                            diffViewInstance?.setDiffMode(DiffMode.SIDE_BY_SIDE)
+                        },
+                        label = { Text("Side-by-Side (Split)", fontSize = 12.sp) }
+                    )
+
+                    FilterChip(
+                        selected = diffMode == DiffMode.UNIFIED,
+                        onClick = {
+                            diffMode = DiffMode.UNIFIED
+                            diffViewInstance?.setDiffMode(DiffMode.UNIFIED)
+                        },
+                        label = { Text("Unified (위아래 표시)", fontSize = 12.sp) }
+                    )
+
+                    Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+
                     presets.forEachIndexed { index, (title, _) ->
                         FilterChip(
                             selected = selectedPreset == index,
@@ -185,6 +203,7 @@ fun DiffDemoScreen(
                     val colors = if (isDark) DiffColors.Dark else DiffColors.Light
                     setDiffColors(colors)
                     setTextSize(textSizeSp)
+                    setDiffMode(diffMode)
                     setFoldingEnabled(isFoldingEnabled, 5)
                     setHeaderTitles("Original Code", "Modified Code")
                     val (orig, mod) = presets[selectedPreset].second
@@ -196,6 +215,7 @@ fun DiffDemoScreen(
                 val colors = if (isDark) DiffColors.Dark else DiffColors.Light
                 view.setDiffColors(colors)
                 view.setTextSize(textSizeSp)
+                view.setDiffMode(diffMode)
                 diffViewInstance = view
             }
         )

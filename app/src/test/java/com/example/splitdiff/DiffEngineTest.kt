@@ -7,6 +7,7 @@ import com.example.splitdiff.engine.InlineDiffCalculator
 import com.example.splitdiff.engine.KotlinDiffEngine
 import com.example.splitdiff.model.DiffDisplayItem
 import com.example.splitdiff.model.DiffLine
+import com.example.splitdiff.model.DiffMode
 import com.example.splitdiff.model.DiffResult
 import com.example.splitdiff.model.DiffRow
 import com.example.splitdiff.model.DiffRowType
@@ -218,7 +219,6 @@ class DiffEngineTest {
 
     @Test
     fun testFoldingManager_ThresholdAndToggle() {
-        // 10줄의 UNCHANGED 행 생성
         val rows = (1..10).map { i ->
             DiffRow(
                 id = i.toLong(),
@@ -229,9 +229,9 @@ class DiffEngineTest {
         }
         val diffResult = DiffResult(rows = rows, unchangedCount = 10)
 
-        // Threshold = 5일 때, 10줄 블록은 1개의 FoldedHeader로 접혀야 함
         val itemsCollapsed = FoldingManager.createDisplayItems(
             diffResult = diffResult,
+            mode = DiffMode.SIDE_BY_SIDE,
             isFoldingEnabled = true,
             foldingThreshold = 5,
             expandedFoldIds = emptySet()
@@ -244,14 +244,56 @@ class DiffEngineTest {
         assertEquals(1, header.startLineLeft)
         assertEquals(10, header.endLineLeft)
 
-        // 접힌 헤더 ID를 expandedFoldIds에 넣으면 10개의 LineRow로 펼쳐져야 함
         val itemsExpanded = FoldingManager.createDisplayItems(
             diffResult = diffResult,
+            mode = DiffMode.SIDE_BY_SIDE,
             isFoldingEnabled = true,
             foldingThreshold = 5,
             expandedFoldIds = setOf(header.id)
         )
         assertEquals(10, itemsExpanded.size)
-        assertTrue(itemsExpanded.all { it is DiffDisplayItem.LineRow })
+        assertTrue(itemsExpanded.all { it is DiffDisplayItem.SideBySideRow })
+    }
+
+    @Test
+    fun testUnifiedModeTransformation() = runTest {
+        val oldText = "A\nB\nC"
+        val newText = "A\nX\nC"
+
+        val result = engine.calculateDiff(oldText, newText)
+
+        val unifiedItems = FoldingManager.createDisplayItems(
+            diffResult = result,
+            mode = DiffMode.UNIFIED,
+            isFoldingEnabled = false
+        )
+
+        // A(UNCHANGED), -B(DELETED), +X(INSERTED), C(UNCHANGED) -> 총 4행
+        assertEquals(4, unifiedItems.size)
+        assertTrue(unifiedItems.all { it is DiffDisplayItem.UnifiedRow })
+
+        val r0 = unifiedItems[0] as DiffDisplayItem.UnifiedRow
+        assertEquals(1, r0.oldLineNumber)
+        assertEquals(1, r0.newLineNumber)
+        assertEquals("A", r0.content)
+        assertEquals(" ", r0.prefix)
+
+        val r1 = unifiedItems[1] as DiffDisplayItem.UnifiedRow
+        assertEquals(2, r1.oldLineNumber)
+        assertNull(r1.newLineNumber)
+        assertEquals("B", r1.content)
+        assertEquals("-", r1.prefix)
+
+        val r2 = unifiedItems[2] as DiffDisplayItem.UnifiedRow
+        assertNull(r2.oldLineNumber)
+        assertEquals(2, r2.newLineNumber)
+        assertEquals("X", r2.content)
+        assertEquals("+", r2.prefix)
+
+        val r3 = unifiedItems[3] as DiffDisplayItem.UnifiedRow
+        assertEquals(3, r3.oldLineNumber)
+        assertEquals(3, r3.newLineNumber)
+        assertEquals("C", r3.content)
+        assertEquals(" ", r3.prefix)
     }
 }

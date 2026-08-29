@@ -20,7 +20,7 @@ import com.example.splitdiff.model.DiffRow
 import com.example.splitdiff.model.DiffRowType
 
 /**
- * RecyclerView 기반 Side-by-Side Diff 어댑터.
+ * Side-by-Side 및 Unified 모드를 모두 지원하는 RecyclerView Diff 어댑터.
  */
 class DiffViewAdapter(
     private val onToggleFold: (Long) -> Unit
@@ -54,14 +54,16 @@ class DiffViewAdapter(
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
-            is DiffDisplayItem.LineRow -> TYPE_LINE_ROW
+            is DiffDisplayItem.SideBySideRow -> TYPE_SIDE_BY_SIDE_ROW
+            is DiffDisplayItem.UnifiedRow -> TYPE_UNIFIED_ROW
             is DiffDisplayItem.FoldedHeader -> TYPE_FOLDED_HEADER
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
-            TYPE_LINE_ROW -> DiffRowViewHolder.create(parent.context, gutterWidthDp)
+            TYPE_SIDE_BY_SIDE_ROW -> DiffRowViewHolder.create(parent.context, gutterWidthDp)
+            TYPE_UNIFIED_ROW -> UnifiedRowViewHolder.create(parent.context, gutterWidthDp)
             TYPE_FOLDED_HEADER -> FoldedHeaderViewHolder.create(parent.context, onToggleFold)
             else -> throw IllegalArgumentException("Unknown viewType: $viewType")
         }
@@ -69,9 +71,18 @@ class DiffViewAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
-            is DiffDisplayItem.LineRow -> {
+            is DiffDisplayItem.SideBySideRow -> {
                 (holder as DiffRowViewHolder).bind(
                     row = item.diffRow,
+                    colors = diffColors,
+                    highlighter = syntaxHighlighter,
+                    textSizeSp = textSizeSp,
+                    isDark = isDark
+                )
+            }
+            is DiffDisplayItem.UnifiedRow -> {
+                (holder as UnifiedRowViewHolder).bind(
+                    item = item,
                     colors = diffColors,
                     highlighter = syntaxHighlighter,
                     textSizeSp = textSizeSp,
@@ -89,8 +100,9 @@ class DiffViewAdapter(
     }
 
     companion object {
-        private const val TYPE_LINE_ROW = 0
-        private const val TYPE_FOLDED_HEADER = 1
+        private const val TYPE_SIDE_BY_SIDE_ROW = 0
+        private const val TYPE_UNIFIED_ROW = 1
+        private const val TYPE_FOLDED_HEADER = 2
     }
 
     object DiffItemCallback : DiffUtil.ItemCallback<DiffDisplayItem>() {
@@ -105,7 +117,7 @@ class DiffViewAdapter(
 }
 
 /**
- * 한 줄(DiffRow)을 좌우로 분할하여 렌더링하는 ViewHolder.
+ * Side-by-Side (Split) 모드용 ViewHolder.
  */
 class DiffRowViewHolder(
     itemView: View,
@@ -129,18 +141,15 @@ class DiffRowViewHolder(
         textSizeSp: Float,
         isDark: Boolean
     ) {
-        // 폰트 크기 동적 적용
         leftGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         leftCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         rightGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         rightCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
 
-        // Divider 색상
         centerDivider.setBackgroundColor(colors.dividerColor)
         leftGutterDivider.setBackgroundColor(colors.dividerColor)
         rightGutterDivider.setBackgroundColor(colors.dividerColor)
 
-        // Left Background / Highlight
         val leftBg = when (row.type) {
             DiffRowType.DELETED -> colors.deletedBackground
             DiffRowType.MODIFIED -> colors.modifiedBackground
@@ -152,7 +161,6 @@ class DiffRowViewHolder(
             else -> Color.TRANSPARENT
         }
 
-        // Right Background / Highlight
         val rightBg = when (row.type) {
             DiffRowType.INSERTED -> colors.addedBackground
             DiffRowType.MODIFIED -> colors.modifiedBackground
@@ -164,7 +172,6 @@ class DiffRowViewHolder(
             else -> Color.TRANSPARENT
         }
 
-        // Bind Left Side
         bindSide(
             line = row.left,
             container = leftContainer,
@@ -178,7 +185,6 @@ class DiffRowViewHolder(
             sideLabel = "Original"
         )
 
-        // Bind Right Side
         bindSide(
             line = row.right,
             container = rightContainer,
@@ -339,7 +345,162 @@ class DiffRowViewHolder(
 }
 
 /**
- * 접힌 Unchanged Block을 나타내는 ViewHolder (배너 형태).
+ * Unified (통합 단일 열) 모드용 ViewHolder (Old Line #, New Line #, +/-, Code).
+ */
+class UnifiedRowViewHolder(
+    itemView: View,
+    private val rootContainer: LinearLayout,
+    private val oldGutterText: TextView,
+    private val newGutterText: TextView,
+    private val gutterDivider: View,
+    private val prefixText: TextView,
+    private val scrollView: HorizontalScrollView,
+    private val codeText: TextView
+) : RecyclerView.ViewHolder(itemView) {
+
+    fun bind(
+        item: DiffDisplayItem.UnifiedRow,
+        colors: DiffColors,
+        highlighter: SyntaxHighlighter,
+        textSizeSp: Float,
+        isDark: Boolean
+    ) {
+        oldGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        newGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        prefixText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        codeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+
+        gutterDivider.setBackgroundColor(colors.dividerColor)
+        oldGutterText.setBackgroundColor(colors.lineNumberBackground)
+        oldGutterText.setTextColor(colors.lineNumberTextColor)
+        newGutterText.setBackgroundColor(colors.lineNumberBackground)
+        newGutterText.setTextColor(colors.lineNumberTextColor)
+
+        oldGutterText.text = item.oldLineNumber?.toString() ?: ""
+        newGutterText.text = item.newLineNumber?.toString() ?: ""
+        prefixText.text = item.prefix
+
+        val bgColor = when (item.type) {
+            DiffRowType.DELETED -> colors.deletedBackground
+            DiffRowType.INSERTED -> colors.addedBackground
+            DiffRowType.MODIFIED -> colors.modifiedBackground
+            else -> colors.unchangedBackground
+        }
+
+        val highlightBg = when (item.type) {
+            DiffRowType.DELETED -> colors.deletedHighlight
+            DiffRowType.INSERTED -> colors.addedHighlight
+            DiffRowType.MODIFIED -> colors.modifiedHighlight
+            else -> Color.TRANSPARENT
+        }
+
+        val prefixColor = when (item.type) {
+            DiffRowType.DELETED -> Color.parseColor("#E53935")
+            DiffRowType.INSERTED -> Color.parseColor("#4CAF50")
+            else -> colors.lineNumberTextColor
+        }
+
+        rootContainer.setBackgroundColor(bgColor)
+        prefixText.setTextColor(prefixColor)
+
+        val highlighted = highlighter.highlight(
+            spans = item.spans,
+            defaultTextColor = colors.codeTextColor,
+            highlightBgColor = highlightBg,
+            isDark = isDark
+        )
+        codeText.text = highlighted
+
+        val typeDesc = when (item.type) {
+            DiffRowType.DELETED -> "deleted"
+            DiffRowType.INSERTED -> "added"
+            else -> "unchanged"
+        }
+        rootContainer.contentDescription = "Line ${item.oldLineNumber ?: ""}/${item.newLineNumber ?: ""} $typeDesc: ${item.content}"
+    }
+
+    companion object {
+        fun create(context: Context, gutterWidthDp: Int): UnifiedRowViewHolder {
+            val density = context.resources.displayMetrics.density
+            val gutterPx = (gutterWidthDp * density).toInt()
+            val dividerPx = (1 * density).toInt().coerceAtLeast(1)
+            val padHorizontalPx = (6 * density).toInt()
+            val padVerticalPx = (3 * density).toInt()
+            val prefixPx = (16 * density).toInt()
+
+            val rootLayout = LinearLayout(context).apply {
+                layoutParams = RecyclerView.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                orientation = LinearLayout.HORIZONTAL
+                isBaselineAligned = false
+            }
+
+            val oldGutterText = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
+                gravity = Gravity.END or Gravity.CENTER_VERTICAL
+                typeface = Typeface.MONOSPACE
+                setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
+            }
+
+            val newGutterText = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
+                gravity = Gravity.END or Gravity.CENTER_VERTICAL
+                typeface = Typeface.MONOSPACE
+                setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
+            }
+
+            val gutterDivider = View(context).apply {
+                layoutParams = LinearLayout.LayoutParams(dividerPx, ViewGroup.LayoutParams.MATCH_PARENT)
+            }
+
+            val prefixText = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(prefixPx, ViewGroup.LayoutParams.MATCH_PARENT)
+                gravity = Gravity.CENTER
+                typeface = Typeface.MONOSPACE
+            }
+
+            val codeText = TextView(context).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                typeface = Typeface.MONOSPACE
+                setSingleLine(true)
+                setTextIsSelectable(true)
+                setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
+            }
+
+            val scrollView = HorizontalScrollView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                isFillViewport = true
+                scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
+                addView(codeText)
+            }
+
+            rootLayout.addView(oldGutterText)
+            rootLayout.addView(newGutterText)
+            rootLayout.addView(gutterDivider)
+            rootLayout.addView(prefixText)
+            rootLayout.addView(scrollView)
+
+            return UnifiedRowViewHolder(
+                itemView = rootLayout,
+                rootContainer = rootLayout,
+                oldGutterText = oldGutterText,
+                newGutterText = newGutterText,
+                gutterDivider = gutterDivider,
+                prefixText = prefixText,
+                scrollView = scrollView,
+                codeText = codeText
+            )
+        }
+    }
+}
+
+/**
+ * 접힌 Unchanged Block을 나타내는 ViewHolder.
  */
 class FoldedHeaderViewHolder(
     itemView: View,

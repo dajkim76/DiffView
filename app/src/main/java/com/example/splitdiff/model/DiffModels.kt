@@ -1,6 +1,21 @@
 package com.example.splitdiff.model
 
 /**
+ * Diff 표시 모드 (Side-by-Side 분할 뷰 vs Unified 단일 통합 뷰)
+ */
+enum class DiffMode {
+    /**
+     * 좌(Original) / 우(Modified) 2열 나란히 표시하는 모드
+     */
+    SIDE_BY_SIDE,
+
+    /**
+     * 변경 사항을 위아래 단일 열로 표시하는 통합 모드 (+/- 표기)
+     */
+    UNIFIED
+}
+
+/**
  * 인라인 차이점 하이라이트 단위
  */
 data class TextSpan(
@@ -38,17 +53,40 @@ data class DiffRow(
 )
 
 /**
- * UI 렌더링을 위한 표시 단위 (일반 DiffRow 또는 접힌 Unchanged Block)
+ * UI 렌더링을 위한 표시 단위
  */
 sealed interface DiffDisplayItem {
     val id: Long
 
-    data class LineRow(
+    /**
+     * Side-by-Side 모드용 한 행
+     */
+    data class SideBySideRow(
         val diffRow: DiffRow
     ) : DiffDisplayItem {
         override val id: Long get() = diffRow.id
     }
 
+    /**
+     * Unified 모드용 한 행 (Old Line #, New Line #, 소스코드, +/- 접두사)
+     */
+    data class UnifiedRow(
+        override val id: Long,
+        val oldLineNumber: Int?,
+        val newLineNumber: Int?,
+        val content: String,
+        val spans: List<TextSpan>,
+        val type: DiffRowType,
+        val prefix: String = when (type) {
+            DiffRowType.INSERTED -> "+"
+            DiffRowType.DELETED -> "-"
+            else -> " "
+        }
+    ) : DiffDisplayItem
+
+    /**
+     * 미변경 구간 접기 헤더
+     */
     data class FoldedHeader(
         override val id: Long,
         val hiddenRows: List<DiffRow>,
