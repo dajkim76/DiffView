@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diffview_header_original">원본</string>
+    <string name="diffview_header_modified">수정본</string>
+    <string name="diffview_header_unified">통합 변경사항 (+ / -)</string>
+    <string name="diffview_header_old_gutter">이전</string>
+    <string name="diffview_header_new_gutter">이후</string>
+    <string name="diffview_folded_banner">⋯ %1$d개 라인 미변경 (%2$s / %3$s - 클릭하여 펼치기) ⋯</string>
+</resources>

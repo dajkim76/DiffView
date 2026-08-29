@@ -1027,5 +1027,32 @@ class DiffEngineTest {
         )
         assertNotNull(result)
     }
+
+    // =========================================================================
+    // 12. DiffLabels Customization Tests
+    // =========================================================================
+
+    @Test
+    fun testDiffLabels_DefaultValuesAndCustomFormatter() {
+        val defaultLabels = com.mdiwebma.diffview.DiffLabels.Default
+        assertEquals("Original", defaultLabels.originalHeader)
+        assertEquals("Modified", defaultLabels.modifiedHeader)
+        assertEquals("Unified Changes (+ / -)", defaultLabels.unifiedHeader)
+        assertEquals("Old", defaultLabels.oldGutterHeader)
+        assertEquals("New", defaultLabels.newGutterHeader)
+
+        val banner = defaultLabels.foldedBannerFormatter(15, "L1~L15", "R1~R15")
+        assertTrue(banner.contains("15 unchanged lines"))
+        assertTrue(banner.contains("L1~L15"))
+
+        val customLabels = com.mdiwebma.diffview.DiffLabels(
+            originalHeader = "이전 코드",
+            modifiedHeader = "이후 코드",
+            unifiedHeader = "통합 변경",
+            foldedBannerFormatter = { count, left, right -> "접힘: ${count}줄 ($left ~ $right)" }
+        )
+        assertEquals("이전 코드", customLabels.originalHeader)
+        assertEquals("접힘: 10줄 (L1~L10 ~ R1~R10)", customLabels.foldedBannerFormatter(10, "L1~L10", "R1~R10"))
+    }
 }
 

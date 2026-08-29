@@ -57,6 +57,12 @@ class DiffViewAdapter(
             }
         }
 
+    var diffLabels: DiffLabels = DiffLabels.Default
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
     private var _isDark: Boolean = false
     var isDark: Boolean
         get() = _isDark
@@ -125,6 +131,7 @@ class DiffViewAdapter(
                 (holder as FoldedHeaderViewHolder).bind(
                     item = item,
                     colors = diffColors,
+                    labels = diffLabels,
                     textSizeSp = textSizeSp
                 )
             }
@@ -638,6 +645,7 @@ class FoldedHeaderViewHolder(
     fun bind(
         item: DiffDisplayItem.FoldedHeader,
         colors: DiffColors,
+        labels: DiffLabels,
         textSizeSp: Float
     ) {
         currentItem = item
@@ -652,7 +660,7 @@ class FoldedHeaderViewHolder(
             "R${item.startLineRight}~R${item.endLineRight}"
         } else ""
 
-        bannerText.text = "⋯ ${item.lineCount} unchanged lines ($rangeLeft / $rangeRight - Click to expand) ⋯"
+        bannerText.text = labels.foldedBannerFormatter(item.lineCount, rangeLeft, rangeRight)
     }
 
     companion object {

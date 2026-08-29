@@ -43,10 +43,8 @@ class DiffView @JvmOverloads constructor(
     private val viewScope = CoroutineScope(Dispatchers.Main + Job())
 
     private var diffMode: DiffMode = DiffMode.SIDE_BY_SIDE
-    private var originalTitleText: String = "Original"
-    private var modifiedTitleText: String = "Modified"
-
     private var diffColors: DiffColors = DiffColors.defaultFor(context)
+    private var diffLabels: DiffLabels = DiffLabels.fromContext(context)
     private var isDark: Boolean = false
     private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
@@ -68,6 +66,8 @@ class DiffView @JvmOverloads constructor(
     private val rightHeaderBox: LinearLayout
     private val rightHeaderTitle: TextView
     private val unifiedHeaderBox: LinearLayout
+    private val oldGutterHeaderTitle: TextView
+    private val newGutterHeaderTitle: TextView
     private val unifiedHeaderTitle: TextView
 
     private val statsLayout: LinearLayout
@@ -115,7 +115,7 @@ class DiffView @JvmOverloads constructor(
             layoutParams = LinearLayout.LayoutParams(gutterPx, 1)
         }
         leftHeaderTitle = TextView(context).apply {
-            text = originalTitleText
+            text = diffLabels.originalHeader
             typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding(padHorizontalPx, 0, 0, 0)
@@ -137,7 +137,7 @@ class DiffView @JvmOverloads constructor(
             layoutParams = LinearLayout.LayoutParams(gutterPx, 1)
         }
         rightHeaderTitle = TextView(context).apply {
-            text = modifiedTitleText
+            text = diffLabels.modifiedHeader
             typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding(padHorizontalPx, 0, 0, 0)
@@ -158,29 +158,29 @@ class DiffView @JvmOverloads constructor(
             gravity = Gravity.CENTER_VERTICAL
             visibility = GONE
         }
-        val oldGutterSpacer = TextView(context).apply {
+        oldGutterHeaderTitle = TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(gutterPx, LayoutParams.WRAP_CONTENT)
-            text = "Old"
+            text = diffLabels.oldGutterHeader
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         }
-        val newGutterSpacer = TextView(context).apply {
+        newGutterHeaderTitle = TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(gutterPx, LayoutParams.WRAP_CONTENT)
-            text = "New"
+            text = diffLabels.newGutterHeader
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         }
         unifiedHeaderTitle = TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
-            text = "Unified Changes (+ / -)"
+            text = diffLabels.unifiedHeader
             typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding((20 * density).toInt(), 0, 0, 0)
         }
-        unifiedHeaderBox.addView(oldGutterSpacer)
-        unifiedHeaderBox.addView(newGutterSpacer)
+        unifiedHeaderBox.addView(oldGutterHeaderTitle)
+        unifiedHeaderBox.addView(newGutterHeaderTitle)
         unifiedHeaderBox.addView(unifiedHeaderTitle)
 
         // Stats Badges (+ / - / ~)
@@ -225,7 +225,9 @@ class DiffView @JvmOverloads constructor(
             onToggleFold = { foldId ->
                 toggleFold(foldId)
             }
-        )
+        ).apply {
+            this.diffLabels = this@DiffView.diffLabels
+        }
         recyclerView.adapter = adapter
 
         // 4. Progress Indicator
@@ -444,13 +446,39 @@ class DiffView @JvmOverloads constructor(
     }
 
     /**
-     * 헤더 타이틀 설정.
+     * 전체 UI 텍스트 및 포맷터 설정 ([DiffLabels]).
+     */
+    fun setDiffLabels(labels: DiffLabels) {
+        this.diffLabels = labels
+        applyLabels()
+    }
+
+    fun getDiffLabels(): DiffLabels = diffLabels
+
+    /**
+     * Side-by-Side 모드 헤더 타이틀 설정.
      */
     fun setHeaderTitles(original: String, modified: String) {
-        this.originalTitleText = original
-        this.modifiedTitleText = modified
+        this.diffLabels = diffLabels.copy(originalHeader = original, modifiedHeader = modified)
         leftHeaderTitle.text = original
         rightHeaderTitle.text = modified
+    }
+
+    /**
+     * Unified 모드 헤더 타이틀 설정.
+     */
+    fun setUnifiedHeaderTitle(title: String) {
+        this.diffLabels = diffLabels.copy(unifiedHeader = title)
+        unifiedHeaderTitle.text = title
+    }
+
+    private fun applyLabels() {
+        leftHeaderTitle.text = diffLabels.originalHeader
+        rightHeaderTitle.text = diffLabels.modifiedHeader
+        unifiedHeaderTitle.text = diffLabels.unifiedHeader
+        oldGutterHeaderTitle.text = diffLabels.oldGutterHeader
+        newGutterHeaderTitle.text = diffLabels.newGutterHeader
+        adapter.diffLabels = diffLabels
     }
 
     /**

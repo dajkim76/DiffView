@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diffview_header_original">Original</string>
+    <string name="diffview_header_modified">Modified</string>
+    <string name="diffview_header_unified">Unified Changes (+ / -)</string>
+    <string name="diffview_header_old_gutter">Old</string>
+    <string name="diffview_header_new_gutter">New</string>
+    <string name="diffview_folded_banner">⋯ %1$d unchanged lines (%2$s / %3$s - Click to expand) ⋯</string>
+</resources>

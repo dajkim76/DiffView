@@ -33,10 +33,12 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
    - `setLineWrap(true)`를 통해 긴 코드 라인을 가로 스크롤 대신 화면 너비에 맞춰 아래로 자동 줄 바꿈 가능.
 8. **Syntax Highlighting & Dark Theme 지원**:
    - 기본값은 순수 텍스트(`PlainTextSyntaxHighlighter`)이며, 필요 시 `DefaultKotlinSyntaxHighlighter` 또는 커스텀 `SyntaxHighlighter`를 지정하여 문법 강조 적용.
-   - Android Studio 스타일의 Light / Dark 테마 색상 팔레트 기본 제공.
-9. **텍스트 선택 및 복사**:
+9. **UI 문자열/라벨 커스터마이징 & 다국어 지원**:
+   - `DiffLabels` 설정 클래스 또는 `setDiffLabels()`, `setHeaderTitles()`, `setUnifiedHeaderTitle()` API를 통해 헤더, 접기 배너 포맷 등 모든 UI 텍스트 커스텀 가능.
+   - `strings.xml` 및 한국어 `values-ko/strings.xml` 리소스 기본 내장 (앱에서 오버라이드 지원).
+10. **텍스트 선택 및 복사**:
    - 라인별로 시스템 텍스트 드래그 선택 및 복사(`setTextIsSelectable(true)`) 완벽 지원.
-10. Screenshots
+11. Screenshots
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot1](screenshot2.jpg)
 
@@ -152,6 +154,16 @@ diffView.setLineWrap(false)
 
 // 10. 문법 하이라이터 설정 (기본값: PlainText - 문법 강조 없이 Diff 배경만 강조)
 diffView.setSyntaxHighlighter(DefaultKotlinSyntaxHighlighter())
+
+// 11. UI 라벨/문자열 커스터마이징 (또는 strings.xml 오버라이드 지원)
+diffView.setDiffLabels(
+    DiffLabels(
+        originalHeader = "Before",
+        modifiedHeader = "After",
+        unifiedHeader = "Unified",
+        foldedBannerFormatter = { count, left, right -> "⋯ $count lines collapsed ($left / $right) ⋯" }
+    )
+)
 ```
 
 ---
