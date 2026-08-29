@@ -3,23 +3,89 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="30dp">
+    android:paddingTop="36dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp"
+        android:orientation="horizontal">
 
         <Button
-            android:id="@+id/main"
-            android:layout_width="wrap_content"
+            android:id="@+id/btnComposeDemo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Compose demo" />
+            android:layout_marginEnd="6dp"
+            android:text="Compose Demo" />
 
         <Button
-            android:id="@+id/demo"
+            android:id="@+id/btnViewDemo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="View Demo" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="6dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/etCommitUrl"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="GitHub Commit URL"
+            android:textSize="13sp"
+            android:singleLine="true"
+            android:text="https://github.com/dajkim76/Simple-Music-Player/commit/17a90ab12a809e7861080e5cf29cbb383fb41ec3" />
+
+        <Button
+            android:id="@+id/btnFetchCommit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Android view demo" />
+            android:layout_marginStart="8dp"
+            android:text="가져오기" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnSelectFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="파일 선택" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:textSize="12sp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="커밋 URL을 입력하고 가져오기를 누르세요." />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:visibility="gone"
+            android:layout_marginStart="8dp" />
     </LinearLayout>
 
     <com.mdiwebma.diffview.DiffView
