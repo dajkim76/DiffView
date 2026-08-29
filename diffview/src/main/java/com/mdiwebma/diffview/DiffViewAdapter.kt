@@ -67,6 +67,14 @@ class DiffViewAdapter(
             }
         }
 
+    var isTextSelectable: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
     var diffLabels: DiffLabels = DiffLabels.Default
         set(value) {
             field = value
@@ -82,6 +90,12 @@ class DiffViewAdapter(
         }
 
     var gutterWidthDp: Int = 48
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
 
     /**
      * [diffColors]와 [isDark]를 한 번에 업데이트하여 [notifyDataSetChanged]를 한 번만 호출합니다.
@@ -123,7 +137,9 @@ class DiffViewAdapter(
                     textSizeSp = textSizeSp,
                     isDark = isDark,
                     isLineWrap = isLineWrap,
-                    showDiffSymbols = showDiffSymbols
+                    showDiffSymbols = showDiffSymbols,
+                    gutterWidthDp = gutterWidthDp,
+                    isTextSelectable = isTextSelectable
                 )
             }
 
@@ -134,7 +150,9 @@ class DiffViewAdapter(
                     highlighter = syntaxHighlighter,
                     textSizeSp = textSizeSp,
                     isDark = isDark,
-                    isLineWrap = isLineWrap
+                    isLineWrap = isLineWrap,
+                    gutterWidthDp = gutterWidthDp,
+                    isTextSelectable = isTextSelectable
                 )
             }
 
@@ -143,7 +161,8 @@ class DiffViewAdapter(
                     item = item,
                     colors = diffColors,
                     labels = diffLabels,
-                    textSizeSp = textSizeSp
+                    textSizeSp = textSizeSp,
+                    gutterWidthDp = gutterWidthDp
                 )
             }
         }
@@ -199,8 +218,22 @@ class DiffRowViewHolder(
         textSizeSp: Float,
         isDark: Boolean,
         isLineWrap: Boolean = false,
-        showDiffSymbols: Boolean = false
+        showDiffSymbols: Boolean = false,
+        gutterWidthDp: Int = 48,
+        isTextSelectable: Boolean = false
     ) {
+        val density = leftGutterText.context.resources.displayMetrics.density
+        val gutterPx = (gutterWidthDp * density).toInt()
+        if (leftGutterText.layoutParams.width != gutterPx) {
+            leftGutterText.layoutParams = leftGutterText.layoutParams.apply { width = gutterPx }
+        }
+        if (rightGutterText.layoutParams.width != gutterPx) {
+            rightGutterText.layoutParams = rightGutterText.layoutParams.apply { width = gutterPx }
+        }
+
+        leftCodeText.setTextIsSelectable(isTextSelectable)
+        rightCodeText.setTextIsSelectable(isTextSelectable)
+
         leftScrollView.isLineWrap = isLineWrap
         rightScrollView.isLineWrap = isLineWrap
 
@@ -405,7 +438,6 @@ class DiffRowViewHolder(
                 gravity = Gravity.TOP or Gravity.START
                 typeface = Typeface.MONOSPACE
                 setSingleLine(true)
-                setTextIsSelectable(true)
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val leftScrollView = SyncHorizontalScrollView(context).apply {
@@ -446,7 +478,6 @@ class DiffRowViewHolder(
                 gravity = Gravity.TOP or Gravity.START
                 typeface = Typeface.MONOSPACE
                 setSingleLine(true)
-                setTextIsSelectable(true)
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val rightScrollView = SyncHorizontalScrollView(context).apply {
@@ -504,8 +535,20 @@ class UnifiedRowViewHolder(
         highlighter: SyntaxHighlighter,
         textSizeSp: Float,
         isDark: Boolean,
-        isLineWrap: Boolean = false
+        isLineWrap: Boolean = false,
+        gutterWidthDp: Int = 48,
+        isTextSelectable: Boolean = false
     ) {
+        val density = oldGutterText.context.resources.displayMetrics.density
+        val gutterPx = (gutterWidthDp * density).toInt()
+        if (oldGutterText.layoutParams.width != gutterPx) {
+            oldGutterText.layoutParams = oldGutterText.layoutParams.apply { width = gutterPx }
+        }
+        if (newGutterText.layoutParams.width != gutterPx) {
+            newGutterText.layoutParams = newGutterText.layoutParams.apply { width = gutterPx }
+        }
+
+        codeText.setTextIsSelectable(isTextSelectable)
         scrollView.isLineWrap = isLineWrap
         codeText.isSingleLine = !isLineWrap
         codeText.gravity = Gravity.TOP or Gravity.START
@@ -646,7 +689,6 @@ class UnifiedRowViewHolder(
                 gravity = Gravity.TOP or Gravity.START
                 typeface = Typeface.MONOSPACE
                 setSingleLine(true)
-                setTextIsSelectable(true)
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
 
@@ -701,8 +743,15 @@ class FoldedHeaderViewHolder(
         item: DiffDisplayItem.FoldedHeader,
         colors: DiffColors,
         labels: DiffLabels,
-        textSizeSp: Float
+        textSizeSp: Float,
+        gutterWidthDp: Int = 48
     ) {
+        val density = leftGutterText.context.resources.displayMetrics.density
+        val gutterPx = (gutterWidthDp * density).toInt()
+        if (leftGutterText.layoutParams.width != gutterPx) {
+            leftGutterText.layoutParams = leftGutterText.layoutParams.apply { width = gutterPx }
+        }
+
         currentItem = item
         itemView.setBackgroundColor(colors.foldedBannerBackground)
         leftGutterText.setBackgroundColor(colors.lineNumberBackground)

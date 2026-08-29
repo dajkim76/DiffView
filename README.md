@@ -36,9 +36,13 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
 9. **UI 문자열/라벨 커스터마이징 & 다국어 지원**:
    - `DiffLabels` 설정 클래스 또는 `setDiffLabels()`, `setHeaderTitles()`, `setUnifiedHeaderTitle()` API를 통해 헤더, 접기 배너 포맷 등 모든 UI 텍스트 커스텀 가능.
    - `strings.xml` 및 한국어 `values-ko/strings.xml` 리소스 기본 내장 (앱에서 오버라이드 지원).
-10. **텍스트 선택 및 복사**:
-   - 라인별로 시스템 텍스트 드래그 선택 및 복사(`setTextIsSelectable(true)`) 완벽 지원.
-11. Screenshots
+10. **줄 번호 옆 변경 기호(`-` / `+`) 표시**:
+    - `setShowDiffSymbols(true)`를 통해 Side-by-Side 모드에서 각 라인의 변경 상태(`-` 삭제 / `+` 추가)를 줄 번호 옆에 함께 표시.
+11. **줄 번호(Gutter) 너비 조절**:
+    - `setGutterWidthDp(50)`을 통해 줄 번호 영역의 너비를 원하는 크기로 자유롭게 조정.
+12. **텍스트 선택 및 복사 제어**:
+    - `setTextIsSelectable(true)`를 통해 코드 텍스트 드래그 선택 및 복사 기능 활성화/비활성화 (기본값: `false`).
+13. Screenshots
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot1](screenshot2.jpg)
 
@@ -165,6 +169,15 @@ diffView.setDiffLabels(
         foldedBannerFormatter = { count, left, right -> "⋯ $count lines collapsed ($left / $right) ⋯" }
     )
 )
+
+// 12. 줄 번호 옆 변경 기호(- / +) 표시 설정 (기본값: false)
+diffView.setShowDiffSymbols(true)
+
+// 13. 줄 번호(Gutter) 영역 너비 조절 (DP 단위, 기본값: 48)
+diffView.setGutterWidthDp(50)
+
+// 14. 텍스트 드래그 선택 및 복사 활성화 여부 (기본값: false)
+diffView.setTextIsSelectable(true)
 ```
 
 ---

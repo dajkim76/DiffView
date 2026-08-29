@@ -50,6 +50,8 @@ class DiffView @JvmOverloads constructor(
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
     private var isLineWrap: Boolean = false
     private var showDiffSymbols: Boolean = false
+    private var isTextSelectable: Boolean = false
+    private var gutterWidthDp: Int = 48
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
     private var foldingThreshold: Int = 8
@@ -63,8 +65,10 @@ class DiffView @JvmOverloads constructor(
     // UI Elements
     private val headerLayout: LinearLayout
     private val leftHeaderBox: LinearLayout
+    private val leftSpacer: View
     private val leftHeaderTitle: TextView
     private val rightHeaderBox: LinearLayout
+    private val rightSpacer: View
     private val rightHeaderTitle: TextView
     private val unifiedHeaderBox: LinearLayout
     private val oldGutterHeaderTitle: TextView
@@ -84,7 +88,7 @@ class DiffView @JvmOverloads constructor(
 
     init {
         val density = context.resources.displayMetrics.density
-        val gutterPx = (48 * density).toInt()
+        val gutterPx = (gutterWidthDp * density).toInt()
         val dividerPx = (1 * density).toInt().coerceAtLeast(1)
         val padHorizontalPx = (8 * density).toInt()
         val padVerticalPx = (8 * density).toInt()
@@ -112,7 +116,7 @@ class DiffView @JvmOverloads constructor(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        val leftSpacer = View(context).apply {
+        leftSpacer = View(context).apply {
             layoutParams = LinearLayout.LayoutParams(gutterPx, 1)
         }
         leftHeaderTitle = TextView(context).apply {
@@ -134,7 +138,7 @@ class DiffView @JvmOverloads constructor(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        val rightSpacer = View(context).apply {
+        rightSpacer = View(context).apply {
             layoutParams = LinearLayout.LayoutParams(gutterPx, 1)
         }
         rightHeaderTitle = TextView(context).apply {
@@ -391,6 +395,43 @@ class DiffView @JvmOverloads constructor(
     }
 
     fun isShowDiffSymbols(): Boolean = showDiffSymbols
+
+    /**
+     * 줄 번호(Gutter) 영역의 너비 설정 (DP 단위).
+     * 기본값: 48dp
+     */
+    fun setGutterWidthDp(widthDp: Int) {
+        if (this.gutterWidthDp != widthDp) {
+            this.gutterWidthDp = widthDp
+            adapter.gutterWidthDp = widthDp
+            updateGutterWidths()
+        }
+    }
+
+    fun getGutterWidthDp(): Int = gutterWidthDp
+
+    /**
+     * 코드 텍스트의 드래그 선택 및 복사 가능 여부 설정.
+     * - true: 코드 텍스트 선택 및 복사 가능
+     * - false: 텍스트 선택 비활성화 (기본값)
+     */
+    fun setTextIsSelectable(selectable: Boolean) {
+        if (this.isTextSelectable != selectable) {
+            this.isTextSelectable = selectable
+            adapter.isTextSelectable = selectable
+        }
+    }
+
+    fun isTextSelectable(): Boolean = isTextSelectable
+
+    private fun updateGutterWidths() {
+        val density = context.resources.displayMetrics.density
+        val gutterPx = (gutterWidthDp * density).toInt()
+        leftSpacer.layoutParams = leftSpacer.layoutParams.apply { width = gutterPx }
+        rightSpacer.layoutParams = rightSpacer.layoutParams.apply { width = gutterPx }
+        oldGutterHeaderTitle.layoutParams = oldGutterHeaderTitle.layoutParams.apply { width = gutterPx }
+        newGutterHeaderTitle.layoutParams = newGutterHeaderTitle.layoutParams.apply { width = gutterPx }
+    }
 
     /**
      * Monospace 폰트를 기준으로 각 사이드의 최대 라인 너비를 즉시 계산하여

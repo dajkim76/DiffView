@@ -74,6 +74,7 @@ fun DiffDemoScreen(
     var diffGranularity by remember { mutableStateOf(DiffGranularity.WORD) }
     var isLineWrap by remember { mutableStateOf(false) }
     var showDiffSymbols by remember { mutableStateOf(false) }
+    var isTextSelectable by remember { mutableStateOf(false) }
     var isSyntaxKotlin by remember { mutableStateOf(false) }
     var diffViewInstance by remember { mutableStateOf<DiffView?>(null) }
 
@@ -237,6 +238,16 @@ fun DiffDemoScreen(
 
                     OutlinedButton(
                         onClick = {
+                            isTextSelectable = !isTextSelectable
+                            diffViewInstance?.setTextIsSelectable(isTextSelectable)
+                        },
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
+                    ) {
+                        Text(if (isTextSelectable) "Selectable: ON" else "Selectable: OFF", fontSize = 11.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = {
                             isSyntaxKotlin = !isSyntaxKotlin
                             val highlighter = if (isSyntaxKotlin) com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
                             diffViewInstance?.setSyntaxHighlighter(highlighter)
@@ -278,6 +289,7 @@ fun DiffDemoScreen(
                     setDiffGranularity(diffGranularity)
                     setLineWrap(isLineWrap)
                     setShowDiffSymbols(showDiffSymbols)
+                    setTextIsSelectable(isTextSelectable)
                     setHeaderTitles("Original Code", "Modified Code")
                     val (orig, mod) = presets[selectedPreset].second
                     setContent(orig, mod)
@@ -293,6 +305,7 @@ fun DiffDemoScreen(
                 view.setDiffGranularity(diffGranularity)
                 view.setLineWrap(isLineWrap)
                 view.setShowDiffSymbols(showDiffSymbols)
+                view.setTextIsSelectable(isTextSelectable)
                 diffViewInstance = view
             }
         )
