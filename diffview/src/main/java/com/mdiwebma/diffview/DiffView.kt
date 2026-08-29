@@ -50,6 +50,7 @@ class DiffView @JvmOverloads constructor(
     private var isDark: Boolean = false
     private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
+    private var isLineWrap: Boolean = false
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
     private var foldingThreshold: Int = 8
@@ -356,10 +357,30 @@ class DiffView @JvmOverloads constructor(
     fun getDiffGranularity(): DiffGranularity = diffGranularity
 
     /**
+     * 긴 라인에 대한 자동 줄 바꿈(Line Wrap) 활성화 여부 설정.
+     * - true: 가로 스크롤 대신 뷰 너비에 맞춰 자동 줄 바꿈
+     * - false: 단일 행 유지 및 가로 동기 스크롤 (기본값)
+     */
+    fun setLineWrap(enabled: Boolean) {
+        if (this.isLineWrap != enabled) {
+            this.isLineWrap = enabled
+            adapter.isLineWrap = enabled
+            if (!enabled) {
+                estimateAndPreloadContentWidths()
+            } else {
+                adapter.resetScrollGroups()
+            }
+        }
+    }
+
+    fun isLineWrap(): Boolean = isLineWrap
+
+    /**
      * Monospace 폰트를 기준으로 각 사이드의 최대 라인 너비를 즉시 계산하여
      * 첫 번째 라인부터 완벽하게 드래그 가로 스크롤이 작동하도록 사전 설정합니다.
      */
     private fun estimateAndPreloadContentWidths() {
+        if (isLineWrap) return
         val density = context.resources.displayMetrics.density
         val paint = Paint().apply {
             typeface = Typeface.MONOSPACE

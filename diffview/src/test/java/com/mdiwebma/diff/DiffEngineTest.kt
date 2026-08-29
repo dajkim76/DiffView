@@ -994,5 +994,38 @@ class DiffEngineTest {
             )
         }
     }
+
+    // =========================================================================
+    // 11. SyntaxHighlighter & LineWrap Unit Tests
+    // =========================================================================
+
+    @Test
+    fun testPlainTextSyntaxHighlighter_Invocation() {
+        val spans = listOf(
+            com.mdiwebma.diffview.model.TextSpan("val x = ", isHighlighted = false),
+            com.mdiwebma.diffview.model.TextSpan("10", isHighlighted = true)
+        )
+        val result = com.mdiwebma.diffview.PlainTextSyntaxHighlighter.highlight(
+            spans = spans,
+            defaultTextColor = 0xFF000000.toInt(),
+            highlightBgColor = 0xFFFF0000.toInt(),
+            isDark = false
+        )
+        assertNotNull(result)
+    }
+
+    @Test
+    fun testDefaultKotlinSyntaxHighlighter_Invocation() {
+        val spans = listOf(
+            com.mdiwebma.diffview.model.TextSpan("fun calculate(): Int = 42", isHighlighted = false)
+        )
+        val result = com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter().highlight(
+            spans = spans,
+            defaultTextColor = 0xFF000000.toInt(),
+            highlightBgColor = 0,
+            isDark = false
+        )
+        assertNotNull(result)
+    }
 }
 

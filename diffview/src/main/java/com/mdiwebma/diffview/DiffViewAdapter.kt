@@ -37,7 +37,7 @@ class DiffViewAdapter(
             notifyDataSetChanged()
         }
 
-    var syntaxHighlighter: SyntaxHighlighter = DefaultKotlinSyntaxHighlighter()
+    var syntaxHighlighter: SyntaxHighlighter = PlainTextSyntaxHighlighter
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -47,6 +47,14 @@ class DiffViewAdapter(
         set(value) {
             field = value
             notifyDataSetChanged()
+        }
+
+    var isLineWrap: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
         }
 
     private var _isDark: Boolean = false
@@ -97,7 +105,8 @@ class DiffViewAdapter(
                     colors = diffColors,
                     highlighter = syntaxHighlighter,
                     textSizeSp = textSizeSp,
-                    isDark = isDark
+                    isDark = isDark,
+                    isLineWrap = isLineWrap
                 )
             }
 
@@ -107,7 +116,8 @@ class DiffViewAdapter(
                     colors = diffColors,
                     highlighter = syntaxHighlighter,
                     textSizeSp = textSizeSp,
-                    isDark = isDark
+                    isDark = isDark,
+                    isLineWrap = isLineWrap
                 )
             }
 
@@ -169,14 +179,28 @@ class DiffRowViewHolder(
         colors: DiffColors,
         highlighter: SyntaxHighlighter,
         textSizeSp: Float,
-        isDark: Boolean
+        isDark: Boolean,
+        isLineWrap: Boolean = false
     ) {
-        leftScrollView.syncGroup = leftSyncGroup
-        rightScrollView.syncGroup = rightSyncGroup
-        leftScrollView.scrollTo(leftSyncGroup.currentScrollX, 0)
-        rightScrollView.scrollTo(rightSyncGroup.currentScrollX, 0)
-        leftScrollView.applyContentMinWidth(leftSyncGroup.maxContentWidth)
-        rightScrollView.applyContentMinWidth(rightSyncGroup.maxContentWidth)
+        leftScrollView.isLineWrap = isLineWrap
+        rightScrollView.isLineWrap = isLineWrap
+
+        leftCodeText.isSingleLine = !isLineWrap
+        rightCodeText.isSingleLine = !isLineWrap
+
+        leftScrollView.syncGroup = if (isLineWrap) null else leftSyncGroup
+        rightScrollView.syncGroup = if (isLineWrap) null else rightSyncGroup
+        if (!isLineWrap) {
+            leftScrollView.scrollTo(leftSyncGroup.currentScrollX, 0)
+            rightScrollView.scrollTo(rightSyncGroup.currentScrollX, 0)
+            leftScrollView.applyContentMinWidth(leftSyncGroup.maxContentWidth)
+            rightScrollView.applyContentMinWidth(rightSyncGroup.maxContentWidth)
+        } else {
+            leftScrollView.scrollTo(0, 0)
+            rightScrollView.scrollTo(0, 0)
+            leftScrollView.applyContentMinWidth(0)
+            rightScrollView.applyContentMinWidth(0)
+        }
 
         leftGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         leftCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
@@ -406,11 +430,20 @@ class UnifiedRowViewHolder(
         colors: DiffColors,
         highlighter: SyntaxHighlighter,
         textSizeSp: Float,
-        isDark: Boolean
+        isDark: Boolean,
+        isLineWrap: Boolean = false
     ) {
-        scrollView.syncGroup = unifiedSyncGroup
-        scrollView.scrollTo(unifiedSyncGroup.currentScrollX, 0)
-        scrollView.applyContentMinWidth(unifiedSyncGroup.maxContentWidth)
+        scrollView.isLineWrap = isLineWrap
+        codeText.isSingleLine = !isLineWrap
+
+        scrollView.syncGroup = if (isLineWrap) null else unifiedSyncGroup
+        if (!isLineWrap) {
+            scrollView.scrollTo(unifiedSyncGroup.currentScrollX, 0)
+            scrollView.applyContentMinWidth(unifiedSyncGroup.maxContentWidth)
+        } else {
+            scrollView.scrollTo(0, 0)
+            scrollView.applyContentMinWidth(0)
+        }
 
         oldGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         newGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)

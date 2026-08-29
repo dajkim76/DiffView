@@ -2,6 +2,7 @@ package com.mdiwebma.diffview
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.widget.HorizontalScrollView
 import java.util.Collections
 import java.util.WeakHashMap
@@ -85,6 +86,17 @@ class SyncHorizontalScrollView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : HorizontalScrollView(context, attrs, defStyleAttr) {
 
+    var isLineWrap: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                if (value) {
+                    scrollTo(0, 0)
+                }
+                requestLayout()
+            }
+        }
+
     var syncGroup: HorizontalScrollSyncGroup? = null
         set(value) {
             if (field !== value) {
@@ -100,6 +112,16 @@ class SyncHorizontalScrollView @JvmOverloads constructor(
         }
 
     fun applyContentMinWidth(minWidth: Int) {
+        if (isLineWrap) {
+            if (childCount > 0) {
+                val child = getChildAt(0)
+                if (child.minimumWidth != 0) {
+                    child.minimumWidth = 0
+                    child.requestLayout()
+                }
+            }
+            return
+        }
         if (childCount > 0) {
             val child = getChildAt(0)
             if (child.minimumWidth != minWidth) {
@@ -110,6 +132,25 @@ class SyncHorizontalScrollView @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if (isLineWrap) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            if (childCount > 0) {
+                val child = getChildAt(0)
+                if (child.minimumWidth != 0) {
+                    child.minimumWidth = 0
+                }
+                val availableWidth = measuredWidth - paddingLeft - paddingRight
+                if (availableWidth > 0) {
+                    val childWidthSpec = MeasureSpec.makeMeasureSpec(availableWidth, MeasureSpec.EXACTLY)
+                    val childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+                    child.measure(childWidthSpec, childHeightSpec)
+                    val desiredHeight = child.measuredHeight + paddingTop + paddingBottom
+                    setMeasuredDimension(measuredWidth, resolveSize(desiredHeight, heightMeasureSpec))
+                }
+            }
+            return
+        }
+
         val maxWidth = syncGroup?.maxContentWidth ?: 0
         if (childCount > 0) {
             val child = getChildAt(0)
@@ -130,12 +171,14 @@ class SyncHorizontalScrollView @JvmOverloads constructor(
     }
 
     override fun computeHorizontalScrollRange(): Int {
+        if (isLineWrap) return measuredWidth
         val superRange = super.computeHorizontalScrollRange()
         val groupMax = syncGroup?.maxContentWidth ?: 0
         return max(superRange, groupMax)
     }
 
     override fun canScrollHorizontally(direction: Int): Boolean {
+        if (isLineWrap) return false
         val range = computeHorizontalScrollRange()
         val extent = computeHorizontalScrollExtent()
         val offset = computeHorizontalScrollOffset()
@@ -147,7 +190,18 @@ class SyncHorizontalScrollView @JvmOverloads constructor(
         }
     }
 
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        if (isLineWrap) return false
+        return super.onInterceptTouchEvent(ev)
+    }
+
+    override fun onTouchEvent(ev: MotionEvent): Boolean {
+        if (isLineWrap) return false
+        return super.onTouchEvent(ev)
+    }
+
     override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
+        if (isLineWrap) return
         super.onScrollChanged(l, t, oldl, oldt)
         syncGroup?.onScrollChanged(this, l)
     }

@@ -72,6 +72,8 @@ fun DiffDemoScreen(
     var isFoldingEnabled by remember { mutableStateOf(true) }
     var whitespaceMode by remember { mutableStateOf(com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE) }
     var diffGranularity by remember { mutableStateOf(DiffGranularity.WORD) }
+    var isLineWrap by remember { mutableStateOf(false) }
+    var isSyntaxKotlin by remember { mutableStateOf(false) }
     var diffViewInstance by remember { mutableStateOf<DiffView?>(null) }
 
     val presets = remember {
@@ -212,6 +214,27 @@ fun DiffDemoScreen(
                         Text(unitLabel, fontSize = 11.sp)
                     }
 
+                    OutlinedButton(
+                        onClick = {
+                            isLineWrap = !isLineWrap
+                            diffViewInstance?.setLineWrap(isLineWrap)
+                        },
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
+                    ) {
+                        Text(if (isLineWrap) "Wrap: ON" else "Wrap: OFF", fontSize = 11.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            isSyntaxKotlin = !isSyntaxKotlin
+                            val highlighter = if (isSyntaxKotlin) com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
+                            diffViewInstance?.setSyntaxHighlighter(highlighter)
+                        },
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
+                    ) {
+                        Text(if (isSyntaxKotlin) "Syntax: Kotlin" else "Syntax: None", fontSize = 11.sp)
+                    }
+
                     Button(
                         onClick = { diffViewInstance?.expandAll() },
                         contentPadding = ButtonDefaults.TextButtonContentPadding
@@ -242,6 +265,7 @@ fun DiffDemoScreen(
                     setFoldingEnabled(isFoldingEnabled, contextLines = 3, threshold = 8)
                     setWhitespaceIgnoreMode(whitespaceMode)
                     setDiffGranularity(diffGranularity)
+                    setLineWrap(isLineWrap)
                     setHeaderTitles("Original Code", "Modified Code")
                     val (orig, mod) = presets[selectedPreset].second
                     setContent(orig, mod)
@@ -255,6 +279,7 @@ fun DiffDemoScreen(
                 view.setDiffMode(diffMode)
                 view.setWhitespaceIgnoreMode(whitespaceMode)
                 view.setDiffGranularity(diffGranularity)
+                view.setLineWrap(isLineWrap)
                 diffViewInstance = view
             }
         )

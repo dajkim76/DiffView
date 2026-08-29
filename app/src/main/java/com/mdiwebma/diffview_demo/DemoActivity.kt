@@ -31,6 +31,8 @@ class DemoActivity : ComponentActivity() {
     private var isFoldingEnabled = true
     private var whitespaceMode = com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE
     private var diffGranularity = DiffGranularity.WORD
+    private var isLineWrap = false
+    private var isSyntaxKotlin = false
     private var selectedPresetIndex = 0
 
     private val presetButtons = mutableListOf<Button>()
@@ -40,6 +42,8 @@ class DemoActivity : ComponentActivity() {
     private lateinit var foldingButton: Button
     private lateinit var whitespaceButton: Button
     private lateinit var granularityButton: Button
+    private lateinit var wrapButton: Button
+    private lateinit var syntaxButton: Button
 
     private val presets = listOf(
         "Kotlin Sample" to (SAMPLE_ORIGINAL to SAMPLE_MODIFIED),
@@ -190,6 +194,19 @@ class DemoActivity : ComponentActivity() {
             diffView.setDiffGranularity(diffGranularity)
         }
 
+        wrapButton = createOutlineButton("Wrap: OFF") {
+            isLineWrap = !isLineWrap
+            wrapButton.text = if (isLineWrap) "Wrap: ON" else "Wrap: OFF"
+            diffView.setLineWrap(isLineWrap)
+        }
+
+        syntaxButton = createOutlineButton("Syntax: None") {
+            isSyntaxKotlin = !isSyntaxKotlin
+            syntaxButton.text = if (isSyntaxKotlin) "Syntax: Kotlin" else "Syntax: None"
+            val highlighter = if (isSyntaxKotlin) com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
+            diffView.setSyntaxHighlighter(highlighter)
+        }
+
         val expandAllButton = createSolidButton("Expand All") {
             diffView.expandAll()
         }
@@ -204,6 +221,8 @@ class DemoActivity : ComponentActivity() {
         row2.addView(foldingButton)
         row2.addView(whitespaceButton)
         row2.addView(granularityButton)
+        row2.addView(wrapButton)
+        row2.addView(syntaxButton)
         row2.addView(expandAllButton)
         row2.addView(collapseAllButton)
 

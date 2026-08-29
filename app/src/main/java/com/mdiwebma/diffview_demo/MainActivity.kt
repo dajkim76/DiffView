@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         // 7. 커스텀 문법 하이라이터 설정
         diffView.setSyntaxHighlighter(DefaultKotlinSyntaxHighlighter())
+        diffView.setLineWrap(true)
     }
 
     companion object {

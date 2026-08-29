@@ -29,12 +29,14 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
    - `TRIM_LEADING_TRAILING`: 라인 앞/뒤 들여쓰기 공백 무시
    - `COLLAPSE_WHITESPACE`: 연속된 공백 개수 무시
    - `IGNORE_ALL`: 모든 공백 문자 무시
-7. **Syntax Highlighting & Dark Theme 지원**:
-   - Kotlin/Java 기본 문법 하이라이터 내장 및 `SyntaxHighlighter` 인터페이스를 통한 커스텀 하이라이터 확장 가능.
+7. **Line Wrap (자동 줄 바꿈) 지원**:
+   - `setLineWrap(true)`를 통해 긴 코드 라인을 가로 스크롤 대신 화면 너비에 맞춰 아래로 자동 줄 바꿈 가능.
+8. **Syntax Highlighting & Dark Theme 지원**:
+   - 기본값은 순수 텍스트(`PlainTextSyntaxHighlighter`)이며, 필요 시 `DefaultKotlinSyntaxHighlighter` 또는 커스텀 `SyntaxHighlighter`를 지정하여 문법 강조 적용.
    - Android Studio 스타일의 Light / Dark 테마 색상 팔레트 기본 제공.
-8. **텍스트 선택 및 복사**:
+9. **텍스트 선택 및 복사**:
    - 라인별로 시스템 텍스트 드래그 선택 및 복사(`setTextIsSelectable(true)`) 완벽 지원.
-9. Screenshots
+10. Screenshots
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot1](screenshot2.jpg)
 
@@ -145,7 +147,10 @@ diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.TRIM_LEADING_TRAILING)
 // 8. 인라인 Diff 비교 단위 설정 (WORD(기본값) vs CHARACTER)
 diffView.setDiffGranularity(DiffGranularity.WORD)
 
-// 9. 커스텀 문법 하이라이터 설정
+// 9. 자동 줄 바꿈 (Line Wrap) 설정 (기본값: false - 단일 행 가로 스크롤)
+diffView.setLineWrap(false)
+
+// 10. 문법 하이라이터 설정 (기본값: PlainText - 문법 강조 없이 Diff 배경만 강조)
 diffView.setSyntaxHighlighter(DefaultKotlinSyntaxHighlighter())
 ```
 
