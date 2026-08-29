@@ -73,7 +73,7 @@ fun DiffDemoScreen(
     var whitespaceMode by remember { mutableStateOf(com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE) }
     var diffGranularity by remember { mutableStateOf(DiffGranularity.WORD) }
     var isLineWrap by remember { mutableStateOf(false) }
-    var showDiffSymbols by remember { mutableStateOf(false) }
+    var showDiffSymbols by remember { mutableStateOf(true) }
     var isTextSelectable by remember { mutableStateOf(false) }
     var isSyntaxKotlin by remember { mutableStateOf(false) }
     var diffViewInstance by remember { mutableStateOf<DiffView?>(null) }

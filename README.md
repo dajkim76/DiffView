@@ -182,7 +182,7 @@ diffView.setDiffLabels(
     )
 )
 
-// 12. 줄 번호 옆 변경 기호(- / +) 표시 설정 (기본값: false)
+// 12. 줄 번호 옆 변경 기호(- / +) 표시 설정 (기본값: true)
 diffView.setShowDiffSymbols(true)
 
 // 13. 줄 번호(Gutter) 영역 너비 조절 (DP 단위, 기본값: 48)

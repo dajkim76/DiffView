@@ -59,7 +59,7 @@ class DiffViewAdapter(
             }
         }
 
-    var showDiffSymbols: Boolean = false
+    var showDiffSymbols: Boolean = true
         set(value) {
             if (field != value) {
                 field = value
@@ -218,7 +218,7 @@ class DiffRowViewHolder(
         textSizeSp: Float,
         isDark: Boolean,
         isLineWrap: Boolean = false,
-        showDiffSymbols: Boolean = false,
+        showDiffSymbols: Boolean = true,
         gutterWidthDp: Int = 48,
         isTextSelectable: Boolean = false
     ) {

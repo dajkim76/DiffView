@@ -49,7 +49,7 @@ class DiffView @JvmOverloads constructor(
     private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
     private var isLineWrap: Boolean = false
-    private var showDiffSymbols: Boolean = false
+    private var showDiffSymbols: Boolean = true
     private var isTextSelectable: Boolean = false
     private var gutterWidthDp: Int = 48
     private var isFoldingEnabled: Boolean = true
@@ -384,8 +384,8 @@ class DiffView @JvmOverloads constructor(
 
     /**
      * Side-by-Side 모드에서 줄 번호 옆에 변경 기호(- / +) 표시 여부 설정.
-     * - true: 원본 줄 번호 뒤에 '-', 수정본 줄 번호 뒤에 '+' 표시
-     * - false: 줄 번호만 표시 (기본값)
+     * - true: 원본 줄 번호 뒤에 '-', 수정본 줄 번호 뒤에 '+' 표시 (기본값)
+     * - false: 줄 번호만 표시
      */
     fun setShowDiffSymbols(enabled: Boolean) {
         if (this.showDiffSymbols != enabled) {

@@ -75,9 +75,9 @@ class MainActivity : AppCompatActivity() {
         diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
         diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
         diffView.setLineWrap(false)
-        diffView.setShowDiffSymbols(true)
-        diffView.setGutterWidthDp(50)
-        diffView.setTextIsSelectable(true)
+        //diffView.setShowDiffSymbols(false)
+        //diffView.setGutterWidthDp(55)
+        //diffView.setTextIsSelectable(true)
 
         // 초기 샘플 코드 표시
         diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
