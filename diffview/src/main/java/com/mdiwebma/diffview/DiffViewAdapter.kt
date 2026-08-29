@@ -19,6 +19,7 @@ import com.mdiwebma.diffview.model.DiffDisplayItem
 import com.mdiwebma.diffview.model.DiffLine
 import com.mdiwebma.diffview.model.DiffRow
 import com.mdiwebma.diffview.model.DiffRowType
+import com.mdiwebma.diffview.model.FoldPosition
 
 /**
  * Side-by-Side 및 Unified 모드를 모두 지원하며,
@@ -28,7 +29,9 @@ class DiffViewAdapter(
     val leftSyncGroup: HorizontalScrollSyncGroup = HorizontalScrollSyncGroup(),
     val rightSyncGroup: HorizontalScrollSyncGroup = HorizontalScrollSyncGroup(),
     val unifiedSyncGroup: HorizontalScrollSyncGroup = HorizontalScrollSyncGroup(),
-    private val onToggleFold: (Long) -> Unit
+    private val onExpandUp: (Long) -> Unit = {},
+    private val onExpandDown: (Long) -> Unit = {},
+    private val onExpandAll: (Long) -> Unit = {}
 ) : ListAdapter<DiffDisplayItem, RecyclerView.ViewHolder>(DiffItemCallback) {
 
     private var _diffColors: DiffColors = DiffColors.Light
@@ -122,7 +125,7 @@ class DiffViewAdapter(
         return when (viewType) {
             TYPE_SIDE_BY_SIDE_ROW -> DiffRowViewHolder.create(parent.context, gutterWidthDp, leftSyncGroup, rightSyncGroup)
             TYPE_UNIFIED_ROW -> UnifiedRowViewHolder.create(parent.context, gutterWidthDp, unifiedSyncGroup)
-            TYPE_FOLDED_HEADER -> FoldedHeaderViewHolder.create(parent.context, gutterWidthDp, onToggleFold)
+            TYPE_FOLDED_HEADER -> FoldedHeaderViewHolder.create(parent.context, gutterWidthDp, onExpandUp, onExpandDown, onExpandAll)
             else -> throw IllegalArgumentException("Unknown viewType: $viewType")
         }
     }
@@ -777,15 +780,41 @@ class FoldedHeaderViewHolder(
     itemView: View,
     private val leftGutterText: TextView,
     private val gutterDivider: View,
+    private val btnExpandUp: TextView,
     private val bannerText: TextView,
-    private val onToggleFold: (Long) -> Unit
+    private val btnExpandDown: TextView,
+    private val btnExpandAll: TextView,
+    private val onExpandUp: (Long) -> Unit,
+    private val onExpandDown: (Long) -> Unit,
+    private val onExpandAll: (Long) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
     private var currentItem: DiffDisplayItem.FoldedHeader? = null
 
     init {
-        itemView.setOnClickListener {
-            currentItem?.let { onToggleFold(it.id) }
+        btnExpandUp.setOnClickListener {
+            currentItem?.let { onExpandUp(it.id) }
+        }
+        btnExpandDown.setOnClickListener {
+            currentItem?.let { onExpandDown(it.id) }
+        }
+        btnExpandAll.setOnClickListener {
+            currentItem?.let { onExpandAll(it.id) }
+        }
+        bannerText.setOnClickListener {
+            currentItem?.let { item ->
+                when (item.position) {
+                    FoldPosition.START_OF_FILE -> onExpandUp(item.id)
+                    FoldPosition.END_OF_FILE -> onExpandDown(item.id)
+                    FoldPosition.MIDDLE -> {
+                        onExpandUp(item.id)
+                        onExpandDown(item.id)
+                    }
+                }
+            }
+        }
+        leftGutterText.setOnClickListener {
+            currentItem?.let { onExpandAll(it.id) }
         }
     }
 
@@ -810,6 +839,59 @@ class FoldedHeaderViewHolder(
         leftGutterText.text = "↕️"
         gutterDivider.setBackgroundColor(colors.dividerColor)
 
+        val btnBg = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            cornerRadius = 4 * density
+            setColor(colors.lineNumberBackground)
+            setStroke((1 * density).toInt().coerceAtLeast(1), colors.dividerColor)
+        }
+        val btnBg2 = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            cornerRadius = 4 * density
+            setColor(colors.lineNumberBackground)
+            setStroke((1 * density).toInt().coerceAtLeast(1), colors.dividerColor)
+        }
+        val btnBg3 = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            cornerRadius = 4 * density
+            setColor(colors.lineNumberBackground)
+            setStroke((1 * density).toInt().coerceAtLeast(1), colors.dividerColor)
+        }
+
+        val btnTextSize = (textSizeSp - 1.5f).coerceAtLeast(9f)
+
+        btnExpandUp.background = btnBg
+        btnExpandUp.setTextColor(colors.codeTextColor)
+        btnExpandUp.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnTextSize)
+        btnExpandUp.text = labels.expandUpLabel
+
+        btnExpandDown.background = btnBg2
+        btnExpandDown.setTextColor(colors.codeTextColor)
+        btnExpandDown.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnTextSize)
+        btnExpandDown.text = labels.expandDownLabel
+
+        btnExpandAll.background = btnBg3
+        btnExpandAll.setTextColor(colors.codeTextColor)
+        btnExpandAll.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnTextSize)
+        btnExpandAll.text = labels.expandAllLabel
+
+        when (item.position) {
+            FoldPosition.START_OF_FILE -> {
+                btnExpandUp.visibility = View.VISIBLE
+                btnExpandDown.visibility = View.GONE
+            }
+
+            FoldPosition.END_OF_FILE -> {
+                btnExpandUp.visibility = View.GONE
+                btnExpandDown.visibility = View.VISIBLE
+            }
+
+            FoldPosition.MIDDLE -> {
+                btnExpandUp.visibility = View.VISIBLE
+                btnExpandDown.visibility = View.VISIBLE
+            }
+        }
+
         bannerText.setTextColor(colors.foldedBannerTextColor)
         bannerText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp - 1f)
 
@@ -824,12 +906,22 @@ class FoldedHeaderViewHolder(
     }
 
     companion object {
-        fun create(context: Context, gutterWidthDp: Int, onToggleFold: (Long) -> Unit): FoldedHeaderViewHolder {
+        fun create(
+            context: Context,
+            gutterWidthDp: Int,
+            onExpandUp: (Long) -> Unit,
+            onExpandDown: (Long) -> Unit,
+            onExpandAll: (Long) -> Unit
+        ): FoldedHeaderViewHolder {
             val density = context.resources.displayMetrics.density
             val gutterPx = (gutterWidthDp * density).toInt()
             val dividerPx = (1 * density).toInt().coerceAtLeast(1)
-            val padVerticalPx = (6 * density).toInt()
-            val padHorizontalPx = (12 * density).toInt()
+            val padVerticalPx = (4 * density).toInt()
+            val padHorizontalPx = (8 * density).toInt()
+            val leftGutterHorizontalPx = (6 * density).toInt()
+            val btnPadH = (8 * density).toInt()
+            val btnPadV = (3 * density).toInt()
+            val btnMarginH = (4 * density).toInt()
 
             val rootLayout = LinearLayout(context).apply {
                 layoutParams = RecyclerView.LayoutParams(
@@ -840,18 +932,30 @@ class FoldedHeaderViewHolder(
                 gravity = Gravity.CENTER_VERTICAL
                 isClickable = true
                 isFocusable = true
+                setPadding(0, 0, (6 * density).toInt(), 0)
             }
 
             val leftGutterText = TextView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
-                gravity = Gravity.CENTER
+                gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
                 setSingleLine(true)
-                setPadding(0, padVerticalPx, 0, padVerticalPx)
+                setPadding(0, padVerticalPx, leftGutterHorizontalPx, padVerticalPx)
             }
 
             val gutterDivider = View(context).apply {
                 layoutParams = LinearLayout.LayoutParams(dividerPx, ViewGroup.LayoutParams.MATCH_PARENT)
+            }
+
+            val btnExpandUp = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    setMargins(btnMarginH, 0, btnMarginH, 0)
+                }
+                gravity = Gravity.CENTER
+                typeface = Typeface.DEFAULT_BOLD
+                setPadding(btnPadH, btnPadV, btnPadH, btnPadV)
+                isClickable = true
+                isFocusable = true
             }
 
             val bannerText = TextView(context).apply {
@@ -860,13 +964,51 @@ class FoldedHeaderViewHolder(
                 }
                 typeface = Typeface.MONOSPACE
                 gravity = Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+            }
+
+            val btnExpandDown = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    setMargins(btnMarginH, 0, btnMarginH, 0)
+                }
+                gravity = Gravity.CENTER
+                typeface = Typeface.DEFAULT_BOLD
+                setPadding(btnPadH, btnPadV, btnPadH, btnPadV)
+                isClickable = true
+                isFocusable = true
+            }
+
+            val btnExpandAll = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    setMargins(btnMarginH, 0, (2 * density).toInt(), 0)
+                }
+                gravity = Gravity.CENTER
+                typeface = Typeface.DEFAULT_BOLD
+                setPadding(btnPadH, btnPadV, btnPadH, btnPadV)
+                isClickable = true
+                isFocusable = true
             }
 
             rootLayout.addView(leftGutterText)
             rootLayout.addView(gutterDivider)
+            rootLayout.addView(btnExpandUp)
             rootLayout.addView(bannerText)
+            rootLayout.addView(btnExpandDown)
+            rootLayout.addView(btnExpandAll)
 
-            return FoldedHeaderViewHolder(rootLayout, leftGutterText, gutterDivider, bannerText, onToggleFold)
+            return FoldedHeaderViewHolder(
+                itemView = rootLayout,
+                leftGutterText = leftGutterText,
+                gutterDivider = gutterDivider,
+                btnExpandUp = btnExpandUp,
+                bannerText = bannerText,
+                btnExpandDown = btnExpandDown,
+                btnExpandAll = btnExpandAll,
+                onExpandUp = onExpandUp,
+                onExpandDown = onExpandDown,
+                onExpandAll = onExpandAll
+            )
         }
     }
 }

@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.model.DiffMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         diffView = findViewById(R.id.diffview)
 
         // Basic DiffView configuration
-//        diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
+        diffView.setDiffMode(DiffMode.UNIFIED)
 //        diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
 //        diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.NONE)
 //        diffView.setDiffGranularity(DiffGranularity.WORD)

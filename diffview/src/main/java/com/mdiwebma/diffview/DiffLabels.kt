@@ -11,8 +11,11 @@ data class DiffLabels(
     val unifiedHeader: String = "Unified Changes (+ / -)",
     val oldGutterHeader: String = "Old",
     val newGutterHeader: String = "New",
+    val expandUpLabel: String = "▲ Up",
+    val expandDownLabel: String = "▼ Down",
+    val expandAllLabel: String = "Expand All",
     val foldedBannerFormatter: (lineCount: Int, rangeLeft: String, rangeRight: String) -> String = { count, left, right ->
-        val rangeInfo = if (left.isNotEmpty() || right.isNotEmpty()) " ($left / $right - Click to expand)" else ""
+        val rangeInfo = if (left.isNotEmpty() || right.isNotEmpty()) " ($left / $right)" else ""
         "⋯ $count unchanged lines$rangeInfo ⋯"
     }
 ) {
@@ -29,6 +32,9 @@ data class DiffLabels(
                 unifiedHeader = context.getString(R.string.diffview_header_unified),
                 oldGutterHeader = context.getString(R.string.diffview_header_old_gutter),
                 newGutterHeader = context.getString(R.string.diffview_header_new_gutter),
+                expandUpLabel = context.getString(R.string.diffview_expand_up),
+                expandDownLabel = context.getString(R.string.diffview_expand_down),
+                expandAllLabel = context.getString(R.string.diffview_expand_all),
                 foldedBannerFormatter = { count, left, right ->
                     context.getString(R.string.diffview_folded_banner, count, left, right)
                 }

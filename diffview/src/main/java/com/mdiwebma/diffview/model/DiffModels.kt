@@ -157,8 +157,18 @@ sealed interface DiffDisplayItem {
         val startLineLeft: Int?,
         val endLineLeft: Int?,
         val startLineRight: Int?,
-        val endLineRight: Int?
+        val endLineRight: Int?,
+        val position: FoldPosition = FoldPosition.MIDDLE
     ) : DiffDisplayItem
+}
+
+/**
+ * 접힌 블록의 파일 내 위치
+ */
+enum class FoldPosition {
+    START_OF_FILE,
+    MIDDLE,
+    END_OF_FILE
 }
 
 /**

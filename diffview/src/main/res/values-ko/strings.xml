@@ -5,5 +5,8 @@
     <string name="diffview_header_unified">통합 변경사항 (+ / -)</string>
     <string name="diffview_header_old_gutter">이전</string>
     <string name="diffview_header_new_gutter">이후</string>
-    <string name="diffview_folded_banner">⋯ %1$d개 라인 미변경 (%2$s / %3$s - 클릭하여 펼치기) ⋯</string>
+    <string name="diffview_folded_banner">⋯ %1$d개 라인 미변경 (%2$s / %3$s) ⋯</string>
+    <string name="diffview_expand_up">▲ 위로</string>
+    <string name="diffview_expand_down">▼ 아래로</string>
+    <string name="diffview_expand_all">모두 확장</string>
 </resources>

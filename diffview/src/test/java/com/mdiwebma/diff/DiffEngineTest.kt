@@ -1297,6 +1297,74 @@ data class UserProfile(
         assertEquals("שָׁלוֹם עוֹלָם", result.rows[1].left?.content)
         assertEquals("שָׁלוֹם עוֹלָם", result.rows[1].right?.content)
     }
+
+    @Test
+    fun testIncrementalFolding_Middle_ExpandUpAndDown() = runTest {
+        // 30 unchanged lines between 2 changed lines
+        val oldLines = listOf("CHANGE_START") + (1..30).map { "Line $it" } + listOf("CHANGE_END")
+        val newLines = listOf("MODIFIED_START") + (1..30).map { "Line $it" } + listOf("MODIFIED_END")
+
+        val diffResult = engine.calculateDiff(oldLines.joinToString("\n"), newLines.joinToString("\n"))
+
+        // Initial folding: contextLines = 3, middle block hidden = 24 lines (Line 4..27)
+        val initialItems = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            contextLines = 3,
+            foldingThreshold = 8
+        )
+        val initialHeader = initialItems.first { it is DiffDisplayItem.FoldedHeader } as DiffDisplayItem.FoldedHeader
+        assertEquals(24, initialHeader.lineCount)
+        assertEquals(com.mdiwebma.diffview.model.FoldPosition.MIDDLE, initialHeader.position)
+
+        // Expand down 6 lines
+        val foldMap1 = mapOf(initialHeader.id to com.mdiwebma.diffview.FoldExpansionState(expandBottomLines = 6))
+        val itemsAfterDown = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            contextLines = 3,
+            foldingThreshold = 8,
+            expandedFoldMap = foldMap1
+        )
+        val headerAfterDown = itemsAfterDown.first { it is DiffDisplayItem.FoldedHeader } as DiffDisplayItem.FoldedHeader
+        assertEquals(18, headerAfterDown.lineCount)
+
+        // Expand up 6 lines as well (total 12 lines expanded, 12 lines remaining)
+        val foldMap2 = mapOf(initialHeader.id to com.mdiwebma.diffview.FoldExpansionState(expandBottomLines = 6, expandTopLines = 6))
+        val itemsAfterBoth = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            contextLines = 3,
+            foldingThreshold = 8,
+            expandedFoldMap = foldMap2
+        )
+        val headerAfterBoth = itemsAfterBoth.first { it is DiffDisplayItem.FoldedHeader } as DiffDisplayItem.FoldedHeader
+        assertEquals(12, headerAfterBoth.lineCount)
+
+        // Expand All
+        val foldMapAll = mapOf(initialHeader.id to com.mdiwebma.diffview.FoldExpansionState(isFullyExpanded = true))
+        val itemsAll = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            contextLines = 3,
+            foldingThreshold = 8,
+            expandedFoldMap = foldMapAll
+        )
+        assertTrue(itemsAll.none { it is DiffDisplayItem.FoldedHeader })
+    }
+
+    @Test
+    fun testIncrementalFolding_StartAndEndOfFile() = runTest {
+        // Start of file folding
+        val startOld = (1..20).map { "Line $it" } + listOf("CHANGE")
+        val startNew = (1..20).map { "Line $it" } + listOf("MODIFIED")
+        val startDiff = engine.calculateDiff(startOld.joinToString("\n"), startNew.joinToString("\n"))
+
+        val startItems = FoldingManager.createDisplayItems(diffResult = startDiff, contextLines = 3, foldingThreshold = 8)
+        val startHeader = startItems.first { it is DiffDisplayItem.FoldedHeader } as DiffDisplayItem.FoldedHeader
+        assertEquals(17, startHeader.lineCount)
+        assertEquals(com.mdiwebma.diffview.model.FoldPosition.START_OF_FILE, startHeader.position)
+
+        // Expand up 6 lines -> remaining 11 lines
+        val startMap = mapOf(startHeader.id to com.mdiwebma.diffview.FoldExpansionState(expandTopLines = 6))
+        val startExpandedItems = FoldingManager.createDisplayItems(diffResult = startDiff, contextLines = 3, foldingThreshold = 8, expandedFoldMap = startMap)
+        val startExpandedHeader = startExpandedItems.first { it is DiffDisplayItem.FoldedHeader } as DiffDisplayItem.FoldedHeader
+        assertEquals(11, startExpandedHeader.lineCount)
+    }
 }
-
-

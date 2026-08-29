@@ -5,6 +5,17 @@ import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffResult
 import com.mdiwebma.diffview.model.DiffRow
 import com.mdiwebma.diffview.model.DiffRowType
+import com.mdiwebma.diffview.model.FoldPosition
+import kotlin.math.min
+
+/**
+ * 각 접힌 블록의 확장 상태
+ */
+data class FoldExpansionState(
+    val expandTopLines: Int = 0,
+    val expandBottomLines: Int = 0,
+    val isFullyExpanded: Boolean = false
+)
 
 /**
  * Git / Android Studio 표준 방식의 문맥 기반 미변경 라인 접기 매니저.
@@ -27,6 +38,7 @@ object FoldingManager {
         isFoldingEnabled: Boolean = true,
         contextLines: Int = 3,
         foldingThreshold: Int = 8,
+        expandedFoldMap: Map<Long, FoldExpansionState> = emptyMap(),
         expandedFoldIds: Set<Long> = emptySet()
     ): List<DiffDisplayItem> {
         if (diffResult == null || diffResult.rows.isEmpty()) {
@@ -146,69 +158,89 @@ object FoldingManager {
                 }
 
                 if (isStartOfFile) {
-                    /**
-                     * 파일 시작부(isStartOfFile)와 끝부분(isEndOfFile)에서는 변경점 앞/뒤로 한쪽 문맥(contextLines)만
-                     *   남기고 나머지를 접습니다.
-                     *
-                     *   예를 들어 contextLines = 3일 때:
-                     *
-                     *   • 미변경 라인이 4줄(blockLength = 4)인 경우:
-                     *       • 3줄을 문맥으로 보여주면 남는 숨김 대상은 단 1줄(hiddenCount = 1)입니다.
-                     *       • 겨우 1줄을 숨기기 위해 1줄 높이의 접기 배너(⋯ 1 unchanged lines ⋯) 를 띄우면, 줄어드는 화면
-                     *       공간은 0줄이면서 오히려 사용자가 클릭해야 하는 불필요한 배너만 생깁니다.
-                     *   • 따라서 "적어도 3줄 이상(hiddenCount > 2) 숨겨질 때만 배너를 띄우자" 는 의도로 blockLength -
-                     *   contextLines > 2 ➔ blockLength > contextLines + 2로 작성되었던 것입니다.
-                     */
                     if (blockLength > contextLines + 2 && blockLength > foldingThreshold) {
                         val foldId = 1_000_000L + foldIndex++
                         val hiddenCount = blockLength - contextLines
                         val hiddenBlock = unchangedBlock.subList(0, hiddenCount)
                         val bottomContext = unchangedBlock.subList(hiddenCount, blockLength)
 
-                        if (expandedFoldIds.contains(foldId)) {
+                        val state = expandedFoldMap[foldId]
+                        val isFullyExpanded = state?.isFullyExpanded == true || expandedFoldIds.contains(foldId)
+
+                        if (isFullyExpanded) {
                             addRowsToItems(hiddenBlock)
                         } else {
-                            val firstRow = hiddenBlock.first()
-                            val lastRow = hiddenBlock.last()
-                            displayItems.add(
-                                DiffDisplayItem.FoldedHeader(
-                                    id = foldId,
-                                    hiddenRows = hiddenBlock,
-                                    lineCount = hiddenBlock.size,
-                                    startLineLeft = firstRow.left?.lineNumber,
-                                    endLineLeft = lastRow.left?.lineNumber,
-                                    startLineRight = firstRow.right?.lineNumber,
-                                    endLineRight = lastRow.right?.lineNumber
+                            val expandUpLines = state?.expandTopLines ?: 0
+                            val actualExpanded = min(expandUpLines, hiddenBlock.size)
+                            val remainingCount = hiddenBlock.size - actualExpanded
+
+                            if (remainingCount <= 0) {
+                                addRowsToItems(hiddenBlock)
+                            } else {
+                                val stillHiddenBlock = hiddenBlock.subList(0, remainingCount)
+                                val expandedBlock = hiddenBlock.subList(remainingCount, hiddenBlock.size)
+
+                                val firstRow = stillHiddenBlock.first()
+                                val lastRow = stillHiddenBlock.last()
+                                displayItems.add(
+                                    DiffDisplayItem.FoldedHeader(
+                                        id = foldId,
+                                        hiddenRows = stillHiddenBlock,
+                                        lineCount = stillHiddenBlock.size,
+                                        startLineLeft = firstRow.left?.lineNumber,
+                                        endLineLeft = lastRow.left?.lineNumber,
+                                        startLineRight = firstRow.right?.lineNumber,
+                                        endLineRight = lastRow.right?.lineNumber,
+                                        position = FoldPosition.START_OF_FILE
+                                    )
                                 )
-                            )
+                                addRowsToItems(expandedBlock)
+                            }
                         }
                         addRowsToItems(bottomContext)
                     } else {
                         addRowsToItems(unchangedBlock)
                     }
                 } else if (isEndOfFile) {
-                    if (blockLength > contextLines + 2 && blockLength > foldingThreshold) { // + 2: 같은 이유
+                    if (blockLength > contextLines + 2 && blockLength > foldingThreshold) {
                         val topContext = unchangedBlock.subList(0, contextLines)
                         val foldId = 1_000_000L + foldIndex++
                         val hiddenBlock = unchangedBlock.subList(contextLines, blockLength)
 
                         addRowsToItems(topContext)
-                        if (expandedFoldIds.contains(foldId)) {
+
+                        val state = expandedFoldMap[foldId]
+                        val isFullyExpanded = state?.isFullyExpanded == true || expandedFoldIds.contains(foldId)
+
+                        if (isFullyExpanded) {
                             addRowsToItems(hiddenBlock)
                         } else {
-                            val firstRow = hiddenBlock.first()
-                            val lastRow = hiddenBlock.last()
-                            displayItems.add(
-                                DiffDisplayItem.FoldedHeader(
-                                    id = foldId,
-                                    hiddenRows = hiddenBlock,
-                                    lineCount = hiddenBlock.size,
-                                    startLineLeft = firstRow.left?.lineNumber,
-                                    endLineLeft = lastRow.left?.lineNumber,
-                                    startLineRight = firstRow.right?.lineNumber,
-                                    endLineRight = lastRow.right?.lineNumber
+                            val expandDownLines = state?.expandBottomLines ?: 0
+                            val actualExpanded = min(expandDownLines, hiddenBlock.size)
+                            val remainingCount = hiddenBlock.size - actualExpanded
+
+                            if (remainingCount <= 0) {
+                                addRowsToItems(hiddenBlock)
+                            } else {
+                                val expandedBlock = hiddenBlock.subList(0, actualExpanded)
+                                val stillHiddenBlock = hiddenBlock.subList(actualExpanded, hiddenBlock.size)
+
+                                addRowsToItems(expandedBlock)
+                                val firstRow = stillHiddenBlock.first()
+                                val lastRow = stillHiddenBlock.last()
+                                displayItems.add(
+                                    DiffDisplayItem.FoldedHeader(
+                                        id = foldId,
+                                        hiddenRows = stillHiddenBlock,
+                                        lineCount = stillHiddenBlock.size,
+                                        startLineLeft = firstRow.left?.lineNumber,
+                                        endLineLeft = lastRow.left?.lineNumber,
+                                        startLineRight = firstRow.right?.lineNumber,
+                                        endLineRight = lastRow.right?.lineNumber,
+                                        position = FoldPosition.END_OF_FILE
+                                    )
                                 )
-                            )
+                            }
                         }
                     } else {
                         addRowsToItems(unchangedBlock)
@@ -222,31 +254,49 @@ object FoldingManager {
                         // 2. 중간 접히는 블록
                         val middleBlock = unchangedBlock.subList(contextLines, blockLength - contextLines)
                         val foldId = 1_000_000L + foldIndex++
-                        val isExpanded = expandedFoldIds.contains(foldId)
 
-                        if (isExpanded) {
+                        val state = expandedFoldMap[foldId]
+                        val isFullyExpanded = state?.isFullyExpanded == true || expandedFoldIds.contains(foldId)
+
+                        if (isFullyExpanded) {
                             addRowsToItems(middleBlock)
                         } else {
-                            val firstRow = middleBlock.first()
-                            val lastRow = middleBlock.last()
-                            displayItems.add(
-                                DiffDisplayItem.FoldedHeader(
-                                    id = foldId,
-                                    hiddenRows = middleBlock,
-                                    lineCount = middleBlock.size,
-                                    startLineLeft = firstRow.left?.lineNumber,
-                                    endLineLeft = lastRow.left?.lineNumber,
-                                    startLineRight = firstRow.right?.lineNumber,
-                                    endLineRight = lastRow.right?.lineNumber
+                            val expandDownLines = state?.expandBottomLines ?: 0
+                            val expandUpLines = state?.expandTopLines ?: 0
+                            val totalExpanded = expandDownLines + expandUpLines
+
+                            if (totalExpanded >= middleBlock.size) {
+                                addRowsToItems(middleBlock)
+                            } else {
+                                val topExpanded = middleBlock.subList(0, expandDownLines)
+                                val stillHidden = middleBlock.subList(expandDownLines, middleBlock.size - expandUpLines)
+                                val bottomExpanded = middleBlock.subList(middleBlock.size - expandUpLines, middleBlock.size)
+
+                                addRowsToItems(topExpanded)
+
+                                val firstRow = stillHidden.first()
+                                val lastRow = stillHidden.last()
+                                displayItems.add(
+                                    DiffDisplayItem.FoldedHeader(
+                                        id = foldId,
+                                        hiddenRows = stillHidden,
+                                        lineCount = stillHidden.size,
+                                        startLineLeft = firstRow.left?.lineNumber,
+                                        endLineLeft = lastRow.left?.lineNumber,
+                                        startLineRight = firstRow.right?.lineNumber,
+                                        endLineRight = lastRow.right?.lineNumber,
+                                        position = FoldPosition.MIDDLE
+                                    )
                                 )
-                            )
+
+                                addRowsToItems(bottomExpanded)
+                            }
                         }
 
                         // 3. 뒤쪽 문맥 라인 (항상 화면에 표시)
                         val bottomContext = unchangedBlock.subList(blockLength - contextLines, blockLength)
                         addRowsToItems(bottomContext)
                     } else {
-                        // 임계치 이하인 경우 전체 표시
                         addRowsToItems(unchangedBlock)
                     }
                 }

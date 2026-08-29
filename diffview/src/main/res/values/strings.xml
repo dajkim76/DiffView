@@ -5,5 +5,8 @@
     <string name="diffview_header_unified">Unified Changes (+ / -)</string>
     <string name="diffview_header_old_gutter">Old</string>
     <string name="diffview_header_new_gutter">New</string>
-    <string name="diffview_folded_banner">⋯ %1$d unchanged lines (%2$s / %3$s - Click to expand) ⋯</string>
+    <string name="diffview_folded_banner">⋯ %1$d unchanged lines (%2$s / %3$s) ⋯</string>
+    <string name="diffview_expand_up">▲ Up</string>
+    <string name="diffview_expand_down">▼ Down</string>
+    <string name="diffview_expand_all">Expand All</string>
 </resources>

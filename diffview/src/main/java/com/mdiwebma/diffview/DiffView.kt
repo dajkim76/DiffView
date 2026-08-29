@@ -55,7 +55,7 @@ class DiffView @JvmOverloads constructor(
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
     private var foldingThreshold: Int = 8
-    private val expandedFoldIds = mutableSetOf<Long>()
+    private val expandedFoldMap = mutableMapOf<Long, FoldExpansionState>()
 
     private var currentOriginalText: String = ""
     private var currentModifiedText: String = ""
@@ -227,8 +227,19 @@ class DiffView @JvmOverloads constructor(
         }
 
         adapter = DiffViewAdapter(
-            onToggleFold = { foldId ->
-                toggleFold(foldId)
+            onExpandUp = { foldId ->
+                val state = expandedFoldMap.getOrPut(foldId) { FoldExpansionState() }
+                expandedFoldMap[foldId] = state.copy(expandTopLines = state.expandTopLines + 6)
+                updateDisplayItems()
+            },
+            onExpandDown = { foldId ->
+                val state = expandedFoldMap.getOrPut(foldId) { FoldExpansionState() }
+                expandedFoldMap[foldId] = state.copy(expandBottomLines = state.expandBottomLines + 6)
+                updateDisplayItems()
+            },
+            onExpandAll = { foldId ->
+                expandedFoldMap[foldId] = FoldExpansionState(isFullyExpanded = true)
+                updateDisplayItems()
             }
         ).apply {
             this.diffLabels = this@DiffView.diffLabels
@@ -308,7 +319,7 @@ class DiffView @JvmOverloads constructor(
         currentOriginalText = original
         currentModifiedText = modified
         diffJob?.cancel()
-        expandedFoldIds.clear()
+        expandedFoldMap.clear()
         adapter.resetScrollGroups()
         estimateAndPreloadContentWidths()
         recyclerView.scrollToPosition(0)
@@ -555,10 +566,12 @@ class DiffView @JvmOverloads constructor(
             isFoldingEnabled = true,
             contextLines = contextLines,
             foldingThreshold = foldingThreshold,
-            expandedFoldIds = emptySet()
+            expandedFoldMap = emptyMap()
         ).filterIsInstance<DiffDisplayItem.FoldedHeader>()
 
-        expandedFoldIds.addAll(items.map { it.id })
+        for (item in items) {
+            expandedFoldMap[item.id] = FoldExpansionState(isFullyExpanded = true)
+        }
         updateDisplayItems()
     }
 
@@ -566,16 +579,7 @@ class DiffView @JvmOverloads constructor(
      * 모든 접힌 블록 다시 접기.
      */
     fun collapseAll() {
-        expandedFoldIds.clear()
-        updateDisplayItems()
-    }
-
-    private fun toggleFold(foldId: Long) {
-        if (expandedFoldIds.contains(foldId)) {
-            expandedFoldIds.remove(foldId)
-        } else {
-            expandedFoldIds.add(foldId)
-        }
+        expandedFoldMap.clear()
         updateDisplayItems()
     }
 
@@ -586,7 +590,7 @@ class DiffView @JvmOverloads constructor(
             isFoldingEnabled = isFoldingEnabled,
             contextLines = contextLines,
             foldingThreshold = foldingThreshold,
-            expandedFoldIds = expandedFoldIds
+            expandedFoldMap = expandedFoldMap
         )
         adapter.submitList(items)
     }
