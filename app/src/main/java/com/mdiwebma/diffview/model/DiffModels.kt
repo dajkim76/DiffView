@@ -1,6 +1,54 @@
 package com.mdiwebma.diffview.model
 
 /**
+ * 공백 문자(Whitespace) 비교 무시 옵션.
+ */
+enum class WhitespaceIgnoreMode {
+    /**
+     * 공백을 무시하지 않고 엄격하게 비교 (기본값)
+     */
+    NONE,
+
+    /**
+     * 라인 앞/뒤의 공백(들여쓰기 및 줄 끝 공백) 차이를 무시
+     */
+    TRIM_LEADING_TRAILING,
+
+    /**
+     * 공백의 개수 변화를 무시 (연속된 공백을 단일 공백으로 간주)
+     */
+    COLLAPSE_WHITESPACE,
+
+    /**
+     * 모든 공백 문자를 무시하고 내용만 비교
+     */
+    IGNORE_ALL;
+
+    /**
+     * 설정된 모드에 따라 문자열을 정규화합니다.
+     */
+    fun normalize(str: String): String {
+        return when (this) {
+            NONE -> str
+            TRIM_LEADING_TRAILING -> str.trim()
+            COLLAPSE_WHITESPACE -> str.trim().replace(WHITESPACE_REGEX, " ")
+            IGNORE_ALL -> str.filterNot { it.isWhitespace() }
+        }
+    }
+
+    /**
+     * 설정된 모드에 따라 두 문자열이 동등한지 판별합니다.
+     */
+    fun areEqual(a: String, b: String): Boolean {
+        return normalize(a) == normalize(b)
+    }
+
+    companion object {
+        private val WHITESPACE_REGEX = "\\s+".toRegex()
+    }
+}
+
+/**
  * Diff 표시 모드 (Side-by-Side 분할 뷰 vs Unified 단일 통합 뷰)
  */
 enum class DiffMode {

@@ -123,7 +123,10 @@ diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
 diffView.expandAll()
 diffView.collapseAll()
 
-// 7. 커스텀 문법 하이라이터 설정
+// 7. 공백 무시 비교 옵션 설정 (NONE, TRIM_LEADING_TRAILING, COLLAPSE_WHITESPACE, IGNORE_ALL)
+diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.TRIM_LEADING_TRAILING)
+
+// 8. 커스텀 문법 하이라이터 설정
 diffView.setSyntaxHighlighter(DefaultKotlinSyntaxHighlighter())
 ```
 

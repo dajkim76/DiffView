@@ -19,6 +19,7 @@ import com.mdiwebma.diffview.engine.KotlinDiffEngine
 import com.mdiwebma.diffview.model.DiffDisplayItem
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffResult
+import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -45,6 +46,7 @@ class DiffView @JvmOverloads constructor(
     private var modifiedTitleText: String = "Modified"
 
     private var diffColors: DiffColors = DiffColors.defaultFor(context)
+    private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
     private var foldingThreshold: Int = 8
@@ -304,7 +306,12 @@ class DiffView @JvmOverloads constructor(
         diffJob = viewScope.launch {
             try {
                 val result = withContext(Dispatchers.Default) {
-                    diffEngine.calculateDiff(original, modified)
+                    diffEngine.calculateDiff(
+                        oldText = original,
+                        newText = modified,
+                        enableInlineDiff = true,
+                        whitespaceMode = whitespaceIgnoreMode
+                    )
                 }
                 currentDiffResult = result
                 updateStats(result)
@@ -315,6 +322,20 @@ class DiffView @JvmOverloads constructor(
             }
         }
     }
+
+    /**
+     * 공백 무시 비교 모드 설정 ([WhitespaceIgnoreMode]).
+     */
+    fun setWhitespaceIgnoreMode(mode: WhitespaceIgnoreMode) {
+        if (this.whitespaceIgnoreMode != mode) {
+            this.whitespaceIgnoreMode = mode
+            if (currentOriginalText.isNotEmpty() || currentModifiedText.isNotEmpty()) {
+                setContent(currentOriginalText, currentModifiedText)
+            }
+        }
+    }
+
+    fun getWhitespaceIgnoreMode(): WhitespaceIgnoreMode = whitespaceIgnoreMode
 
     /**
      * Monospace 폰트를 기준으로 각 사이드의 최대 라인 너비를 즉시 계산하여

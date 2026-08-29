@@ -69,11 +69,13 @@ fun DiffDemoScreen(
     var diffMode by remember { mutableStateOf(DiffMode.SIDE_BY_SIDE) }
     var textSizeSp by remember { mutableFloatStateOf(12.5f) }
     var isFoldingEnabled by remember { mutableStateOf(true) }
+    var whitespaceMode by remember { mutableStateOf(com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE) }
     var diffViewInstance by remember { mutableStateOf<DiffView?>(null) }
 
     val presets = remember {
         listOf(
             "Kotlin Sample" to (SAMPLE_ORIGINAL to SAMPLE_MODIFIED),
+            "Whitespace Sample" to (WHITESPACE_ORIGINAL to WHITESPACE_MODIFIED),
             "Middle Insert/Delete" to (INSERT_DELETE_ORIGINAL to INSERT_DELETE_MODIFIED),
             "Long Line (Chars)" to (LONG_LINE_ORIGINAL to LONG_LINE_MODIFIED),
             "Large File (5,000L)" to createLargeSample(5000)
@@ -172,6 +174,27 @@ fun DiffDemoScreen(
                         Text(if (isFoldingEnabled) "Folding ON" else "Folding OFF", fontSize = 11.sp)
                     }
 
+                    OutlinedButton(
+                        onClick = {
+                            whitespaceMode = when (whitespaceMode) {
+                                com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE -> com.mdiwebma.diffview.model.WhitespaceIgnoreMode.TRIM_LEADING_TRAILING
+                                com.mdiwebma.diffview.model.WhitespaceIgnoreMode.TRIM_LEADING_TRAILING -> com.mdiwebma.diffview.model.WhitespaceIgnoreMode.COLLAPSE_WHITESPACE
+                                com.mdiwebma.diffview.model.WhitespaceIgnoreMode.COLLAPSE_WHITESPACE -> com.mdiwebma.diffview.model.WhitespaceIgnoreMode.IGNORE_ALL
+                                com.mdiwebma.diffview.model.WhitespaceIgnoreMode.IGNORE_ALL -> com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE
+                            }
+                            diffViewInstance?.setWhitespaceIgnoreMode(whitespaceMode)
+                        },
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
+                    ) {
+                        val wsLabel = when (whitespaceMode) {
+                            com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE -> "WS: None"
+                            com.mdiwebma.diffview.model.WhitespaceIgnoreMode.TRIM_LEADING_TRAILING -> "WS: Trim"
+                            com.mdiwebma.diffview.model.WhitespaceIgnoreMode.COLLAPSE_WHITESPACE -> "WS: Collapse"
+                            com.mdiwebma.diffview.model.WhitespaceIgnoreMode.IGNORE_ALL -> "WS: Ignore All"
+                        }
+                        Text(wsLabel, fontSize = 11.sp)
+                    }
+
                     Button(
                         onClick = { diffViewInstance?.expandAll() },
                         contentPadding = ButtonDefaults.TextButtonContentPadding
@@ -200,6 +223,7 @@ fun DiffDemoScreen(
                     setTextSize(textSizeSp)
                     setDiffMode(diffMode)
                     setFoldingEnabled(isFoldingEnabled, contextLines = 3, threshold = 8)
+                    setWhitespaceIgnoreMode(whitespaceMode)
                     setHeaderTitles("Original Code", "Modified Code")
                     val (orig, mod) = presets[selectedPreset].second
                     setContent(orig, mod)
@@ -211,11 +235,28 @@ fun DiffDemoScreen(
                 view.setDiffColors(colors)
                 view.setTextSize(textSizeSp)
                 view.setDiffMode(diffMode)
+                view.setWhitespaceIgnoreMode(whitespaceMode)
                 diffViewInstance = view
             }
         )
     }
 }
+
+private val WHITESPACE_ORIGINAL = """
+val a = 1
+    val indentDiff = 2
+val multipleSpaces     =     3
+val exactSame = 4
+val allWhitespaceIgnored = "hello world"
+""".trimIndent()
+
+private val WHITESPACE_MODIFIED = """
+val a = 1
+val indentDiff = 2
+val multipleSpaces = 3
+val exactSame = 4
+val   all   Whitespace   Ignored = "hello world"
+""".trimIndent()
 
 private val SAMPLE_ORIGINAL = """
 package com.example.splitdiff

@@ -5,6 +5,7 @@ import com.mdiwebma.diffview.model.DiffResult
 import com.mdiwebma.diffview.model.DiffRow
 import com.mdiwebma.diffview.model.DiffRowType
 import com.mdiwebma.diffview.model.TextSpan
+import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 import io.github.petertrr.diffutils.diff
 import io.github.petertrr.diffutils.patch.ChangeDelta
 import io.github.petertrr.diffutils.patch.DeleteDelta
@@ -24,7 +25,8 @@ class KotlinDiffEngine(
     override suspend fun calculateDiff(
         oldText: String,
         newText: String,
-        enableInlineDiff: Boolean
+        enableInlineDiff: Boolean,
+        whitespaceMode: WhitespaceIgnoreMode
     ): DiffResult = withContext(defaultDispatcher) {
         val originalLines = splitLines(oldText)
         val modifiedLines = splitLines(newText)
@@ -33,7 +35,20 @@ class KotlinDiffEngine(
             return@withContext DiffResult(emptyList())
         }
 
-        val patch = diff(originalLines, modifiedLines)
+        // 공백 무시 모드에 따라 비교용 정규화 리스트 생성
+        val normalizedOriginalLines = if (whitespaceMode == WhitespaceIgnoreMode.NONE) {
+            originalLines
+        } else {
+            originalLines.map { whitespaceMode.normalize(it) }
+        }
+
+        val normalizedModifiedLines = if (whitespaceMode == WhitespaceIgnoreMode.NONE) {
+            modifiedLines
+        } else {
+            modifiedLines.map { whitespaceMode.normalize(it) }
+        }
+
+        val patch = diff(normalizedOriginalLines, normalizedModifiedLines)
         val deltas = patch.deltas.sortedBy { it.source.position }
 
         val rows = mutableListOf<DiffRow>()
@@ -63,16 +78,17 @@ class KotlinDiffEngine(
             while (originalIndex < deltaSourcePos) {
                 val origLineNum = originalIndex + 1
                 val modLineNum = modifiedIndex + 1
-                val text = originalLines[originalIndex]
+                val origText = originalLines[originalIndex]
+                val modText = modifiedLines[modifiedIndex]
                 val line = DiffLine(
                     lineNumber = origLineNum,
-                    content = text,
-                    spans = listOf(TextSpan(text, false))
+                    content = origText,
+                    spans = listOf(TextSpan(origText, false))
                 )
                 val rightLine = DiffLine(
                     lineNumber = modLineNum,
-                    content = text,
-                    spans = listOf(TextSpan(text, false))
+                    content = modText,
+                    spans = listOf(TextSpan(modText, false))
                 )
                 addRow(line, rightLine, DiffRowType.UNCHANGED)
                 originalIndex++
@@ -81,114 +97,138 @@ class KotlinDiffEngine(
 
             when (delta) {
                 is ChangeDelta -> {
-                    val origChunk = delta.source.lines
-                    val modChunk = delta.target.lines
-                    val maxLen = max(origChunk.size, modChunk.size)
+                    val origSize = delta.source.lines.size
+                    val modSize = delta.target.lines.size
+                    val maxLen = max(origSize, modSize)
 
                     for (i in 0 until maxLen) {
-                        val hasLeft = i < origChunk.size
-                        val hasRight = i < modChunk.size
+                        val hasLeft = i < origSize
+                        val hasRight = i < modSize
 
                         if (hasLeft && hasRight) {
-                            val leftText = origChunk[i]
-                            val rightText = modChunk[i]
-                            val (leftSpans, rightSpans) = if (enableInlineDiff) {
-                                InlineDiffCalculator.calculateInlineDiff(leftText, rightText)
+                            val origLineIndex = originalIndex + i
+                            val modLineIndex = modifiedIndex + i
+                            val leftText = originalLines[origLineIndex]
+                            val rightText = modifiedLines[modLineIndex]
+                            val isEqualByMode = whitespaceMode.areEqual(leftText, rightText)
+
+                            if (isEqualByMode) {
+                                val leftLine = DiffLine(
+                                    lineNumber = origLineIndex + 1,
+                                    content = leftText,
+                                    spans = listOf(TextSpan(leftText, false))
+                                )
+                                val rightLine = DiffLine(
+                                    lineNumber = modLineIndex + 1,
+                                    content = rightText,
+                                    spans = listOf(TextSpan(rightText, false))
+                                )
+                                addRow(leftLine, rightLine, DiffRowType.UNCHANGED)
                             } else {
-                                listOf(TextSpan(leftText, false)) to listOf(TextSpan(rightText, false))
+                                val (leftSpans, rightSpans) = if (enableInlineDiff) {
+                                    InlineDiffCalculator.calculateInlineDiff(leftText, rightText)
+                                } else {
+                                    listOf(TextSpan(leftText, false)) to listOf(TextSpan(rightText, false))
+                                }
+                                val leftLine = DiffLine(
+                                    lineNumber = origLineIndex + 1,
+                                    content = leftText,
+                                    spans = leftSpans
+                                )
+                                val rightLine = DiffLine(
+                                    lineNumber = modLineIndex + 1,
+                                    content = rightText,
+                                    spans = rightSpans
+                                )
+                                addRow(leftLine, rightLine, DiffRowType.MODIFIED)
                             }
-                            val leftLine = DiffLine(
-                                lineNumber = originalIndex + 1,
-                                content = leftText,
-                                spans = leftSpans
-                            )
-                            val rightLine = DiffLine(
-                                lineNumber = modifiedIndex + 1,
-                                content = rightText,
-                                spans = rightSpans
-                            )
-                            addRow(leftLine, rightLine, DiffRowType.MODIFIED)
-                            originalIndex++
-                            modifiedIndex++
                         } else if (hasLeft) {
-                            val leftText = origChunk[i]
+                            val origLineIndex = originalIndex + i
+                            val leftText = originalLines[origLineIndex]
                             val leftLine = DiffLine(
-                                lineNumber = originalIndex + 1,
+                                lineNumber = origLineIndex + 1,
                                 content = leftText,
                                 spans = listOf(TextSpan(leftText, false))
                             )
                             addRow(leftLine, null, DiffRowType.DELETED)
-                            originalIndex++
                         } else {
-                            val rightText = modChunk[i]
+                            val modLineIndex = modifiedIndex + i
+                            val rightText = modifiedLines[modLineIndex]
                             val rightLine = DiffLine(
-                                lineNumber = modifiedIndex + 1,
+                                lineNumber = modLineIndex + 1,
                                 content = rightText,
                                 spans = listOf(TextSpan(rightText, false))
                             )
                             addRow(null, rightLine, DiffRowType.INSERTED)
-                            modifiedIndex++
                         }
                     }
+                    originalIndex += origSize
+                    modifiedIndex += modSize
                 }
-
                 is DeleteDelta -> {
-                    for (lineText in delta.source.lines) {
+                    for (i in 0 until delta.source.lines.size) {
+                        val origLineIndex = originalIndex + i
+                        val leftText = originalLines[origLineIndex]
                         val leftLine = DiffLine(
-                            lineNumber = originalIndex + 1,
-                            content = lineText,
-                            spans = listOf(TextSpan(lineText, false))
+                            lineNumber = origLineIndex + 1,
+                            content = leftText,
+                            spans = listOf(TextSpan(leftText, false))
                         )
                         addRow(leftLine, null, DiffRowType.DELETED)
-                        originalIndex++
                     }
+                    originalIndex += delta.source.lines.size
                 }
-
                 is InsertDelta -> {
-                    for (lineText in delta.target.lines) {
+                    for (i in 0 until delta.target.lines.size) {
+                        val modLineIndex = modifiedIndex + i
+                        val rightText = modifiedLines[modLineIndex]
                         val rightLine = DiffLine(
-                            lineNumber = modifiedIndex + 1,
-                            content = lineText,
-                            spans = listOf(TextSpan(lineText, false))
+                            lineNumber = modLineIndex + 1,
+                            content = rightText,
+                            spans = listOf(TextSpan(rightText, false))
                         )
                         addRow(null, rightLine, DiffRowType.INSERTED)
-                        modifiedIndex++
                     }
+                    modifiedIndex += delta.target.lines.size
                 }
-
                 else -> {
-                    val origChunk = delta.source.lines
-                    for (lineText in origChunk) {
+                    val origSize = delta.source.lines.size
+                    for (i in 0 until origSize) {
+                        val origLineIndex = originalIndex + i
+                        val modLineIndex = modifiedIndex + i
+                        val origText = originalLines[origLineIndex]
+                        val modText = modifiedLines[modLineIndex]
                         val leftLine = DiffLine(
-                            lineNumber = originalIndex + 1,
-                            content = lineText,
-                            spans = listOf(TextSpan(lineText, false))
+                            lineNumber = origLineIndex + 1,
+                            content = origText,
+                            spans = listOf(TextSpan(origText, false))
                         )
                         val rightLine = DiffLine(
-                            lineNumber = modifiedIndex + 1,
-                            content = lineText,
-                            spans = listOf(TextSpan(lineText, false))
+                            lineNumber = modLineIndex + 1,
+                            content = modText,
+                            spans = listOf(TextSpan(modText, false))
                         )
                         addRow(leftLine, rightLine, DiffRowType.UNCHANGED)
-                        originalIndex++
-                        modifiedIndex++
                     }
+                    originalIndex += origSize
+                    modifiedIndex += origSize
                 }
             }
         }
 
         // 마지막 남은 UNCHANGED 라인들 채우기
         while (originalIndex < originalLines.size && modifiedIndex < modifiedLines.size) {
-            val text = originalLines[originalIndex]
+            val origText = originalLines[originalIndex]
+            val modText = modifiedLines[modifiedIndex]
             val leftLine = DiffLine(
                 lineNumber = originalIndex + 1,
-                content = text,
-                spans = listOf(TextSpan(text, false))
+                content = origText,
+                spans = listOf(TextSpan(origText, false))
             )
             val rightLine = DiffLine(
                 lineNumber = modifiedIndex + 1,
-                content = text,
-                spans = listOf(TextSpan(text, false))
+                content = modText,
+                spans = listOf(TextSpan(modText, false))
             )
             addRow(leftLine, rightLine, DiffRowType.UNCHANGED)
             originalIndex++
