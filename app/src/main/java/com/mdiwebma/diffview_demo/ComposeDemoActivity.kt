@@ -73,6 +73,7 @@ fun DiffDemoScreen(
     var whitespaceMode by remember { mutableStateOf(com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE) }
     var diffGranularity by remember { mutableStateOf(DiffGranularity.WORD) }
     var isLineWrap by remember { mutableStateOf(false) }
+    var showDiffSymbols by remember { mutableStateOf(false) }
     var isSyntaxKotlin by remember { mutableStateOf(false) }
     var diffViewInstance by remember { mutableStateOf<DiffView?>(null) }
 
@@ -226,6 +227,16 @@ fun DiffDemoScreen(
 
                     OutlinedButton(
                         onClick = {
+                            showDiffSymbols = !showDiffSymbols
+                            diffViewInstance?.setShowDiffSymbols(showDiffSymbols)
+                        },
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
+                    ) {
+                        Text(if (showDiffSymbols) "Symbols: ON (+/-)" else "Symbols: OFF", fontSize = 11.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = {
                             isSyntaxKotlin = !isSyntaxKotlin
                             val highlighter = if (isSyntaxKotlin) com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
                             diffViewInstance?.setSyntaxHighlighter(highlighter)
@@ -266,6 +277,7 @@ fun DiffDemoScreen(
                     setWhitespaceIgnoreMode(whitespaceMode)
                     setDiffGranularity(diffGranularity)
                     setLineWrap(isLineWrap)
+                    setShowDiffSymbols(showDiffSymbols)
                     setHeaderTitles("Original Code", "Modified Code")
                     val (orig, mod) = presets[selectedPreset].second
                     setContent(orig, mod)
@@ -280,6 +292,7 @@ fun DiffDemoScreen(
                 view.setWhitespaceIgnoreMode(whitespaceMode)
                 view.setDiffGranularity(diffGranularity)
                 view.setLineWrap(isLineWrap)
+                view.setShowDiffSymbols(showDiffSymbols)
                 diffViewInstance = view
             }
         )

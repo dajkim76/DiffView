@@ -49,6 +49,7 @@ class DiffView @JvmOverloads constructor(
     private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
     private var isLineWrap: Boolean = false
+    private var showDiffSymbols: Boolean = false
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
     private var foldingThreshold: Int = 8
@@ -83,7 +84,7 @@ class DiffView @JvmOverloads constructor(
 
     init {
         val density = context.resources.displayMetrics.density
-        val gutterPx = (42 * density).toInt()
+        val gutterPx = (48 * density).toInt()
         val dividerPx = (1 * density).toInt().coerceAtLeast(1)
         val padHorizontalPx = (8 * density).toInt()
         val padVerticalPx = (8 * density).toInt()
@@ -376,6 +377,20 @@ class DiffView @JvmOverloads constructor(
     }
 
     fun isLineWrap(): Boolean = isLineWrap
+
+    /**
+     * Side-by-Side 모드에서 줄 번호 옆에 변경 기호(- / +) 표시 여부 설정.
+     * - true: 원본 줄 번호 뒤에 '-', 수정본 줄 번호 뒤에 '+' 표시
+     * - false: 줄 번호만 표시 (기본값)
+     */
+    fun setShowDiffSymbols(enabled: Boolean) {
+        if (this.showDiffSymbols != enabled) {
+            this.showDiffSymbols = enabled
+            adapter.showDiffSymbols = enabled
+        }
+    }
+
+    fun isShowDiffSymbols(): Boolean = showDiffSymbols
 
     /**
      * Monospace 폰트를 기준으로 각 사이드의 최대 라인 너비를 즉시 계산하여

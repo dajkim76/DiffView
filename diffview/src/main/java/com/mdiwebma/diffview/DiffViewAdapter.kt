@@ -59,6 +59,14 @@ class DiffViewAdapter(
             }
         }
 
+    var showDiffSymbols: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
     var diffLabels: DiffLabels = DiffLabels.Default
         set(value) {
             field = value
@@ -73,7 +81,7 @@ class DiffViewAdapter(
             notifyDataSetChanged()
         }
 
-    var gutterWidthDp: Int = 42
+    var gutterWidthDp: Int = 48
 
     /**
      * [diffColors]와 [isDark]를 한 번에 업데이트하여 [notifyDataSetChanged]를 한 번만 호출합니다.
@@ -100,7 +108,7 @@ class DiffViewAdapter(
         return when (viewType) {
             TYPE_SIDE_BY_SIDE_ROW -> DiffRowViewHolder.create(parent.context, gutterWidthDp, leftSyncGroup, rightSyncGroup)
             TYPE_UNIFIED_ROW -> UnifiedRowViewHolder.create(parent.context, gutterWidthDp, unifiedSyncGroup)
-            TYPE_FOLDED_HEADER -> FoldedHeaderViewHolder.create(parent.context, onToggleFold)
+            TYPE_FOLDED_HEADER -> FoldedHeaderViewHolder.create(parent.context, gutterWidthDp, onToggleFold)
             else -> throw IllegalArgumentException("Unknown viewType: $viewType")
         }
     }
@@ -114,7 +122,8 @@ class DiffViewAdapter(
                     highlighter = syntaxHighlighter,
                     textSizeSp = textSizeSp,
                     isDark = isDark,
-                    isLineWrap = isLineWrap
+                    isLineWrap = isLineWrap,
+                    showDiffSymbols = showDiffSymbols
                 )
             }
 
@@ -189,7 +198,8 @@ class DiffRowViewHolder(
         highlighter: SyntaxHighlighter,
         textSizeSp: Float,
         isDark: Boolean,
-        isLineWrap: Boolean = false
+        isLineWrap: Boolean = false,
+        showDiffSymbols: Boolean = false
     ) {
         leftScrollView.isLineWrap = isLineWrap
         rightScrollView.isLineWrap = isLineWrap
@@ -260,6 +270,20 @@ class DiffRowViewHolder(
             else -> colors.lineNumberBackground
         }
 
+        val leftSymbol = if (showDiffSymbols) {
+            when (row.type) {
+                DiffRowType.DELETED, DiffRowType.MODIFIED -> " -"
+                else -> "  "
+            }
+        } else ""
+
+        val rightSymbol = if (showDiffSymbols) {
+            when (row.type) {
+                DiffRowType.INSERTED, DiffRowType.MODIFIED -> " +"
+                else -> "  "
+            }
+        } else ""
+
         bindSide(
             line = row.left,
             container = leftContainer,
@@ -272,7 +296,8 @@ class DiffRowViewHolder(
             highlighter = highlighter,
             isDark = isDark,
             isLineWrap = isLineWrap,
-            sideLabel = "Original"
+            sideLabel = "Original",
+            symbol = leftSymbol
         )
 
         bindSide(
@@ -287,7 +312,8 @@ class DiffRowViewHolder(
             highlighter = highlighter,
             isDark = isDark,
             isLineWrap = isLineWrap,
-            sideLabel = "Modified"
+            sideLabel = "Modified",
+            symbol = rightSymbol
         )
     }
 
@@ -303,14 +329,16 @@ class DiffRowViewHolder(
         highlighter: SyntaxHighlighter,
         isDark: Boolean,
         isLineWrap: Boolean,
-        sideLabel: String
+        sideLabel: String,
+        symbol: String = ""
     ) {
         if (line != null) {
             container.setBackgroundColor(bgColor)
             gutterText.setBackgroundColor(gutterBgColor)
             gutterText.setTextColor(colors.lineNumberTextColor)
             codeText.setTextColor(colors.codeTextColor)
-            gutterText.text = line.lineNumber?.toString() ?: ""
+            val lineNum = line.lineNumber?.toString() ?: ""
+            gutterText.text = if (lineNum.isNotEmpty()) "$lineNum$symbol" else ""
             val highlighted = highlighter.highlight(
                 spans = line.spans,
                 defaultTextColor = colors.codeTextColor,
@@ -362,6 +390,7 @@ class DiffRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
+                setSingleLine(true)
                 setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val leftGutterDivider = View(context).apply {
@@ -402,6 +431,7 @@ class DiffRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
+                setSingleLine(true)
                 setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val rightGutterDivider = View(context).apply {
@@ -584,6 +614,7 @@ class UnifiedRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
+                setSingleLine(true)
                 setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
 
@@ -591,6 +622,7 @@ class UnifiedRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
+                setSingleLine(true)
                 setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
 
@@ -651,6 +683,8 @@ class UnifiedRowViewHolder(
  */
 class FoldedHeaderViewHolder(
     itemView: View,
+    private val leftGutterText: TextView,
+    private val gutterDivider: View,
     private val bannerText: TextView,
     private val onToggleFold: (Long) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
@@ -671,6 +705,12 @@ class FoldedHeaderViewHolder(
     ) {
         currentItem = item
         itemView.setBackgroundColor(colors.foldedBannerBackground)
+        leftGutterText.setBackgroundColor(colors.lineNumberBackground)
+        leftGutterText.setTextColor(colors.lineNumberTextColor)
+        leftGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        leftGutterText.text = "↕️"
+        gutterDivider.setBackgroundColor(colors.dividerColor)
+
         bannerText.setTextColor(colors.foldedBannerTextColor)
         bannerText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp - 1f)
 
@@ -685,33 +725,49 @@ class FoldedHeaderViewHolder(
     }
 
     companion object {
-        fun create(context: Context, onToggleFold: (Long) -> Unit): FoldedHeaderViewHolder {
+        fun create(context: Context, gutterWidthDp: Int, onToggleFold: (Long) -> Unit): FoldedHeaderViewHolder {
             val density = context.resources.displayMetrics.density
+            val gutterPx = (gutterWidthDp * density).toInt()
+            val dividerPx = (1 * density).toInt().coerceAtLeast(1)
             val padVerticalPx = (6 * density).toInt()
-            val padHorizontalPx = (16 * density).toInt()
+            val padHorizontalPx = (12 * density).toInt()
 
-            val root = FrameLayout(context).apply {
+            val rootLayout = LinearLayout(context).apply {
                 layoutParams = RecyclerView.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
-                setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
                 isClickable = true
                 isFocusable = true
             }
 
-            val textView = TextView(context).apply {
-                layoutParams = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    Gravity.CENTER
-                )
+            val leftGutterText = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
+                gravity = Gravity.CENTER
+                typeface = Typeface.MONOSPACE
+                setSingleLine(true)
+                setPadding(0, padVerticalPx, 0, padVerticalPx)
+            }
+
+            val gutterDivider = View(context).apply {
+                layoutParams = LinearLayout.LayoutParams(dividerPx, ViewGroup.LayoutParams.MATCH_PARENT)
+            }
+
+            val bannerText = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
+                }
                 typeface = Typeface.MONOSPACE
                 gravity = Gravity.CENTER
             }
 
-            root.addView(textView)
-            return FoldedHeaderViewHolder(root, textView, onToggleFold)
+            rootLayout.addView(leftGutterText)
+            rootLayout.addView(gutterDivider)
+            rootLayout.addView(bannerText)
+
+            return FoldedHeaderViewHolder(rootLayout, leftGutterText, gutterDivider, bannerText, onToggleFold)
         }
     }
 }
