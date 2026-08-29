@@ -146,6 +146,19 @@ object FoldingManager {
                 }
 
                 if (isStartOfFile) {
+                    /**
+                     * 파일 시작부(isStartOfFile)와 끝부분(isEndOfFile)에서는 변경점 앞/뒤로 한쪽 문맥(contextLines)만
+                     *   남기고 나머지를 접습니다.
+                     *
+                     *   예를 들어 contextLines = 3일 때:
+                     *
+                     *   • 미변경 라인이 4줄(blockLength = 4)인 경우:
+                     *       • 3줄을 문맥으로 보여주면 남는 숨김 대상은 단 1줄(hiddenCount = 1)입니다.
+                     *       • 겨우 1줄을 숨기기 위해 1줄 높이의 접기 배너(⋯ 1 unchanged lines ⋯) 를 띄우면, 줄어드는 화면
+                     *       공간은 0줄이면서 오히려 사용자가 클릭해야 하는 불필요한 배너만 생깁니다.
+                     *   • 따라서 "적어도 3줄 이상(hiddenCount > 2) 숨겨질 때만 배너를 띄우자" 는 의도로 blockLength -
+                     *   contextLines > 2 ➔ blockLength > contextLines + 2로 작성되었던 것입니다.
+                     */
                     if (blockLength > contextLines + 2 && blockLength > foldingThreshold) {
                         val foldId = 1_000_000L + foldIndex++
                         val hiddenCount = blockLength - contextLines
@@ -174,7 +187,7 @@ object FoldingManager {
                         addRowsToItems(unchangedBlock)
                     }
                 } else if (isEndOfFile) {
-                    if (blockLength > contextLines + 2 && blockLength > foldingThreshold) {
+                    if (blockLength > contextLines + 2 && blockLength > foldingThreshold) { // + 2: 같은 이유
                         val topContext = unchangedBlock.subList(0, contextLines)
                         val foldId = 1_000_000L + foldIndex++
                         val hiddenBlock = unchangedBlock.subList(contextLines, blockLength)

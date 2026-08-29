@@ -521,4 +521,398 @@ class DiffEngineTest {
         assertEquals(0, syncGroup.maxContentWidth)
         assertEquals(0, syncGroup.currentScrollX)
     }
+
+    // =========================================================================
+    // 7. KotlinDiffEngine Edge Case Tests (identified during review)
+    // =========================================================================
+
+    @Test
+    fun testLineNumbersCorrectAfterInsertion() = runTest {
+        // Verify that line numbers remain correct in the modified side
+        // after rows have been inserted.
+        val oldText = "A\nC"
+        val newText = "A\nB\nC"
+
+        val result = engine.calculateDiff(oldText, newText)
+
+        // A: UNCHANGED at line 1/1
+        assertEquals(1, result.rows[0].left?.lineNumber)
+        assertEquals(1, result.rows[0].right?.lineNumber)
+        assertEquals(DiffRowType.UNCHANGED, result.rows[0].type)
+
+        // B: INSERTED at right line 2 (no left line)
+        assertNull(result.rows[1].left)
+        assertEquals(2, result.rows[1].right?.lineNumber)
+        assertEquals(DiffRowType.INSERTED, result.rows[1].type)
+
+        // C: UNCHANGED at old line 2, new line 3
+        assertEquals(2, result.rows[2].left?.lineNumber)
+        assertEquals(3, result.rows[2].right?.lineNumber)
+        assertEquals(DiffRowType.UNCHANGED, result.rows[2].type)
+    }
+
+    @Test
+    fun testLineNumbersCorrectAfterDeletion() = runTest {
+        // Verify that line numbers on the modified side stay consecutive
+        // even when lines are deleted from the original.
+        val oldText = "A\nB\nC"
+        val newText = "A\nC"
+
+        val result = engine.calculateDiff(oldText, newText)
+
+        assertEquals(3, result.rows.size)
+        // A: UNCHANGED
+        assertEquals(1, result.rows[0].left?.lineNumber)
+        assertEquals(1, result.rows[0].right?.lineNumber)
+        // B: DELETED from left (old line 2), no right
+        assertEquals(2, result.rows[1].left?.lineNumber)
+        assertNull(result.rows[1].right)
+        assertEquals(DiffRowType.DELETED, result.rows[1].type)
+        // C: UNCHANGED — left line 3, right line 2
+        assertEquals(3, result.rows[2].left?.lineNumber)
+        assertEquals(2, result.rows[2].right?.lineNumber)
+    }
+
+    @Test
+    fun testRowIdIsUniqueAndMonotonicallyIncreasing() = runTest {
+        val oldText = "A\nB\nC\nD\nE"
+        val newText = "A\nX\nC\nY\nE"
+
+        val result = engine.calculateDiff(oldText, newText)
+
+        val ids = result.rows.map { it.id }
+        assertEquals(ids.distinct(), ids)
+        assertEquals(ids.sorted(), ids)
+    }
+
+    @Test
+    fun testWindowsLineEndings_CRLF() = runTest {
+        // CRLF should be treated the same as LF
+        val oldText = "A\r\nB\r\nC"
+        val newText = "A\nB\nC"
+
+        val result = engine.calculateDiff(oldText, newText)
+
+        assertEquals(3, result.rows.size)
+        assertTrue(result.rows.all { it.type == DiffRowType.UNCHANGED })
+    }
+
+    @Test
+    fun testOldCR_LineEndings() = runTest {
+        // Classic Mac CR-only line endings should also be normalized
+        val oldText = "A\rB\rC"
+        val newText = "A\nB\nC"
+
+        val result = engine.calculateDiff(oldText, newText)
+
+        assertEquals(3, result.rows.size)
+        assertTrue(result.rows.all { it.type == DiffRowType.UNCHANGED })
+    }
+
+    @Test
+    fun testCountersMatchRows() = runTest {
+        val oldText = "A\nB\nC\nD"
+        val newText = "A\nX\nC\nE\nF"
+
+        val result = engine.calculateDiff(oldText, newText)
+
+        // Verify that addedCount + deletedCount + modifiedCount + unchangedCount == rows.size
+        // (note: MODIFIED row counts as 1 in modifiedCount but may expand in Unified mode)
+        val sumFromCounters = result.addedCount + result.deletedCount + result.modifiedCount + result.unchangedCount
+        assertEquals(result.rows.size, sumFromCounters)
+
+        // Individually verify by counting
+        assertEquals(result.rows.count { it.type == DiffRowType.UNCHANGED }, result.unchangedCount)
+        assertEquals(result.rows.count { it.type == DiffRowType.MODIFIED }, result.modifiedCount)
+        assertEquals(result.rows.count { it.type == DiffRowType.INSERTED }, result.addedCount)
+        assertEquals(result.rows.count { it.type == DiffRowType.DELETED }, result.deletedCount)
+    }
+
+    @Test
+    fun testWhitespace_OriginalTextPreservedInContent() = runTest {
+        // Even when whitespace is ignored for diff calculation, the displayed
+        // content must be the ORIGINAL (unmodified) text, not the normalized text.
+        val oldText = "   val x = 1"   // leading whitespace
+        val newText = "val x = 1"
+
+        val result = engine.calculateDiff(
+            oldText = oldText,
+            newText = newText,
+            whitespaceMode = WhitespaceIgnoreMode.TRIM_LEADING_TRAILING
+        )
+
+        assertEquals(DiffRowType.UNCHANGED, result.rows[0].type)
+        // Content must be the original raw text — NOT trimmed
+        assertEquals("   val x = 1", result.rows[0].left?.content)
+        assertEquals("val x = 1", result.rows[0].right?.content)
+    }
+
+    @Test
+    fun testWhitespace_MultipleBlocks() = runTest {
+        // Mixed scenario: some lines differ only by whitespace (become UNCHANGED),
+        // others differ in content (remain MODIFIED).
+        val oldText = "   val a = 1\nval b = \"changed\"\n   val c = 3"
+        val newText = "val a = 1\nval b = \"other\"\nval c = 3"
+
+        val result = engine.calculateDiff(
+            oldText = oldText,
+            newText = newText,
+            whitespaceMode = WhitespaceIgnoreMode.TRIM_LEADING_TRAILING
+        )
+
+        assertEquals(3, result.rows.size)
+        assertEquals(DiffRowType.UNCHANGED, result.rows[0].type)
+        assertEquals(DiffRowType.MODIFIED, result.rows[1].type)
+        assertEquals(DiffRowType.UNCHANGED, result.rows[2].type)
+    }
+
+    // =========================================================================
+    // 8. InlineDiffCalculator Performance Guard Tests
+    // =========================================================================
+
+    @Test
+    fun testInlineDiff_LongLineFallbackToFastPath() {
+        // Lines > 2000 chars should use prefix/suffix fast path (not O(n*m) LCS)
+        val prefix = "X".repeat(1500)
+        val suffix = "Y".repeat(1500)
+        val leftLine = prefix + "OLD" + suffix
+        val rightLine = prefix + "NEW" + suffix
+
+        val elapsedMs = measureTimeMillis {
+            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(leftLine, rightLine)
+            assertEquals("OLD", leftSpans.filter { it.isHighlighted }.joinToString("") { it.text })
+            assertEquals("NEW", rightSpans.filter { it.isHighlighted }.joinToString("") { it.text })
+        }
+
+        println("Long line inline diff (3003 chars each) took $elapsedMs ms")
+        assertTrue("Fast path for long lines should complete in < 50ms", elapsedMs < 50)
+    }
+
+    @Test
+    fun testInlineDiff_BoundaryExact2000Chars() {
+        // Exactly at the 2000-char threshold — LCS path used
+        val left = "A".repeat(2000)
+        val right = "B".repeat(2000)
+
+        val elapsedMs = measureTimeMillis {
+            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(left, right)
+            // Entire line is highlighted since nothing matches
+            assertEquals(left, leftSpans.filter { it.isHighlighted }.joinToString("") { it.text })
+            assertEquals(right, rightSpans.filter { it.isHighlighted }.joinToString("") { it.text })
+        }
+
+        println("LCS diff at 2000 chars took $elapsedMs ms")
+    }
+
+    @Test
+    fun testInlineDiff_BoundaryJustOver2000Chars() {
+        // 2001 chars — falls back to fast path
+        val left = "A".repeat(2001)
+        val right = "B".repeat(2001)
+
+        val elapsedMs = measureTimeMillis {
+            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(left, right)
+            // Fast path: common prefix=0, common suffix=0 → entire line highlighted
+            assertTrue(leftSpans.all { it.isHighlighted })
+            assertTrue(rightSpans.all { it.isHighlighted })
+        }
+
+        println("Fast path inline diff at 2001 chars took $elapsedMs ms")
+        assertTrue("Fast path should be much faster than LCS for large strings", elapsedMs < 50)
+    }
+
+    // =========================================================================
+    // 9. FoldingManager Additional Coverage Tests
+    // =========================================================================
+
+    @Test
+    fun testFolding_AllUnchanged_NeverFolds() {
+        // A file with zero changes should never show a FoldedHeader,
+        // regardless of block length.
+        val rows = (1..100).map { i ->
+            DiffRow(i.toLong(), DiffLine(i, "L$i"), DiffLine(i, "R$i"), DiffRowType.UNCHANGED)
+        }
+        val diffResult = DiffResult(rows = rows, unchangedCount = 100)
+
+        val items = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            mode = DiffMode.SIDE_BY_SIDE,
+            isFoldingEnabled = true,
+            contextLines = 3,
+            foldingThreshold = 8
+        )
+
+        // No FoldedHeaders for an all-unchanged file
+        assertTrue(
+            "All-unchanged file should not produce any FoldedHeaders",
+            items.none { it is DiffDisplayItem.FoldedHeader }
+        )
+        assertEquals(100, items.size)
+    }
+
+    @Test
+    fun testFolding_MultipleChangedBlocks_MultipleHeaders() {
+        // Two separate changed blocks surrounded by long unchanged blocks.
+        val rows = mutableListOf<DiffRow>()
+        // 15 unchanged
+        for (i in 1..15) rows.add(DiffRow(i.toLong(), DiffLine(i, "L$i"), DiffLine(i, "R$i"), DiffRowType.UNCHANGED))
+        // 1 modified
+        rows.add(DiffRow(16L, DiffLine(16, "Old1"), DiffLine(16, "New1"), DiffRowType.MODIFIED))
+        // 15 unchanged
+        for (i in 17..31) rows.add(DiffRow(i.toLong(), DiffLine(i, "L$i"), DiffLine(i, "R$i"), DiffRowType.UNCHANGED))
+        // 1 modified
+        rows.add(DiffRow(32L, DiffLine(32, "Old2"), DiffLine(32, "New2"), DiffRowType.MODIFIED))
+        // 15 unchanged
+        for (i in 33..47) rows.add(DiffRow(i.toLong(), DiffLine(i, "L$i"), DiffLine(i, "R$i"), DiffRowType.UNCHANGED))
+
+        val diffResult = DiffResult(rows = rows)
+
+        val items = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            mode = DiffMode.SIDE_BY_SIDE,
+            isFoldingEnabled = true,
+            contextLines = 3,
+            foldingThreshold = 8,
+            expandedFoldIds = emptySet()
+        )
+
+        val headers = items.filterIsInstance<DiffDisplayItem.FoldedHeader>()
+        // Expect: before first change (start fold), between changes (middle fold), after last change (end fold)
+        assertEquals(3, headers.size)
+
+        // Each header's lineCount should account for the hidden lines
+        // Start block (15 lines): hide 15-3=12 lines
+        assertEquals(12, headers[0].lineCount)
+        // Middle block (15 lines, between two changes): hide 15-3-3=9 lines
+        assertEquals(9, headers[1].lineCount)
+        // End block (15 lines): hide 15-3=12 lines
+        assertEquals(12, headers[2].lineCount)
+    }
+
+    @Test
+    fun testFolding_UnifiedMode_ModifiedRowExpandsToTwoRows() {
+        // In UNIFIED mode, a MODIFIED DiffRow must produce two UnifiedRows: one DELETED, one INSERTED
+        val rows = listOf(
+            DiffRow(0L, DiffLine(1, "old line"), DiffLine(1, "new line"), DiffRowType.MODIFIED)
+        )
+        val diffResult = DiffResult(rows = rows, modifiedCount = 1)
+
+        val items = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            mode = DiffMode.UNIFIED,
+            isFoldingEnabled = false
+        )
+
+        assertEquals(2, items.size)
+        val deleted = items[0] as DiffDisplayItem.UnifiedRow
+        val inserted = items[1] as DiffDisplayItem.UnifiedRow
+
+        assertEquals(DiffRowType.DELETED, deleted.type)
+        assertEquals("-", deleted.prefix)
+        assertEquals(1, deleted.oldLineNumber)
+        assertNull(deleted.newLineNumber)
+        assertEquals("old line", deleted.content)
+
+        assertEquals(DiffRowType.INSERTED, inserted.type)
+        assertEquals("+", inserted.prefix)
+        assertNull(inserted.oldLineNumber)
+        assertEquals(1, inserted.newLineNumber)
+        assertEquals("new line", inserted.content)
+    }
+
+    @Test
+    fun testFolding_NullDiffResult_ReturnsEmpty() {
+        val items = FoldingManager.createDisplayItems(
+            diffResult = null,
+            mode = DiffMode.SIDE_BY_SIDE,
+            isFoldingEnabled = true
+        )
+        assertTrue(items.isEmpty())
+    }
+
+    @Test
+    fun testFolding_EmptyDiffResult_ReturnsEmpty() {
+        val items = FoldingManager.createDisplayItems(
+            diffResult = DiffResult(emptyList()),
+            mode = DiffMode.SIDE_BY_SIDE,
+            isFoldingEnabled = true
+        )
+        assertTrue(items.isEmpty())
+    }
+
+    @Test
+    fun testFolding_FoldedHeaderLineRange_IsAccurate() {
+        // Verify that the line number range stored in FoldedHeader
+        // matches the actual hidden rows.
+        val rows = (1..20).map { i ->
+            DiffRow(i.toLong(), DiffLine(i, "L$i"), DiffLine(i, "R$i"), DiffRowType.UNCHANGED)
+        }.toMutableList()
+        rows.add(DiffRow(21L, DiffLine(21, "Mod"), DiffLine(21, "Mod2"), DiffRowType.MODIFIED))
+        val diffResult = DiffResult(rows = rows)
+
+        val items = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            mode = DiffMode.SIDE_BY_SIDE,
+            isFoldingEnabled = true,
+            contextLines = 3,
+            foldingThreshold = 8,
+            expandedFoldIds = emptySet()
+        )
+
+        val header = items.filterIsInstance<DiffDisplayItem.FoldedHeader>().first()
+        // Hidden rows: lines 1..17 (20 - 3 context = 17 hidden)
+        assertEquals(1, header.startLineLeft)
+        assertEquals(17, header.endLineLeft)
+        assertEquals(17, header.lineCount)
+    }
+
+    // =========================================================================
+    // 10. WhitespaceIgnoreMode.normalize() Unit Tests
+    // =========================================================================
+
+    @Test
+    fun testWhitespaceModeNormalize_None() {
+        val mode = WhitespaceIgnoreMode.NONE
+        assertEquals("  hello  ", mode.normalize("  hello  "))
+        assertEquals("a  b", mode.normalize("a  b"))
+    }
+
+    @Test
+    fun testWhitespaceModeNormalize_Trim() {
+        val mode = WhitespaceIgnoreMode.TRIM_LEADING_TRAILING
+        assertEquals("hello", mode.normalize("  hello  "))
+        assertEquals("a  b", mode.normalize("a  b")) // middle spaces preserved
+        assertEquals("", mode.normalize("   "))
+    }
+
+    @Test
+    fun testWhitespaceModeNormalize_Collapse() {
+        val mode = WhitespaceIgnoreMode.COLLAPSE_WHITESPACE
+        assertEquals("a b c", mode.normalize("a   b   c"))
+        assertEquals("hello world", mode.normalize("  hello   world  "))
+        assertEquals("", mode.normalize("   "))
+    }
+
+    @Test
+    fun testWhitespaceModeNormalize_IgnoreAll() {
+        val mode = WhitespaceIgnoreMode.IGNORE_ALL
+        assertEquals("abc", mode.normalize("a b c"))
+        assertEquals("valx=1", mode.normalize("val x = 1"))
+        assertEquals("", mode.normalize("   "))
+    }
+
+    @Test
+    fun testWhitespaceModeAreEqual_Symmetry() {
+        // areEqual must be symmetric: areEqual(a, b) == areEqual(b, a)
+        val a = "  val x = 1  "
+        val b = "val x = 1"
+        for (mode in WhitespaceIgnoreMode.entries) {
+            assertEquals(
+                "Mode $mode: areEqual should be symmetric",
+                mode.areEqual(a, b),
+                mode.areEqual(b, a)
+            )
+        }
+    }
 }
+

@@ -46,6 +46,7 @@ class DiffView @JvmOverloads constructor(
     private var modifiedTitleText: String = "Modified"
 
     private var diffColors: DiffColors = DiffColors.defaultFor(context)
+    private var isDark: Boolean = false
     private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
@@ -395,9 +396,12 @@ class DiffView @JvmOverloads constructor(
 
     /**
      * 테마/색상 팔레트 설정.
+     * @param isDark true이면 Syntax Highlighter가 다크 모드 색상을 사용합니다.
+     *               생략하면 [colors]가 [DiffColors.Dark]인지 구조적으로 비교합니다.
      */
-    fun setDiffColors(colors: DiffColors) {
+    fun setDiffColors(colors: DiffColors, isDark: Boolean = (colors == DiffColors.Dark)) {
         this.diffColors = colors
+        this.isDark = isDark
         applyColors()
     }
 
@@ -497,9 +501,9 @@ class DiffView @JvmOverloads constructor(
         headerDivider.setBackgroundColor(diffColors.dividerColor)
         centerHeaderDivider.setBackgroundColor(diffColors.dividerColor)
 
-        val isDarkTheme = diffColors == DiffColors.Dark
-        adapter.diffColors = diffColors
-        adapter.isDark = isDarkTheme
+        // Batch adapter field updates to avoid triggering notifyDataSetChanged() twice.
+        // Set isDark first (no-op if unchanged) then diffColors which triggers the notify.
+        adapter.applyTheme(diffColors = diffColors, isDark = isDark)
     }
 
     override fun onDetachedFromWindow() {
