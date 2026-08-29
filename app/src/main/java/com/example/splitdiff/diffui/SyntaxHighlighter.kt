@@ -28,7 +28,7 @@ interface SyntaxHighlighter {
 }
 
 /**
- * 문법 하이라이팅을 적용하지 않는 기본 텍스트 하이라이터 (인라인 diff 변경점만 배경 강조).
+ * 문법 하이라이팅을 적용하지 않는 기본 텍스트 하이라이터.
  */
 object PlainTextSyntaxHighlighter : SyntaxHighlighter {
     override fun highlight(
@@ -50,6 +50,14 @@ object PlainTextSyntaxHighlighter : SyntaxHighlighter {
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
+        }
+        if (ssb.isNotEmpty()) {
+            ssb.setSpan(
+                ForegroundColorSpan(defaultTextColor),
+                0,
+                ssb.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
         return ssb
     }
@@ -87,7 +95,17 @@ class DefaultKotlinSyntaxHighlighter : SyntaxHighlighter {
         val fullText = fullTextBuilder.toString()
         val ssb = SpannableStringBuilder(fullText)
 
-        // 1. Syntax Highlighting 스타일 적용
+        // 1. 전체 기본 텍스트 색상 적용 (다크/라이트 테마 일관성 보장)
+        if (fullText.isNotEmpty()) {
+            ssb.setSpan(
+                ForegroundColorSpan(defaultTextColor),
+                0,
+                fullText.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+
+        // 2. Syntax Highlighting 스타일 적용
         applyRegexSpan(ssb, commentPattern, fullText) {
             ForegroundColorSpan(commentColor)
         }
@@ -104,7 +122,7 @@ class DefaultKotlinSyntaxHighlighter : SyntaxHighlighter {
             ForegroundColorSpan(numberColor)
         }
 
-        // 2. 인라인 Diff 하이라이트 배경 적용
+        // 3. 인라인 Diff 하이라이트 배경 적용
         if (highlightBgColor != Color.TRANSPARENT) {
             var currentOffset = 0
             for (span in spans) {

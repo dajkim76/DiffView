@@ -233,6 +233,7 @@ class DiffRowViewHolder(
         container.setBackgroundColor(bgColor)
         gutterText.setBackgroundColor(colors.lineNumberBackground)
         gutterText.setTextColor(colors.lineNumberTextColor)
+        codeText.setTextColor(colors.codeTextColor)
 
         if (line != null) {
             gutterText.text = line.lineNumber?.toString() ?: ""
@@ -433,6 +434,7 @@ class UnifiedRowViewHolder(
 
         rootContainer.setBackgroundColor(bgColor)
         prefixText.setTextColor(prefixColor)
+        codeText.setTextColor(colors.codeTextColor)
 
         val highlighted = highlighter.highlight(
             spans = item.spans,
