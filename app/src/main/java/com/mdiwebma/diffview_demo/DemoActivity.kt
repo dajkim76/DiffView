@@ -203,7 +203,8 @@ class DemoActivity : ComponentActivity() {
         syntaxButton = createOutlineButton("Syntax: None") {
             isSyntaxKotlin = !isSyntaxKotlin
             syntaxButton.text = if (isSyntaxKotlin) "Syntax: Kotlin" else "Syntax: None"
-            val highlighter = if (isSyntaxKotlin) com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
+            val highlighter =
+                if (isSyntaxKotlin) com.mdiwebma.diffview.KotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
             diffView.setSyntaxHighlighter(highlighter)
         }
 

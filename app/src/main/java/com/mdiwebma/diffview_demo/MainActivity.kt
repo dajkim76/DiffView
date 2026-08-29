@@ -12,8 +12,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter
 import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.KotlinSyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
         diffView.setTextSize(12.5f)
         diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
-        diffView.setSyntaxHighlighter(DefaultKotlinSyntaxHighlighter())
+        diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
         diffView.setLineWrap(false)
         diffView.setShowDiffSymbols(true)
         diffView.setGutterWidthDp(50)
@@ -268,6 +268,7 @@ class MainActivity : AppCompatActivity() {
                     original = fileInfo.previousFilename ?: fileInfo.filename,
                     modified = fileInfo.filename
                 )
+                diffView.setSyntaxHighlighter(com.mdiwebma.diffview.SyntaxHighlighter.forFileName(fileInfo.filename))
                 diffView.setContent(original = origText, modified = modText)
                 //diffView.expandAll()
                 setLoading(false, "선택됨: ${fileInfo.filename}")

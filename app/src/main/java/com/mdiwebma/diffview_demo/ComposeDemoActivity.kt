@@ -249,7 +249,8 @@ fun DiffDemoScreen(
                     OutlinedButton(
                         onClick = {
                             isSyntaxKotlin = !isSyntaxKotlin
-                            val highlighter = if (isSyntaxKotlin) com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
+                            val highlighter =
+                                if (isSyntaxKotlin) com.mdiwebma.diffview.KotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
                             diffViewInstance?.setSyntaxHighlighter(highlighter)
                         },
                         contentPadding = ButtonDefaults.TextButtonContentPadding

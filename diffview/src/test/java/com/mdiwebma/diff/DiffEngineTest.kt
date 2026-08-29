@@ -1019,7 +1019,7 @@ class DiffEngineTest {
         val spans = listOf(
             com.mdiwebma.diffview.model.TextSpan("fun calculate(): Int = 42", isHighlighted = false)
         )
-        val result = com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter().highlight(
+        val result = com.mdiwebma.diffview.KotlinSyntaxHighlighter().highlight(
             spans = spans,
             defaultTextColor = 0xFF000000.toInt(),
             highlightBgColor = 0,

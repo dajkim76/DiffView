@@ -25,6 +25,34 @@ interface SyntaxHighlighter {
         @ColorInt highlightBgColor: Int,
         isDark: Boolean
     ): CharSequence
+
+    companion object {
+        /**
+         * 파일 확장자(예: "kt", "java", "js", "py", "cpp", "cs")를 바탕으로 적절한 [SyntaxHighlighter]를 반환합니다.
+         */
+        fun forExtension(extension: String): SyntaxHighlighter {
+            return when (extension.lowercase().removePrefix(".")) {
+                "kt", "kts" -> KotlinSyntaxHighlighter()
+                "java" -> JavaSyntaxHighlighter()
+                "js", "jsx", "ts", "tsx", "mjs", "cjs" -> JavaScriptSyntaxHighlighter()
+                "py", "pyw" -> PythonSyntaxHighlighter()
+                "cpp", "cxx", "cc", "c", "h", "hpp", "hxx" -> CppSyntaxHighlighter()
+                "cs" -> CSharpSyntaxHighlighter()
+                else -> PlainTextSyntaxHighlighter
+            }
+        }
+
+        /**
+         * 파일 이름(예: "MainActivity.kt", "script.py")을 바탕으로 적절한 [SyntaxHighlighter]를 반환합니다.
+         */
+        fun forFileName(fileName: String): SyntaxHighlighter {
+            val dotIndex = fileName.lastIndexOf('.')
+            if (dotIndex == -1 || dotIndex == fileName.length - 1) {
+                return PlainTextSyntaxHighlighter
+            }
+            return forExtension(fileName.substring(dotIndex + 1))
+        }
+    }
 }
 
 /**
@@ -64,18 +92,16 @@ object PlainTextSyntaxHighlighter : SyntaxHighlighter {
 }
 
 /**
- * Kotlin / Java 등 소스 코드 키워드, 문자열, 주석을 지원하는 기본 하이라이터.
+ * 정규식 기반 공통 소스 코드 문법 하이라이터 베이스 클래스.
  */
-class DefaultKotlinSyntaxHighlighter : SyntaxHighlighter {
-
-    private val keywordPattern = Pattern.compile(
-        "\\b(val|var|fun|class|interface|object|enum|data|sealed|package|import|" +
-                "if|else|when|for|while|do|return|break|continue|throw|try|catch|finally|" +
-                "private|protected|public|internal|override|abstract|open|final|lateinit|by|is|as|in|out|suspend|companion)\\b"
-    )
-    private val stringPattern = Pattern.compile("\"(\\\\.|[^\"])*\"")
-    private val commentPattern = Pattern.compile("//.*|/\\*[\\s\\S]*?\\*/")
-    private val numberPattern = Pattern.compile("\\b\\d+(\\.\\d+)?([fFL])?\\b")
+open class RegexSyntaxHighlighter(
+    val keywordPattern: Pattern? = null,
+    val stringPattern: Pattern? = null,
+    val commentPattern: Pattern? = null,
+    val numberPattern: Pattern? = null,
+    val preprocessorPattern: Pattern? = null,
+    val annotationPattern: Pattern? = null
+) : SyntaxHighlighter {
 
     override fun highlight(
         spans: List<TextSpan>,
@@ -87,6 +113,7 @@ class DefaultKotlinSyntaxHighlighter : SyntaxHighlighter {
         val stringColor = if (isDark) Color.parseColor("#6A8759") else Color.parseColor("#067D17")
         val commentColor = if (isDark) Color.parseColor("#808080") else Color.parseColor("#8C8C8C")
         val numberColor = if (isDark) Color.parseColor("#6897BB") else Color.parseColor("#1750EB")
+        val specialColor = if (isDark) Color.parseColor("#BBB529") else Color.parseColor("#871094")
 
         val fullTextBuilder = StringBuilder()
         for (s in spans) {
@@ -106,20 +133,24 @@ class DefaultKotlinSyntaxHighlighter : SyntaxHighlighter {
         }
 
         // 2. Syntax Highlighting 스타일 적용
-        applyRegexSpan(ssb, commentPattern, fullText) {
-            ForegroundColorSpan(commentColor)
+        preprocessorPattern?.let { pattern ->
+            applyRegexSpan(ssb, pattern, fullText) { ForegroundColorSpan(specialColor) }
         }
-        applyRegexSpan(ssb, stringPattern, fullText) {
-            ForegroundColorSpan(stringColor)
+        annotationPattern?.let { pattern ->
+            applyRegexSpan(ssb, pattern, fullText) { ForegroundColorSpan(specialColor) }
         }
-        applyRegexSpan(ssb, keywordPattern, fullText) {
-            ForegroundColorSpan(keywordColor)
+        numberPattern?.let { pattern ->
+            applyRegexSpan(ssb, pattern, fullText) { ForegroundColorSpan(numberColor) }
         }
-        applyRegexSpan(ssb, keywordPattern, fullText) {
-            StyleSpan(Typeface.BOLD)
+        keywordPattern?.let { pattern ->
+            applyRegexSpan(ssb, pattern, fullText) { ForegroundColorSpan(keywordColor) }
+            applyRegexSpan(ssb, pattern, fullText) { StyleSpan(Typeface.BOLD) }
         }
-        applyRegexSpan(ssb, numberPattern, fullText) {
-            ForegroundColorSpan(numberColor)
+        stringPattern?.let { pattern ->
+            applyRegexSpan(ssb, pattern, fullText) { ForegroundColorSpan(stringColor) }
+        }
+        commentPattern?.let { pattern ->
+            applyRegexSpan(ssb, pattern, fullText) { ForegroundColorSpan(commentColor) }
         }
 
         // 3. 인라인 Diff 하이라이트 배경 적용
@@ -159,3 +190,97 @@ class DefaultKotlinSyntaxHighlighter : SyntaxHighlighter {
         }
     }
 }
+
+/**
+ * Kotlin 소스 코드 문법 하이라이터.
+ */
+class KotlinSyntaxHighlighter : RegexSyntaxHighlighter(
+    keywordPattern = Pattern.compile(
+        "\\b(val|var|fun|class|interface|object|enum|data|sealed|package|import|" +
+                "if|else|when|for|while|do|return|break|continue|throw|try|catch|finally|" +
+                "private|protected|public|internal|override|abstract|open|final|lateinit|by|is|as|in|out|suspend|companion|true|false|null)\\b"
+    ),
+    stringPattern = Pattern.compile("\"\"\"[\\s\\S]*?\"\"\"|\"(\\\\.|[^\"])*\""),
+    commentPattern = Pattern.compile("//.*|/\\*[\\s\\S]*?\\*/"),
+    numberPattern = Pattern.compile("\\b\\d+(\\.\\d+)?([fFL])?\\b"),
+    annotationPattern = Pattern.compile("@[A-Za-z0-9_]+")
+)
+
+/**
+ * Java 소스 코드 문법 하이라이터.
+ */
+class JavaSyntaxHighlighter : RegexSyntaxHighlighter(
+    keywordPattern = Pattern.compile(
+        "\\b(public|protected|private|static|final|abstract|class|interface|enum|extends|implements|" +
+                "package|import|new|this|super|return|if|else|for|while|do|switch|case|default|break|continue|" +
+                "throw|throws|try|catch|finally|synchronized|volatile|transient|native|strictfp|instanceof|" +
+                "void|boolean|byte|char|short|int|long|float|double|null|true|false|var|record|yield|sealed|permits|non-sealed)\\b"
+    ),
+    stringPattern = Pattern.compile("\"\"\"[\\s\\S]*?\"\"\"|\"(\\\\.|[^\"\\\\])*\"|'(\\\\.|[^'\\\\])*'"),
+    commentPattern = Pattern.compile("//.*|/\\*[\\s\\S]*?\\*/"),
+    numberPattern = Pattern.compile("\\b\\d+(\\.\\d+)?([fFdDlL])?\\b|0x[0-9a-fA-F]+"),
+    annotationPattern = Pattern.compile("@[A-Za-z0-9_]+")
+)
+
+/**
+ * JavaScript / TypeScript 소스 코드 문법 하이라이터.
+ */
+class JavaScriptSyntaxHighlighter : RegexSyntaxHighlighter(
+    keywordPattern = Pattern.compile(
+        "\\b(function|const|let|var|if|else|for|while|do|switch|case|default|break|continue|return|" +
+                "try|catch|finally|throw|class|extends|super|this|new|typeof|instanceof|void|delete|in|of|" +
+                "async|await|yield|import|export|from|as|null|undefined|true|false|debugger|type|interface)\\b"
+    ),
+    stringPattern = Pattern.compile("`[\\s\\S]*?`|\"(\\\\.|[^\"\\\\])*\"|'(\\\\.|[^'\\\\])*'"),
+    commentPattern = Pattern.compile("//.*|/\\*[\\s\\S]*?\\*/"),
+    numberPattern = Pattern.compile("\\b\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b|0x[0-9a-fA-F]+")
+)
+
+/**
+ * Python 소스 코드 문법 하이라이터.
+ */
+class PythonSyntaxHighlighter : RegexSyntaxHighlighter(
+    keywordPattern = Pattern.compile(
+        "\\b(def|class|if|elif|else|for|while|try|except|finally|with|as|import|from|return|yield|" +
+                "break|continue|pass|raise|lambda|assert|global|nonlocal|and|or|not|is|in|True|False|None|self|async|await)\\b"
+    ),
+    stringPattern = Pattern.compile("\"\"\"[\\s\\S]*?\"\"\"|'''[\\s\\S]*?'''|\"(\\\\.|[^\"\\\\])*\"|'(\\\\.|[^'\\\\])*'"),
+    commentPattern = Pattern.compile("#.*"),
+    numberPattern = Pattern.compile("\\b\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b|0x[0-9a-fA-F]+"),
+    annotationPattern = Pattern.compile("@[A-Za-z0-9_.]+")
+)
+
+/**
+ * C / C++ 소스 코드 문법 하이라이터.
+ */
+class CppSyntaxHighlighter : RegexSyntaxHighlighter(
+    keywordPattern = Pattern.compile(
+        "\\b(auto|bool|break|case|catch|char|class|const|constexpr|continue|default|delete|do|double|" +
+                "else|enum|explicit|export|extern|false|float|for|friend|goto|if|inline|int|long|mutable|" +
+                "namespace|new|noexcept|nullptr|operator|private|protected|public|register|reinterpret_cast|" +
+                "return|short|signed|sizeof|static|static_assert|static_cast|struct|switch|template|this|" +
+                "thread_local|throw|true|try|typedef|typeid|typename|union|unsigned|using|virtual|void|volatile|wchar_t|while)\\b"
+    ),
+    stringPattern = Pattern.compile("R\"\\([\\s\\S]*?\\)\"|\"(\\\\.|[^\"\\\\])*\"|'(\\\\.|[^'\\\\])*'"),
+    commentPattern = Pattern.compile("//.*|/\\*[\\s\\S]*?\\*/"),
+    numberPattern = Pattern.compile("\\b\\d+(\\.\\d+)?([fFlLuU])?\\b|0x[0-9a-fA-F]+"),
+    preprocessorPattern = Pattern.compile("#\\s*(include|define|ifdef|ifndef|endif|if|else|elif|pragma|undef)\\b.*")
+)
+
+/**
+ * C# 소스 코드 문법 하이라이터.
+ */
+class CSharpSyntaxHighlighter : RegexSyntaxHighlighter(
+    keywordPattern = Pattern.compile(
+        "\\b(abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|" +
+                "delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|goto|" +
+                "if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|" +
+                "override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|sizeof|stackalloc|" +
+                "static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|" +
+                "virtual|void|volatile|while|async|await|var|record|init|yield|get|set)\\b"
+    ),
+    stringPattern = Pattern.compile("@\"[^\"]*(\"\"[^\"]*)*\"|\"(\\\\.|[^\"\\\\])*\"|'(\\\\.|[^'\\\\])*'|\\$\"(?:[^\"\\\\{]|\\\\.)*\""),
+    commentPattern = Pattern.compile("//.*|/\\*[\\s\\S]*?\\*/"),
+    numberPattern = Pattern.compile("\\b\\d+(\\.\\d+)?([fFdDmMlL])?\\b|0x[0-9a-fA-F]+"),
+    annotationPattern = Pattern.compile("\\[[A-Za-z0-9_]+\\]")
+)
