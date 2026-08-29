@@ -229,26 +229,42 @@ class DiffEngineTest {
         }
         val diffResult = DiffResult(rows = rows, unchangedCount = 10)
 
+        // 10줄 블록: contextLines = 3, threshold = 8
+        // 상단 3줄 + FoldedHeader(4줄) + 하단 3줄 = 총 7개 아이템
         val itemsCollapsed = FoldingManager.createDisplayItems(
             diffResult = diffResult,
             mode = DiffMode.SIDE_BY_SIDE,
             isFoldingEnabled = true,
-            foldingThreshold = 5,
+            contextLines = 3,
+            foldingThreshold = 8,
             expandedFoldIds = emptySet()
         )
 
-        assertEquals(1, itemsCollapsed.size)
-        assertTrue(itemsCollapsed[0] is DiffDisplayItem.FoldedHeader)
-        val header = itemsCollapsed[0] as DiffDisplayItem.FoldedHeader
-        assertEquals(10, header.lineCount)
-        assertEquals(1, header.startLineLeft)
-        assertEquals(10, header.endLineLeft)
+        assertEquals(7, itemsCollapsed.size)
+        // 상단 3줄은 일반 LineRow
+        assertTrue(itemsCollapsed[0] is DiffDisplayItem.SideBySideRow)
+        assertTrue(itemsCollapsed[1] is DiffDisplayItem.SideBySideRow)
+        assertTrue(itemsCollapsed[2] is DiffDisplayItem.SideBySideRow)
 
+        // 4번째 아이템이 FoldedHeader
+        assertTrue(itemsCollapsed[3] is DiffDisplayItem.FoldedHeader)
+        val header = itemsCollapsed[3] as DiffDisplayItem.FoldedHeader
+        assertEquals(4, header.lineCount)
+        assertEquals(4, header.startLineLeft)
+        assertEquals(7, header.endLineLeft)
+
+        // 하단 3줄은 일반 LineRow
+        assertTrue(itemsCollapsed[4] is DiffDisplayItem.SideBySideRow)
+        assertTrue(itemsCollapsed[5] is DiffDisplayItem.SideBySideRow)
+        assertTrue(itemsCollapsed[6] is DiffDisplayItem.SideBySideRow)
+
+        // 펼쳤을 때 10줄 모두 표시
         val itemsExpanded = FoldingManager.createDisplayItems(
             diffResult = diffResult,
             mode = DiffMode.SIDE_BY_SIDE,
             isFoldingEnabled = true,
-            foldingThreshold = 5,
+            contextLines = 3,
+            foldingThreshold = 8,
             expandedFoldIds = setOf(header.id)
         )
         assertEquals(10, itemsExpanded.size)

@@ -162,7 +162,7 @@ class DemoActivity : ComponentActivity() {
         foldingButton = createOutlineButton("Folding ON") {
             isFoldingEnabled = !isFoldingEnabled
             foldingButton.text = if (isFoldingEnabled) "Folding ON" else "Folding OFF"
-            diffView.setFoldingEnabled(isFoldingEnabled, 5)
+            diffView.setFoldingEnabled(isFoldingEnabled, contextLines = 3, threshold = 8)
         }
 
         val expandAllButton = createSolidButton("Expand All") {
@@ -193,7 +193,7 @@ class DemoActivity : ComponentActivity() {
             setDiffColors(if (isDarkMode) DiffColors.Dark else DiffColors.Light)
             setTextSize(textSizeSp)
             setDiffMode(currentMode)
-            setFoldingEnabled(isFoldingEnabled, 5)
+            setFoldingEnabled(isFoldingEnabled, contextLines = 3, threshold = 8)
             setHeaderTitles("Original Code", "Modified Code")
             val (orig, mod) = presets[selectedPresetIndex].second
             setContent(orig, mod)

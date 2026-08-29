@@ -169,7 +169,7 @@ fun DiffDemoScreen(
                     OutlinedButton(
                         onClick = {
                             isFoldingEnabled = !isFoldingEnabled
-                            diffViewInstance?.setFoldingEnabled(isFoldingEnabled, 5)
+                            diffViewInstance?.setFoldingEnabled(isFoldingEnabled, contextLines = 3, threshold = 8)
                         },
                         contentPadding = ButtonDefaults.TextButtonContentPadding
                     ) {
@@ -204,7 +204,7 @@ fun DiffDemoScreen(
                     setDiffColors(colors)
                     setTextSize(textSizeSp)
                     setDiffMode(diffMode)
-                    setFoldingEnabled(isFoldingEnabled, 5)
+                    setFoldingEnabled(isFoldingEnabled, contextLines = 3, threshold = 8)
                     setHeaderTitles("Original Code", "Modified Code")
                     val (orig, mod) = presets[selectedPreset].second
                     setContent(orig, mod)

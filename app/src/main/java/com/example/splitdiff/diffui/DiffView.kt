@@ -47,7 +47,8 @@ class DiffView @JvmOverloads constructor(
 
     private var diffColors: DiffColors = DiffColors.defaultFor(context)
     private var isFoldingEnabled: Boolean = true
-    private var foldingThreshold: Int = 5
+    private var contextLines: Int = 3
+    private var foldingThreshold: Int = 8
     private val expandedFoldIds = mutableSetOf<Long>()
 
     private var currentOriginalText: String = ""
@@ -361,10 +362,13 @@ class DiffView @JvmOverloads constructor(
     }
 
     /**
-     * Unchanged 블록 접기 설정 및 임계치 조정.
+     * Unchanged 블록 접기 설정 및 문맥 라인/임계치 조정.
+     * @param contextLines 변경점 주변에 항상 표시할 앞/뒤 미변경 문맥 라인 수 (기본 3줄)
+     * @param threshold 접기를 수행할 최소 미변경 라인 수 (기본 8줄)
      */
-    fun setFoldingEnabled(enabled: Boolean, threshold: Int = 5) {
+    fun setFoldingEnabled(enabled: Boolean, contextLines: Int = 3, threshold: Int = 8) {
         this.isFoldingEnabled = enabled
+        this.contextLines = contextLines
         this.foldingThreshold = threshold
         updateDisplayItems()
     }
@@ -403,6 +407,7 @@ class DiffView @JvmOverloads constructor(
             diffResult = result,
             mode = diffMode,
             isFoldingEnabled = true,
+            contextLines = contextLines,
             foldingThreshold = foldingThreshold,
             expandedFoldIds = emptySet()
         ).filterIsInstance<DiffDisplayItem.FoldedHeader>()
@@ -433,6 +438,7 @@ class DiffView @JvmOverloads constructor(
             diffResult = currentDiffResult,
             mode = diffMode,
             isFoldingEnabled = isFoldingEnabled,
+            contextLines = contextLines,
             foldingThreshold = foldingThreshold,
             expandedFoldIds = expandedFoldIds
         )
