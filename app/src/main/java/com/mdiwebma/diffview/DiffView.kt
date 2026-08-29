@@ -1,4 +1,4 @@
-package com.mdiwebma.diff.diffui
+package com.mdiwebma.diffview
 
 import android.content.Context
 import android.graphics.Color
@@ -8,18 +8,17 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.mdiwebma.diff.engine.DiffEngine
-import com.mdiwebma.diff.engine.KotlinDiffEngine
-import com.mdiwebma.diff.model.DiffDisplayItem
-import com.mdiwebma.diff.model.DiffMode
-import com.mdiwebma.diff.model.DiffResult
+import com.mdiwebma.diffview.engine.DiffEngine
+import com.mdiwebma.diffview.engine.KotlinDiffEngine
+import com.mdiwebma.diffview.model.DiffDisplayItem
+import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview.model.DiffResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -92,8 +91,8 @@ class DiffView @JvmOverloads constructor(
         // 2. Header Layout
         headerLayout = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT
             )
             orientation = LinearLayout.HORIZONTAL
             setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
@@ -102,7 +101,7 @@ class DiffView @JvmOverloads constructor(
 
         // --- Side-by-Side Left Header ---
         leftHeaderBox = LinearLayout(context).apply {
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
@@ -124,7 +123,7 @@ class DiffView @JvmOverloads constructor(
 
         // --- Side-by-Side Right Header ---
         rightHeaderBox = LinearLayout(context).apply {
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
@@ -138,7 +137,7 @@ class DiffView @JvmOverloads constructor(
             setPadding(padHorizontalPx, 0, 0, 0)
         }
         val rightHeaderInner = LinearLayout(context).apply {
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
@@ -148,27 +147,27 @@ class DiffView @JvmOverloads constructor(
 
         // --- Unified Mode Header ---
         unifiedHeaderBox = LinearLayout(context).apply {
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             visibility = GONE
         }
         val oldGutterSpacer = TextView(context).apply {
-            layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.WRAP_CONTENT)
+            layoutParams = LinearLayout.LayoutParams(gutterPx, LayoutParams.WRAP_CONTENT)
             text = "Old"
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         }
         val newGutterSpacer = TextView(context).apply {
-            layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.WRAP_CONTENT)
+            layoutParams = LinearLayout.LayoutParams(gutterPx, LayoutParams.WRAP_CONTENT)
             text = "New"
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         }
         unifiedHeaderTitle = TextView(context).apply {
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             text = "Unified Changes (+ / -)"
             typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
@@ -181,8 +180,8 @@ class DiffView @JvmOverloads constructor(
         // Stats Badges (+ / - / ~)
         statsLayout = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
             ).apply {
                 marginStart = padHorizontalPx
             }
@@ -203,13 +202,13 @@ class DiffView @JvmOverloads constructor(
         headerLayout.addView(statsLayout)
 
         headerDivider = View(context).apply {
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dividerPx)
+            layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dividerPx)
         }
 
         // 3. RecyclerView
         recyclerView = RecyclerView(context).apply {
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT,
                 0,
                 1f
             )
@@ -226,8 +225,8 @@ class DiffView @JvmOverloads constructor(
         // 4. Progress Indicator
         progressBar = ProgressBar(context).apply {
             layoutParams = LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT,
                 Gravity.CENTER
             )
             visibility = GONE
@@ -248,8 +247,8 @@ class DiffView @JvmOverloads constructor(
         val density = context.resources.displayMetrics.density
         return TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
             ).apply {
                 marginEnd = (6 * density).toInt()
             }

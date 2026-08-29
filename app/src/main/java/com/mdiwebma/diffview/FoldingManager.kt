@@ -1,10 +1,10 @@
-package com.mdiwebma.diff.diffui
+package com.mdiwebma.diffview
 
-import com.mdiwebma.diff.model.DiffDisplayItem
-import com.mdiwebma.diff.model.DiffMode
-import com.mdiwebma.diff.model.DiffResult
-import com.mdiwebma.diff.model.DiffRow
-import com.mdiwebma.diff.model.DiffRowType
+import com.mdiwebma.diffview.model.DiffDisplayItem
+import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview.model.DiffResult
+import com.mdiwebma.diffview.model.DiffRow
+import com.mdiwebma.diffview.model.DiffRowType
 
 /**
  * Git / Android Studio 표준 방식의 문맥 기반 미변경 라인 접기 매니저.

@@ -50,23 +50,22 @@ dependencies {
 
 ## 📁 프로젝트에 복사해야 할 파일 목록
 
-다른 프로젝트에 본 컴포넌트를 적용하려면 아래 **`com.mdiwebma.diff` 패키지의 10개 파일**을 복사하여 사용하시면 됩니다:
+다른 프로젝트에 본 컴포넌트를 적용하려면 아래 **`com.mdiwebma.diffview` 패키지의 10개 파일**을 복사하여 사용하시면 됩니다:
 
 ```text
-com.mdiwebma.diff
+com.mdiwebma.diffview
+├── DiffView.kt                   # 최종 커스텀 FrameLayout 뷰 컴포넌트
+├── DiffViewAdapter.kt            # Side-by-Side & Unified 지원 RecyclerView 어댑터
+├── DiffColors.kt                 # Android Studio Light / Dark 색상 테마 팔레트
+├── SyntaxHighlighter.kt          # 문법 하이라이팅 인터페이스 및 Kotlin 구현체
+├── FoldingManager.kt             # Git/AS 스타일 문맥 기반 라인 접기 매니저
+├── SyncHorizontalScrollView.kt   # 컬럼 단위 가로 스크롤 동기화 ScrollView & Manager
 ├── model/
-│   └── DiffModels.kt                 # DiffRow, DiffLine, DiffRowType, DiffMode 등 데이터 모델
-├── engine/
-│   ├── DiffEngine.kt                 # Diff 계산 인터페이스
-│   ├── InlineDiffCalculator.kt       # 문자/토큰 단위 인라인 Diff 계산기
-│   └── KotlinDiffEngine.kt           # kotlin-multiplatform-diff 기반 구현체
-└── diffui/
-    ├── DiffView.kt                   # 최종 커스텀 FrameLayout 뷰 컴포넌트
-    ├── DiffViewAdapter.kt            # Side-by-Side & Unified 지원 RecyclerView 어댑터
-    ├── DiffColors.kt                 # Android Studio Light / Dark 색상 테마 팔레트
-    ├── SyntaxHighlighter.kt          # 문법 하이라이팅 인터페이스 및 Kotlin 구현체
-    ├── FoldingManager.kt             # Git/AS 스타일 문맥 기반 라인 접기 매니저
-    └── SyncHorizontalScrollView.kt   # 컬럼 단위 가로 스크롤 동기화 ScrollView & Manager
+│   └── DiffModels.kt             # DiffRow, DiffLine, DiffRowType, DiffMode 등 데이터 모델
+└── engine/
+    ├── DiffEngine.kt             # Diff 계산 인터페이스
+    ├── InlineDiffCalculator.kt   # 문자/토큰 단위 인라인 Diff 계산기
+    └── KotlinDiffEngine.kt       # kotlin-multiplatform-diff 기반 구현체
 ```
 
 ---
@@ -76,7 +75,7 @@ com.mdiwebma.diff
 ### 1. XML 레이아웃에 추가
 
 ```xml
-<com.mdiwebma.diff.diffui.DiffView
+<com.mdiwebma.diffview.DiffView
     android:id="@+id/diffView"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
@@ -85,10 +84,10 @@ com.mdiwebma.diff
 ### 2. Kotlin 코드에서 제어
 
 ```kotlin
-import com.mdiwebma.diff.diffui.DiffColors
-import com.mdiwebma.diff.diffui.DiffView
-import com.mdiwebma.diff.diffui.DefaultKotlinSyntaxHighlighter
-import com.mdiwebma.diff.model.DiffMode
+import com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter
+import com.mdiwebma.diffview.DiffColors
+import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.model.DiffMode
 
 val diffView = findViewById<DiffView>(R.id.diffView)
 
@@ -111,7 +110,7 @@ diffView.setContent(original = originalCode, modified = modifiedCode)
 diffView.setDiffMode(DiffMode.SIDE_BY_SIDE) // 좌우 2열 분할 모드
 // diffView.setDiffMode(DiffMode.UNIFIED)    // 위아래 단일 열 통합 모드
 
-// 3. 테마 설정 (Light / Dark)
+// 3. 테마 설정 (Light / Dark), Default(Auto)
 diffView.setDiffColors(DiffColors.Dark)
 
 // 4. 글꼴 크기 변경 (SP 단위)

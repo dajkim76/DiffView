@@ -1,4 +1,4 @@
-package com.mdiwebma.diff_demo.ui.theme
+package com.mdiwebma.diffview_demo.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -33,6 +33,7 @@ fun SplitDiffTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

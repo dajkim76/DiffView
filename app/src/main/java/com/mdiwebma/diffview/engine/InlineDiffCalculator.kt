@@ -1,6 +1,6 @@
-package com.mdiwebma.diff.engine
+package com.mdiwebma.diffview.engine
 
-import com.mdiwebma.diff.model.TextSpan
+import com.mdiwebma.diffview.model.TextSpan
 import kotlin.math.max
 import kotlin.math.min
 

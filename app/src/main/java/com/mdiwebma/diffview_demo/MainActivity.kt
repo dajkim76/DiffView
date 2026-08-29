@@ -1,19 +1,19 @@
-package com.mdiwebma.diff_demo
+package com.mdiwebma.diffview_demo
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.mdiwebma.diff.diffui.DefaultKotlinSyntaxHighlighter
-import com.mdiwebma.diff.diffui.DiffView
-import com.mdiwebma.diff.model.DiffMode
+import com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter
+import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.model.DiffMode
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.test)
+        setContentView(R.layout.main)
         findViewById<View>(R.id.main).setOnClickListener {
             startActivity(Intent(this, ComposeDemoActivity::class.java))
         }

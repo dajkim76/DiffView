@@ -1,4 +1,4 @@
-package com.mdiwebma.diff.diffui
+package com.mdiwebma.diffview
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -8,7 +8,7 @@ import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import androidx.annotation.ColorInt
-import com.mdiwebma.diff.model.TextSpan
+import com.mdiwebma.diffview.model.TextSpan
 import java.util.regex.Pattern
 
 /**

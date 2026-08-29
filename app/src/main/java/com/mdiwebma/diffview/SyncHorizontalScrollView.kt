@@ -1,4 +1,4 @@
-package com.mdiwebma.diff.diffui
+package com.mdiwebma.diffview
 
 import android.content.Context
 import android.util.AttributeSet

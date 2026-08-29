@@ -1,6 +1,6 @@
-package com.mdiwebma.diff.engine
+package com.mdiwebma.diffview.engine
 
-import com.mdiwebma.diff.model.DiffResult
+import com.mdiwebma.diffview.model.DiffResult
 
 /**
  * 텍스트 간의 Diff를 계산하는 엔진 인터페이스.

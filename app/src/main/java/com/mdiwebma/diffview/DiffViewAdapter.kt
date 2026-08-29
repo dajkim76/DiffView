@@ -1,4 +1,4 @@
-package com.mdiwebma.diff.diffui
+package com.mdiwebma.diffview
 
 import android.content.Context
 import android.graphics.Color
@@ -13,10 +13,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.mdiwebma.diff.model.DiffDisplayItem
-import com.mdiwebma.diff.model.DiffLine
-import com.mdiwebma.diff.model.DiffRow
-import com.mdiwebma.diff.model.DiffRowType
+import com.mdiwebma.diffview.model.DiffDisplayItem
+import com.mdiwebma.diffview.model.DiffLine
+import com.mdiwebma.diffview.model.DiffRow
+import com.mdiwebma.diffview.model.DiffRowType
 
 /**
  * Side-by-Side 및 Unified 모드를 모두 지원하며,
@@ -83,6 +83,7 @@ class DiffViewAdapter(
                     isDark = isDark
                 )
             }
+
             is DiffDisplayItem.UnifiedRow -> {
                 (holder as UnifiedRowViewHolder).bind(
                     item = item,
@@ -92,6 +93,7 @@ class DiffViewAdapter(
                     isDark = isDark
                 )
             }
+
             is DiffDisplayItem.FoldedHeader -> {
                 (holder as FoldedHeaderViewHolder).bind(
                     item = item,

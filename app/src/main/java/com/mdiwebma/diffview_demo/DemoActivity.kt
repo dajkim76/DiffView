@@ -1,4 +1,4 @@
-package com.mdiwebma.diff_demo
+package com.mdiwebma.diffview_demo
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -14,9 +14,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.mdiwebma.diff.diffui.DiffColors
-import com.mdiwebma.diff.diffui.DiffView
-import com.mdiwebma.diff.model.DiffMode
+import com.mdiwebma.diffview.DiffColors
+import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.model.DiffMode
 
 /**
  * Jetpack Compose를 사용하지 않는 순수 Android View 기반 DiffView 데모 액티비티.

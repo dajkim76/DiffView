@@ -1,4 +1,4 @@
-package com.mdiwebma.diff_demo
+package com.mdiwebma.diffview_demo
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -32,10 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.mdiwebma.diff.diffui.DiffColors
-import com.mdiwebma.diff.diffui.DiffView
-import com.mdiwebma.diff.model.DiffMode
-import com.mdiwebma.diff_demo.ui.theme.SplitDiffTheme
+import com.mdiwebma.diffview.DiffColors
+import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview_demo.ui.theme.SplitDiffTheme
 
 class ComposeDemoActivity : ComponentActivity() {
 

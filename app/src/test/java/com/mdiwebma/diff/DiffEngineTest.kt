@@ -1,14 +1,14 @@
 package com.mdiwebma.diff
 
-import com.mdiwebma.diff.diffui.FoldingManager
-import com.mdiwebma.diff.engine.InlineDiffCalculator
-import com.mdiwebma.diff.engine.KotlinDiffEngine
-import com.mdiwebma.diff.model.DiffDisplayItem
-import com.mdiwebma.diff.model.DiffLine
-import com.mdiwebma.diff.model.DiffMode
-import com.mdiwebma.diff.model.DiffResult
-import com.mdiwebma.diff.model.DiffRow
-import com.mdiwebma.diff.model.DiffRowType
+import com.mdiwebma.diffview.FoldingManager
+import com.mdiwebma.diffview.engine.InlineDiffCalculator
+import com.mdiwebma.diffview.engine.KotlinDiffEngine
+import com.mdiwebma.diffview.model.DiffDisplayItem
+import com.mdiwebma.diffview.model.DiffLine
+import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview.model.DiffResult
+import com.mdiwebma.diffview.model.DiffRow
+import com.mdiwebma.diffview.model.DiffRowType
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

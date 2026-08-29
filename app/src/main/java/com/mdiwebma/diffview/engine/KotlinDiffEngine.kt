@@ -1,10 +1,10 @@
-package com.mdiwebma.diff.engine
+package com.mdiwebma.diffview.engine
 
-import com.mdiwebma.diff.model.DiffLine
-import com.mdiwebma.diff.model.DiffResult
-import com.mdiwebma.diff.model.DiffRow
-import com.mdiwebma.diff.model.DiffRowType
-import com.mdiwebma.diff.model.TextSpan
+import com.mdiwebma.diffview.model.DiffLine
+import com.mdiwebma.diffview.model.DiffResult
+import com.mdiwebma.diffview.model.DiffRow
+import com.mdiwebma.diffview.model.DiffRowType
+import com.mdiwebma.diffview.model.TextSpan
 import io.github.petertrr.diffutils.diff
 import io.github.petertrr.diffutils.patch.ChangeDelta
 import io.github.petertrr.diffutils.patch.DeleteDelta
@@ -131,6 +131,7 @@ class KotlinDiffEngine(
                         }
                     }
                 }
+
                 is DeleteDelta -> {
                     for (lineText in delta.source.lines) {
                         val leftLine = DiffLine(
@@ -142,6 +143,7 @@ class KotlinDiffEngine(
                         originalIndex++
                     }
                 }
+
                 is InsertDelta -> {
                     for (lineText in delta.target.lines) {
                         val rightLine = DiffLine(
@@ -153,6 +155,7 @@ class KotlinDiffEngine(
                         modifiedIndex++
                     }
                 }
+
                 else -> {
                     val origChunk = delta.source.lines
                     for (lineText in origChunk) {
