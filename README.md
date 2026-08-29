@@ -1,11 +1,15 @@
-# SplitDiff
+# DiffView
 
-Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffView** Android 재사용 가능한 커스텀 뷰 라이브러리입니다.
+Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffView** Android 라이브러리입니다.
+
+[![](https://jitpack.io/v/dajkim76/DiffView.svg)](https://jitpack.io/#dajkim76/DiffView)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ---
 
 ## 🌟 주요 기능
-
+0. Powered by A.I 
+   - 대부분의 코드는 **Gemini 3.7 Flash** 로 생성했습니다. 문제가 있다면 코드를 clone에서 A.I를 통해서 개선하세요. 
 1. **2가지 Diff 모드 지원**:
    - **Side-by-Side (Split) 모드**: 좌(Original) / 우(Modified) 2열 나란히 표시하며 좌우 라인을 완벽 정렬.
    - **Unified (통합 위아래) 모드**: 하나의 뷰 안에서 변경 사항을 위아래 단일 열(`+` / `-`)로 표시.
@@ -19,53 +23,63 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
 5. **Git / Android Studio 스타일 Context-aware Folding (미변경 라인 접기)**:
    - 변경점 주변의 앞/뒤 문맥 라인(`contextLines`, 기본 3줄)은 유지하고, 중간의 긴 미변경 구간만 `⋯ N lines unchanged ⋯` 배너로 접기.
    - 배너 클릭 시 개별 블록 펼치기/접기 및 전체 일괄 펼치기/접기 지원.
-6. **Syntax Highlighting & Dark Theme 지원**:
+6. **4가지 공백 무시 비교 옵션 (Whitespace Ignore Mode)**:
+   - `NONE`: 공백 엄격 비교 (기본값)
+   - `TRIM_LEADING_TRAILING`: 라인 앞/뒤 들여쓰기 공백 무시
+   - `COLLAPSE_WHITESPACE`: 연속된 공백 개수 무시
+   - `IGNORE_ALL`: 모든 공백 문자 무시
+7. **Syntax Highlighting & Dark Theme 지원**:
    - Kotlin/Java 기본 문법 하이라이터 내장 및 `SyntaxHighlighter` 인터페이스를 통한 커스텀 하이라이터 확장 가능.
    - Android Studio 스타일의 Light / Dark 테마 색상 팔레트 기본 제공.
-7. **텍스트 선택 및 복사**:
-   - 시스템 텍스트 드래그 선택 및 복사(`setTextIsSelectable(true)`) 완벽 지원.
+8. **텍스트 선택 및 복사**:
+   - 라인별로 시스템 텍스트 드래그 선택 및 복사(`setTextIsSelectable(true)`) 완벽 지원.
+9. Screenshots
+![Screenshot1](screenshot1.jpg)
+![Screenshot1](screenshot2.jpg)
 
 ---
 
-## 📦 필요한 의존성 (Dependencies)
+## 📦 JitPack 라이브러리 설치 방법
 
-프로젝트의 `build.gradle.kts` (또는 `libs.versions.toml`)에 아래 의존성을 추가합니다:
+### 1. `settings.gradle.kts`에 JitPack 저장소 추가
+
+```kotlin
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+### 2. `build.gradle.kts` (Module :app)에 라이브러리 추가
 
 ```kotlin
 dependencies {
-    // Diff 계산 엔진
-    implementation("io.github.petertrr:kotlin-multiplatform-diff:1.3.0")
-
-    // Android 기본 UI 컴포넌트
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.core:core-ktx:1.15.0")
-
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("com.github.dajkim76:DiffView:1.0.0")
 }
 ```
 
 ---
 
-## 📁 프로젝트에 복사해야 할 파일 목록
-
-다른 프로젝트에 본 컴포넌트를 적용하려면 아래 **`com.mdiwebma.diffview` 패키지의 10개 파일**을 복사하여 사용하시면 됩니다:
+## 📁 프로젝트 구조
 
 ```text
-com.mdiwebma.diffview
-├── DiffView.kt                   # 최종 커스텀 FrameLayout 뷰 컴포넌트
-├── DiffViewAdapter.kt            # Side-by-Side & Unified 지원 RecyclerView 어댑터
-├── DiffColors.kt                 # Android Studio Light / Dark 색상 테마 팔레트
-├── SyntaxHighlighter.kt          # 문법 하이라이팅 인터페이스 및 Kotlin 구현체
-├── FoldingManager.kt             # Git/AS 스타일 문맥 기반 라인 접기 매니저
-├── SyncHorizontalScrollView.kt   # 컬럼 단위 가로 스크롤 동기화 ScrollView & Manager
-├── model/
-│   └── DiffModels.kt             # DiffRow, DiffLine, DiffRowType, DiffMode 등 데이터 모델
-└── engine/
-    ├── DiffEngine.kt             # Diff 계산 인터페이스
-    ├── InlineDiffCalculator.kt   # 문자/토큰 단위 인라인 Diff 계산기
-    └── KotlinDiffEngine.kt       # kotlin-multiplatform-diff 기반 구현체
+DiffView/
+├── diffview/                     # 📦 핵심 Android Library 모듈 (배포 대상)
+│   └── src/main/java/com/mdiwebma/diffview/
+│       ├── DiffView.kt                   # 최종 커스텀 FrameLayout 뷰 컴포넌트
+│       ├── DiffViewAdapter.kt            # Side-by-Side & Unified 지원 RecyclerView 어댑터
+│       ├── DiffColors.kt                 # Android Studio Light / Dark 색상 테마 팔레트
+│       ├── SyntaxHighlighter.kt          # 문법 하이라이팅 인터페이스 및 Kotlin 구현체
+│       ├── FoldingManager.kt             # Git/AS 스타일 문맥 기반 라인 접기 매니저
+│       ├── SyncHorizontalScrollView.kt   # 컬럼 단위 가로 스크롤 동기화 ScrollView & Manager
+│       ├── model/DiffModels.kt           # DiffRow, DiffLine, DiffMode, WhitespaceIgnoreMode 등 모델
+│       └── engine/                       # DiffEngine, KotlinDiffEngine, InlineDiffCalculator
+│
+└── app/                          # 📱 데모 / 샘플 애플리케이션 (Android View & Compose 데모)
 ```
 
 ---
@@ -88,6 +102,7 @@ import com.mdiwebma.diffview.DefaultKotlinSyntaxHighlighter
 import com.mdiwebma.diffview.DiffColors
 import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 
 val diffView = findViewById<DiffView>(R.id.diffView)
 
@@ -135,21 +150,17 @@ diffView.setSyntaxHighlighter(DefaultKotlinSyntaxHighlighter())
 ## 📄 License
 
 ```text
-GNU GENERAL PUBLIC LICENSE
-Version 3, 29 June 2007
+Copyright 2026 DiffView Project (dajkim76)
 
-Copyright (C) 2026 SplitDiff Project
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```

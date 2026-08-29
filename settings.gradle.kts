@@ -22,5 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SplitDiff"
+rootProject.name = "DiffView"
+include(":diffview")
 include(":app")
