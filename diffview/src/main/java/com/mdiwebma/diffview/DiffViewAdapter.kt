@@ -202,6 +202,10 @@ class DiffRowViewHolder(
             rightScrollView.applyContentMinWidth(0)
         }
 
+        val gutterGravity = if (isLineWrap) Gravity.END or Gravity.TOP else Gravity.END or Gravity.CENTER_VERTICAL
+        leftGutterText.gravity = gutterGravity
+        rightGutterText.gravity = gutterGravity
+
         leftGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         leftCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         rightGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
@@ -233,12 +237,25 @@ class DiffRowViewHolder(
             else -> Color.TRANSPARENT
         }
 
+        val leftGutterBg = when (row.type) {
+            DiffRowType.DELETED -> colors.deletedBackground
+            DiffRowType.MODIFIED -> colors.modifiedBackground
+            else -> colors.lineNumberBackground
+        }
+
+        val rightGutterBg = when (row.type) {
+            DiffRowType.INSERTED -> colors.addedBackground
+            DiffRowType.MODIFIED -> colors.modifiedBackground
+            else -> colors.lineNumberBackground
+        }
+
         bindSide(
             line = row.left,
             container = leftContainer,
             gutterText = leftGutterText,
             codeText = leftCodeText,
             bgColor = leftBg,
+            gutterBgColor = leftGutterBg,
             highlightColor = leftHighlightBg,
             colors = colors,
             highlighter = highlighter,
@@ -252,6 +269,7 @@ class DiffRowViewHolder(
             gutterText = rightGutterText,
             codeText = rightCodeText,
             bgColor = rightBg,
+            gutterBgColor = rightGutterBg,
             highlightColor = rightHighlightBg,
             colors = colors,
             highlighter = highlighter,
@@ -266,6 +284,7 @@ class DiffRowViewHolder(
         gutterText: TextView,
         codeText: TextView,
         bgColor: Int,
+        gutterBgColor: Int,
         highlightColor: Int,
         colors: DiffColors,
         highlighter: SyntaxHighlighter,
@@ -273,7 +292,7 @@ class DiffRowViewHolder(
         sideLabel: String
     ) {
         container.setBackgroundColor(bgColor)
-        gutterText.setBackgroundColor(colors.lineNumberBackground)
+        gutterText.setBackgroundColor(if (line != null) gutterBgColor else colors.lineNumberBackground)
         gutterText.setTextColor(colors.lineNumberTextColor)
         codeText.setTextColor(colors.codeTextColor)
 
@@ -445,16 +464,18 @@ class UnifiedRowViewHolder(
             scrollView.applyContentMinWidth(0)
         }
 
+        val gutterGravity = if (isLineWrap) Gravity.END or Gravity.TOP else Gravity.END or Gravity.CENTER_VERTICAL
+        val prefixGravity = if (isLineWrap) Gravity.CENTER_HORIZONTAL or Gravity.TOP else Gravity.CENTER
+        oldGutterText.gravity = gutterGravity
+        newGutterText.gravity = gutterGravity
+        prefixText.gravity = prefixGravity
+
         oldGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         newGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         prefixText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         codeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
 
         gutterDivider.setBackgroundColor(colors.dividerColor)
-        oldGutterText.setBackgroundColor(colors.lineNumberBackground)
-        oldGutterText.setTextColor(colors.lineNumberTextColor)
-        newGutterText.setBackgroundColor(colors.lineNumberBackground)
-        newGutterText.setTextColor(colors.lineNumberTextColor)
 
         oldGutterText.text = item.oldLineNumber?.toString() ?: ""
         newGutterText.text = item.newLineNumber?.toString() ?: ""
@@ -465,6 +486,13 @@ class UnifiedRowViewHolder(
             DiffRowType.INSERTED -> colors.addedBackground
             DiffRowType.MODIFIED -> colors.modifiedBackground
             else -> colors.unchangedBackground
+        }
+
+        val gutterBg = when (item.type) {
+            DiffRowType.DELETED -> colors.deletedBackground
+            DiffRowType.INSERTED -> colors.addedBackground
+            DiffRowType.MODIFIED -> colors.modifiedBackground
+            else -> colors.lineNumberBackground
         }
 
         val highlightBg = when (item.type) {
@@ -481,6 +509,10 @@ class UnifiedRowViewHolder(
         }
 
         rootContainer.setBackgroundColor(bgColor)
+        oldGutterText.setBackgroundColor(gutterBg)
+        oldGutterText.setTextColor(colors.lineNumberTextColor)
+        newGutterText.setBackgroundColor(gutterBg)
+        newGutterText.setTextColor(colors.lineNumberTextColor)
         prefixText.setTextColor(prefixColor)
         codeText.setTextColor(colors.codeTextColor)
 
@@ -544,6 +576,7 @@ class UnifiedRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(prefixPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.CENTER
                 typeface = Typeface.MONOSPACE
+                setPadding(0, padVerticalPx, 0, padVerticalPx)
             }
 
             val codeText = TextView(context).apply {
