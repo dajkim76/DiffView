@@ -5,6 +5,7 @@ import com.mdiwebma.diffview.HorizontalScrollSyncGroup
 import com.mdiwebma.diffview.engine.InlineDiffCalculator
 import com.mdiwebma.diffview.engine.KotlinDiffEngine
 import com.mdiwebma.diffview.model.DiffDisplayItem
+import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLine
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffResult
@@ -192,7 +193,7 @@ class DiffEngineTest {
         val oldLine = "val count = 10"
         val newLine = "val count = 20"
 
-        // enableInlineDiff = true
+        // enableInlineDiff = true (default: DiffGranularity.WORD)
         val resultWithInline = engine.calculateDiff(oldLine, newLine, enableInlineDiff = true)
         val modifiedRowWithInline = resultWithInline.rows[0]
         val leftSpansWithInline = modifiedRowWithInline.left?.spans ?: emptyList()
@@ -200,8 +201,8 @@ class DiffEngineTest {
 
         assertTrue(leftSpansWithInline.any { it.isHighlighted })
         assertTrue(rightSpansWithInline.any { it.isHighlighted })
-        assertEquals("1", leftSpansWithInline.filter { it.isHighlighted }.joinToString("") { it.text })
-        assertEquals("2", rightSpansWithInline.filter { it.isHighlighted }.joinToString("") { it.text })
+        assertEquals("10", leftSpansWithInline.filter { it.isHighlighted }.joinToString("") { it.text })
+        assertEquals("20", rightSpansWithInline.filter { it.isHighlighted }.joinToString("") { it.text })
 
         // enableInlineDiff = false
         val resultWithoutInline = engine.calculateDiff(oldLine, newLine, enableInlineDiff = false)
@@ -218,13 +219,58 @@ class DiffEngineTest {
     }
 
     @Test
+    fun testDiffGranularity_WordVsCharacter() = runTest {
+        val left = "val count = 10"
+        val right = "val count = 20"
+
+        // 1. WORD unit (default) -> entire word token "10" and "20" are highlighted
+        val (leftWordSpans, rightWordSpans) = InlineDiffCalculator.calculateInlineDiff(
+            left = left,
+            right = right,
+            granularity = DiffGranularity.WORD
+        )
+        val leftWordHigh = leftWordSpans.filter { it.isHighlighted }.joinToString("") { it.text }
+        val rightWordHigh = rightWordSpans.filter { it.isHighlighted }.joinToString("") { it.text }
+        assertEquals("10", leftWordHigh)
+        assertEquals("20", rightWordHigh)
+
+        // 2. CHARACTER unit -> only differing char "1" and "2" are highlighted ("0" is common)
+        val (leftCharSpans, rightCharSpans) = InlineDiffCalculator.calculateInlineDiff(
+            left = left,
+            right = right,
+            granularity = DiffGranularity.CHARACTER
+        )
+        val leftCharHigh = leftCharSpans.filter { it.isHighlighted }.joinToString("") { it.text }
+        val rightCharHigh = rightCharSpans.filter { it.isHighlighted }.joinToString("") { it.text }
+        assertEquals("1", leftCharHigh)
+        assertEquals("2", rightCharHigh)
+    }
+
+    @Test
+    fun testDiffGranularity_KoreanWords() {
+        val left = "안녕하세요 좋은 아침입니다"
+        val right = "안녕하세요 활기찬 아침입니다"
+
+        val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(left, right, DiffGranularity.WORD)
+        val leftHigh = leftSpans.filter { it.isHighlighted }.joinToString("") { it.text }
+        val rightHigh = rightSpans.filter { it.isHighlighted }.joinToString("") { it.text }
+
+        assertEquals("좋은", leftHigh)
+        assertEquals("활기찬", rightHigh)
+    }
+
+    @Test
     fun testCase8_LongSingleLineInlineDiff() = runTest {
         val prefix = "A".repeat(100)
         val suffix = "Z".repeat(100)
         val oldLine = prefix + "MIDDLE_OLD" + suffix
         val newLine = prefix + "MIDDLE_NEW" + suffix
 
-        val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(oldLine, newLine)
+        val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(
+            left = oldLine,
+            right = newLine,
+            granularity = DiffGranularity.CHARACTER
+        )
 
         assertTrue(leftSpans.isNotEmpty())
         assertTrue(rightSpans.isNotEmpty())
@@ -672,14 +718,18 @@ class DiffEngineTest {
 
     @Test
     fun testInlineDiff_LongLineFallbackToFastPath() {
-        // Lines > 2000 chars should use prefix/suffix fast path (not O(n*m) LCS)
+        // Lines > 2000 chars in CHARACTER mode should use prefix/suffix fast path (not O(n*m) LCS)
         val prefix = "X".repeat(1500)
         val suffix = "Y".repeat(1500)
         val leftLine = prefix + "OLD" + suffix
         val rightLine = prefix + "NEW" + suffix
 
         val elapsedMs = measureTimeMillis {
-            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(leftLine, rightLine)
+            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(
+                left = leftLine,
+                right = rightLine,
+                granularity = DiffGranularity.CHARACTER
+            )
             assertEquals("OLD", leftSpans.filter { it.isHighlighted }.joinToString("") { it.text })
             assertEquals("NEW", rightSpans.filter { it.isHighlighted }.joinToString("") { it.text })
         }
@@ -689,13 +739,39 @@ class DiffEngineTest {
     }
 
     @Test
+    fun testInlineDiff_WordTokenFallbackToFastPath() {
+        // Token count > 1000 in WORD mode should use token prefix/suffix fast path
+        val prefix = (1..600).joinToString(" ") { "token$it" }
+        val suffix = (1..600).joinToString(" ") { "end$it" }
+        val leftLine = "$prefix oldToken $suffix"
+        val rightLine = "$prefix newToken $suffix"
+
+        val elapsedMs = measureTimeMillis {
+            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(
+                left = leftLine,
+                right = rightLine,
+                granularity = DiffGranularity.WORD
+            )
+            assertEquals("oldToken", leftSpans.filter { it.isHighlighted }.joinToString("") { it.text })
+            assertEquals("newToken", rightSpans.filter { it.isHighlighted }.joinToString("") { it.text })
+        }
+
+        println("Long token line inline diff took $elapsedMs ms")
+        assertTrue("Fast path for long token lists should complete in < 50ms", elapsedMs < 50)
+    }
+
+    @Test
     fun testInlineDiff_BoundaryExact2000Chars() {
         // Exactly at the 2000-char threshold — LCS path used
         val left = "A".repeat(2000)
         val right = "B".repeat(2000)
 
         val elapsedMs = measureTimeMillis {
-            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(left, right)
+            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(
+                left = left,
+                right = right,
+                granularity = DiffGranularity.CHARACTER
+            )
             // Entire line is highlighted since nothing matches
             assertEquals(left, leftSpans.filter { it.isHighlighted }.joinToString("") { it.text })
             assertEquals(right, rightSpans.filter { it.isHighlighted }.joinToString("") { it.text })
@@ -711,7 +787,11 @@ class DiffEngineTest {
         val right = "B".repeat(2001)
 
         val elapsedMs = measureTimeMillis {
-            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(left, right)
+            val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(
+                left = left,
+                right = right,
+                granularity = DiffGranularity.CHARACTER
+            )
             // Fast path: common prefix=0, common suffix=0 → entire line highlighted
             assertTrue(leftSpans.all { it.isHighlighted })
             assertTrue(rightSpans.all { it.isHighlighted })

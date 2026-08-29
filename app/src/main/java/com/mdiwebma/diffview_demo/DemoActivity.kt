@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.mdiwebma.diffview.DiffColors
 import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffMode
 
 /**
@@ -29,6 +30,7 @@ class DemoActivity : ComponentActivity() {
     private var textSizeSp = 12.5f
     private var isFoldingEnabled = true
     private var whitespaceMode = com.mdiwebma.diffview.model.WhitespaceIgnoreMode.NONE
+    private var diffGranularity = DiffGranularity.WORD
     private var selectedPresetIndex = 0
 
     private val presetButtons = mutableListOf<Button>()
@@ -37,6 +39,7 @@ class DemoActivity : ComponentActivity() {
     private lateinit var themeButton: Button
     private lateinit var foldingButton: Button
     private lateinit var whitespaceButton: Button
+    private lateinit var granularityButton: Button
 
     private val presets = listOf(
         "Kotlin Sample" to (SAMPLE_ORIGINAL to SAMPLE_MODIFIED),
@@ -177,6 +180,16 @@ class DemoActivity : ComponentActivity() {
             diffView.setWhitespaceIgnoreMode(whitespaceMode)
         }
 
+        granularityButton = createOutlineButton("Unit: Word") {
+            diffGranularity = if (diffGranularity == DiffGranularity.WORD) {
+                DiffGranularity.CHARACTER
+            } else {
+                DiffGranularity.WORD
+            }
+            granularityButton.text = if (diffGranularity == DiffGranularity.WORD) "Unit: Word" else "Unit: Char"
+            diffView.setDiffGranularity(diffGranularity)
+        }
+
         val expandAllButton = createSolidButton("Expand All") {
             diffView.expandAll()
         }
@@ -190,6 +203,7 @@ class DemoActivity : ComponentActivity() {
         row2.addView(fontMinusButton)
         row2.addView(foldingButton)
         row2.addView(whitespaceButton)
+        row2.addView(granularityButton)
         row2.addView(expandAllButton)
         row2.addView(collapseAllButton)
 
@@ -207,6 +221,8 @@ class DemoActivity : ComponentActivity() {
             setTextSize(textSizeSp)
             setDiffMode(currentMode)
             setFoldingEnabled(isFoldingEnabled, contextLines = 3, threshold = 8)
+            setWhitespaceIgnoreMode(whitespaceMode)
+            setDiffGranularity(diffGranularity)
             setHeaderTitles("Original Code", "Modified Code")
             val (orig, mod) = presets[selectedPresetIndex].second
             setContent(orig, mod)

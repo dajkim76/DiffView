@@ -66,6 +66,21 @@ enum class DiffMode {
 /**
  * 인라인 차이점 하이라이트 단위
  */
+enum class DiffGranularity {
+    /**
+     * 단어/토큰 단위 비교 (기본값)
+     */
+    WORD,
+
+    /**
+     * 문자 단위 비교
+     */
+    CHARACTER
+}
+
+/**
+ * 인라인 차이점 하이라이트 단위
+ */
 data class TextSpan(
     val text: String,
     val isHighlighted: Boolean = false

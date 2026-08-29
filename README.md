@@ -18,8 +18,9 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
 3. **컬럼/뷰 단위 가로 스크롤 동기화**:
    - 짧은 줄이든 긴 줄이든 동일한 가상 캔버스 너비를 공유하여, 어느 줄을 잡고 드래그해도 해당 사이드의 모든 줄이 일체형으로 함께 가로 스크롤됨.
    - 좌측과 우측의 가로 스크롤은 서로 독립적으로 동작.
-4. **인라인 Diff (문자/토큰 단위 정밀 하이라이트)**:
-   - 변경된(`MODIFIED`) 라인에 대해 문자/토큰 단위 LCS 알고리즘을 적용하여 실제로 수정된 텍스트 부분만 진하게 강조.
+4. **인라인 Diff (단어/문자 단위 하이라이트 & 비교 단위 변경)**:
+   - 변경된(`MODIFIED`) 라인에 대해 단어(`WORD`, 기본값) 또는 문자(`CHARACTER`) 단위 LCS 알고리즘을 적용하여 실제로 수정된 텍스트 부분만 정밀하게 하이라이트.
+   - `setDiffGranularity(DiffGranularity.WORD)` / `setDiffGranularity(DiffGranularity.CHARACTER)`를 통해 동적으로 비교 단위 전환 가능.
 5. **Git / Android Studio 스타일 Context-aware Folding (미변경 라인 접기)**:
    - 변경점 주변의 앞/뒤 문맥 라인(`contextLines`, 기본 3줄)은 유지하고, 중간의 긴 미변경 구간만 `⋯ N lines unchanged ⋯` 배너로 접기.
    - 배너 클릭 시 개별 블록 펼치기/접기 및 전체 일괄 펼치기/접기 지원.
@@ -141,7 +142,10 @@ diffView.collapseAll()
 // 7. 공백 무시 비교 옵션 설정 (NONE, TRIM_LEADING_TRAILING, COLLAPSE_WHITESPACE, IGNORE_ALL)
 diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.TRIM_LEADING_TRAILING)
 
-// 8. 커스텀 문법 하이라이터 설정
+// 8. 인라인 Diff 비교 단위 설정 (WORD(기본값) vs CHARACTER)
+diffView.setDiffGranularity(DiffGranularity.WORD)
+
+// 9. 커스텀 문법 하이라이터 설정
 diffView.setSyntaxHighlighter(DefaultKotlinSyntaxHighlighter())
 ```
 

@@ -1,5 +1,6 @@
 package com.mdiwebma.diffview.engine
 
+import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLine
 import com.mdiwebma.diffview.model.DiffResult
 import com.mdiwebma.diffview.model.DiffRow
@@ -26,7 +27,8 @@ class KotlinDiffEngine(
         oldText: String,
         newText: String,
         enableInlineDiff: Boolean,
-        whitespaceMode: WhitespaceIgnoreMode
+        whitespaceMode: WhitespaceIgnoreMode,
+        granularity: DiffGranularity
     ): DiffResult = withContext(defaultDispatcher) {
         val originalLines = splitLines(oldText)
         val modifiedLines = splitLines(newText)
@@ -126,7 +128,11 @@ class KotlinDiffEngine(
                                 addRow(leftLine, rightLine, DiffRowType.UNCHANGED)
                             } else {
                                 val (leftSpans, rightSpans) = if (enableInlineDiff) {
-                                    InlineDiffCalculator.calculateInlineDiff(leftText, rightText)
+                                    InlineDiffCalculator.calculateInlineDiff(
+                                        left = leftText,
+                                        right = rightText,
+                                        granularity = granularity
+                                    )
                                 } else {
                                     listOf(TextSpan(leftText, false)) to listOf(TextSpan(rightText, false))
                                 }

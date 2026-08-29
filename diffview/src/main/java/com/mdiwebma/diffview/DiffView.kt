@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mdiwebma.diffview.engine.DiffEngine
 import com.mdiwebma.diffview.engine.KotlinDiffEngine
 import com.mdiwebma.diffview.model.DiffDisplayItem
+import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffResult
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
@@ -48,6 +49,7 @@ class DiffView @JvmOverloads constructor(
     private var diffColors: DiffColors = DiffColors.defaultFor(context)
     private var isDark: Boolean = false
     private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
+    private var diffGranularity: DiffGranularity = DiffGranularity.WORD
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
     private var foldingThreshold: Int = 8
@@ -311,7 +313,8 @@ class DiffView @JvmOverloads constructor(
                         oldText = original,
                         newText = modified,
                         enableInlineDiff = true,
-                        whitespaceMode = whitespaceIgnoreMode
+                        whitespaceMode = whitespaceIgnoreMode,
+                        granularity = diffGranularity
                     )
                 }
                 currentDiffResult = result
@@ -337,6 +340,20 @@ class DiffView @JvmOverloads constructor(
     }
 
     fun getWhitespaceIgnoreMode(): WhitespaceIgnoreMode = whitespaceIgnoreMode
+
+    /**
+     * 인라인 Diff 비교 단위 설정 ([DiffGranularity.WORD] vs [DiffGranularity.CHARACTER]).
+     */
+    fun setDiffGranularity(granularity: DiffGranularity) {
+        if (this.diffGranularity != granularity) {
+            this.diffGranularity = granularity
+            if (currentOriginalText.isNotEmpty() || currentModifiedText.isNotEmpty()) {
+                setContent(currentOriginalText, currentModifiedText)
+            }
+        }
+    }
+
+    fun getDiffGranularity(): DiffGranularity = diffGranularity
 
     /**
      * Monospace 폰트를 기준으로 각 사이드의 최대 라인 너비를 즉시 계산하여
