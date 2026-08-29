@@ -1150,5 +1150,153 @@ data class UserProfile(
         val noIndent = "val x = 10"
         assertEquals("val x = 10", com.mdiwebma.diffview.formatWrappedText(noIndent).toString())
     }
+
+    // =========================================================================
+    // 9. Comprehensive Edge Cases Tests
+    // =========================================================================
+
+    @Test
+    fun testEdgeCase_EmptyStrings() = runTest {
+        // 1) Empty vs Empty
+        val emptyBoth = engine.calculateDiff("", "")
+        assertEquals(0, emptyBoth.rows.size)
+        assertFalse(emptyBoth.hasChanges)
+
+        // 2) Empty vs Non-empty (All Inserted)
+        val emptyToNew = engine.calculateDiff("", "Line1\nLine2")
+        assertEquals(2, emptyToNew.rows.size)
+        assertEquals(2, emptyToNew.addedCount)
+        assertTrue(emptyToNew.rows.all { it.type == DiffRowType.INSERTED })
+        assertNull(emptyToNew.rows[0].left)
+        assertEquals("Line1", emptyToNew.rows[0].right?.content)
+
+        // 3) Non-empty vs Empty (All Deleted)
+        val oldToEmpty = engine.calculateDiff("Line1\nLine2", "")
+        assertEquals(2, oldToEmpty.rows.size)
+        assertEquals(2, oldToEmpty.deletedCount)
+        assertTrue(oldToEmpty.rows.all { it.type == DiffRowType.DELETED })
+        assertEquals("Line1", oldToEmpty.rows[0].left?.content)
+        assertNull(oldToEmpty.rows[0].right)
+    }
+
+    @Test
+    fun testEdgeCase_MixedNewlines() = runTest {
+        // CRLF (\r\n), LF (\n), and legacy CR (\r) mixed in both texts
+        val oldText = "Line1\r\nLine2\nLine3\rLine4"
+        val newText = "Line1\nLine2\r\nLine3\nLine4"
+
+        val result = engine.calculateDiff(oldText, newText)
+        assertEquals(4, result.rows.size)
+        assertTrue(result.rows.all { it.type == DiffRowType.UNCHANGED })
+        assertFalse(result.hasChanges)
+        assertEquals("Line1", result.rows[0].left?.content)
+        assertEquals("Line4", result.rows[3].right?.content)
+    }
+
+    @Test
+    fun testEdgeCase_ConsecutiveEmptyLines() = runTest {
+        val oldText = "\n\n\n" // 4 lines (3 empty line breaks)
+        val newText = "\n\n"   // 3 lines
+
+        val result = engine.calculateDiff(oldText, newText)
+        assertEquals(4, result.rows.size)
+        assertEquals(1, result.deletedCount)
+        assertEquals(3, result.unchangedCount)
+    }
+
+    @Test
+    fun testEdgeCase_EmojiAndSurrogatePairs() = runTest {
+        // 1) Line-level diff with emojis
+        val oldText = "Kotlin 🚀 1.9\nAndroid 🤖 Studio"
+        val newText = "Kotlin 🛸 2.0\nAndroid 🤖 Studio"
+
+        val result = engine.calculateDiff(oldText, newText, enableInlineDiff = true)
+        assertEquals(2, result.rows.size)
+        assertEquals(DiffRowType.MODIFIED, result.rows[0].type)
+        assertEquals(DiffRowType.UNCHANGED, result.rows[1].type)
+
+        // 2) Word-level inline diff with complex emojis / surrogate pairs
+        val (leftWordSpans, rightWordSpans) = InlineDiffCalculator.calculateInlineDiff(
+            left = "Status: 👨‍👩‍👧‍👦 Family, Code: 🚀",
+            right = "Status: 👨‍👩‍👦 Family, Code: 🛸",
+            granularity = DiffGranularity.WORD
+        )
+        // Verify reconstructed text matches original without corrupting surrogate pairs
+        val leftReconstructed = leftWordSpans.joinToString("") { it.text }
+        val rightReconstructed = rightWordSpans.joinToString("") { it.text }
+        assertEquals("Status: 👨‍👩‍👧‍👦 Family, Code: 🚀", leftReconstructed)
+        assertEquals("Status: 👨‍👩‍👦 Family, Code: 🛸", rightReconstructed)
+
+        // Verify highlight spans exist
+        assertTrue(leftWordSpans.any { it.isHighlighted })
+        assertTrue(rightWordSpans.any { it.isHighlighted })
+
+        // 3) Character-level inline diff with multi-byte Korean and Emojis
+        val (leftCharSpans, rightCharSpans) = InlineDiffCalculator.calculateInlineDiff(
+            left = "가나다🚀라바",
+            right = "가나다🛸라바",
+            granularity = DiffGranularity.CHARACTER
+        )
+        assertEquals("가나다🚀라바", leftCharSpans.joinToString("") { it.text })
+        assertEquals("가나다🛸라바", rightCharSpans.joinToString("") { it.text })
+    }
+
+    @Test
+    fun testEdgeCase_VeryLongSingleLine_DiffAndFolding() = runTest {
+        // Very long line (5000 chars)
+        val prefix = "val massiveString = \"" + "A".repeat(2500)
+        val oldMiddle = "OLD_TOKEN"
+        val newMiddle = "NEW_TOKEN"
+        val suffix = "B".repeat(2500) + "\""
+
+        val oldLongLine = prefix + oldMiddle + suffix
+        val newLongLine = prefix + newMiddle + suffix
+
+        val (leftSpans, rightSpans) = InlineDiffCalculator.calculateInlineDiff(
+            left = oldLongLine,
+            right = newLongLine,
+            granularity = DiffGranularity.WORD
+        )
+
+        assertEquals(oldLongLine, leftSpans.joinToString("") { it.text })
+        assertEquals(newLongLine, rightSpans.joinToString("") { it.text })
+        assertTrue(leftSpans.any { it.isHighlighted && it.text.contains("OLD_TOKEN") })
+        assertTrue(rightSpans.any { it.isHighlighted && it.text.contains("NEW_TOKEN") })
+
+        // Folding test with 20 long identical lines
+        val lines = (1..20).map { "val line$it = \"" + "X".repeat(1000) + "\"" }
+        val oldText = (lines + listOf("val diff = 1")).joinToString("\n")
+        val newText = (lines + listOf("val diff = 2")).joinToString("\n")
+
+        val diffResult = engine.calculateDiff(oldText, newText)
+        val displayItems = FoldingManager.createDisplayItems(
+            diffResult = diffResult,
+            isFoldingEnabled = true,
+            contextLines = 3,
+            foldingThreshold = 8
+        )
+
+        // Context lines = 3, so first 17 lines should be folded into 1 header
+        assertTrue(displayItems.any { it is DiffDisplayItem.FoldedHeader })
+        val foldedHeader = displayItems.first { it is DiffDisplayItem.FoldedHeader } as DiffDisplayItem.FoldedHeader
+        assertEquals(17, foldedHeader.lineCount)
+    }
+
+    @Test
+    fun testEdgeCase_SpecialCharactersAndRtlScripts() = runTest {
+        // RTL (Arabic, Hebrew) and control characters
+        val oldArabic = "مرحبا بالعالم 123\nשָׁלוֹם עוֹלָם\nTab\tSeparated\tValues"
+        val newArabic = "مرحبا بالكون 123\nשָׁלוֹם עוֹלָם\nTab\tModified\tValues"
+
+        val result = engine.calculateDiff(oldArabic, newArabic, enableInlineDiff = true)
+        assertEquals(3, result.rows.size)
+        assertEquals(DiffRowType.MODIFIED, result.rows[0].type)
+        assertEquals(DiffRowType.UNCHANGED, result.rows[1].type)
+        assertEquals(DiffRowType.MODIFIED, result.rows[2].type)
+
+        assertEquals("שָׁלוֹם עוֹלָם", result.rows[1].left?.content)
+        assertEquals("שָׁלוֹם עוֹלָם", result.rows[1].right?.content)
+    }
 }
+
 

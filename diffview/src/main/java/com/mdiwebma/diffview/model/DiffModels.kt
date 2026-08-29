@@ -170,4 +170,7 @@ data class DiffResult(
     val deletedCount: Int = 0,
     val modifiedCount: Int = 0,
     val unchangedCount: Int = 0
-)
+) {
+    val totalDiffCount: Int get() = addedCount + deletedCount + modifiedCount
+    val hasChanges: Boolean get() = totalDiffCount > 0
+}
