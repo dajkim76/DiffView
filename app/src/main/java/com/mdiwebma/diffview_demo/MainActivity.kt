@@ -13,10 +13,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
-import com.mdiwebma.diffview.KotlinSyntaxHighlighter
-import com.mdiwebma.diffview.model.DiffGranularity
-import com.mdiwebma.diffview.model.DiffMode
-import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -72,19 +68,19 @@ class MainActivity : AppCompatActivity() {
         diffView = findViewById(R.id.diffview)
 
         // Basic DiffView configuration
-        diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
-        diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
-        diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.NONE)
-        diffView.setDiffGranularity(DiffGranularity.WORD)
-        diffView.setLineWrap(false)
-        diffView.setTextSize(13f)
-        diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
+//        diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
+//        diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
+//        diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.NONE)
+//        diffView.setDiffGranularity(DiffGranularity.WORD)
+//        diffView.setLineWrap(true)
+//        diffView.setTextSize(13f)
+//        diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
         //diffView.setShowDiffSymbols(false)
         //diffView.setGutterWidthDp(55)
         //diffView.setTextIsSelectable(true)
 
         // Show initial sample code
-        diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
+        //diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
         diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
 //        diffView.expandAll()
 

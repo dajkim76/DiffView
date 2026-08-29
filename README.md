@@ -53,6 +53,7 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot2](screenshot2.jpg)
 ![Screenshot3](screenshot3.jpg)
+![Screenshot4](screenshot4.jpg)
 
 ---
 
@@ -186,7 +187,7 @@ diffView.setDiffLabels(
 // 12. 줄 번호 옆 변경 기호(- / +) 표시 설정 (기본값: true)
 diffView.setShowDiffSymbols(true)
 
-// 13. 줄 번호(Gutter) 영역 너비 조절 (DP 단위, 기본값: 48)
+// 13. 줄 번호(Gutter) 영역 너비 조절 (DP 단위, 기본값: 42)
 diffView.setGutterWidthDp(50)
 
 // 14. 텍스트 드래그 선택 및 복사 활성화 여부 (기본값: false)

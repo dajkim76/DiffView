@@ -89,7 +89,7 @@ class DiffViewAdapter(
             notifyDataSetChanged()
         }
 
-    var gutterWidthDp: Int = 48
+    var gutterWidthDp: Int = 42
         set(value) {
             if (field != value) {
                 field = value
@@ -199,12 +199,14 @@ class DiffRowViewHolder(
     private val leftContainer: LinearLayout,
     private val leftGutterText: TextView,
     private val leftGutterDivider: View,
+    private val leftPrefixText: TextView,
     private val leftScrollView: SyncHorizontalScrollView,
     private val leftCodeText: TextView,
     private val centerDivider: View,
     private val rightContainer: LinearLayout,
     private val rightGutterText: TextView,
     private val rightGutterDivider: View,
+    private val rightPrefixText: TextView,
     private val rightScrollView: SyncHorizontalScrollView,
     private val rightCodeText: TextView,
     private val leftSyncGroup: HorizontalScrollSyncGroup,
@@ -257,22 +259,32 @@ class DiffRowViewHolder(
         }
 
         val gutterGravity = if (isLineWrap) Gravity.END or Gravity.TOP else Gravity.END or Gravity.CENTER_VERTICAL
+        val prefixGravity = if (isLineWrap) Gravity.CENTER_HORIZONTAL or Gravity.TOP else Gravity.CENTER
         leftGutterText.gravity = gutterGravity
         rightGutterText.gravity = gutterGravity
+        leftPrefixText.gravity = prefixGravity
+        rightPrefixText.gravity = prefixGravity
 
         leftGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
-        leftCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         rightGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        leftPrefixText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        rightPrefixText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        leftCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         rightCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
 
-        centerDivider.setBackgroundColor(colors.dividerColor)
         leftGutterDivider.setBackgroundColor(colors.dividerColor)
+        centerDivider.setBackgroundColor(colors.dividerColor)
         rightGutterDivider.setBackgroundColor(colors.dividerColor)
 
         val leftBg = when (row.type) {
             DiffRowType.DELETED -> colors.deletedBackground
             DiffRowType.MODIFIED -> colors.modifiedBackground
             else -> colors.unchangedBackground
+        }
+        val leftGutterBg = when (row.type) {
+            DiffRowType.DELETED -> colors.deletedBackground
+            DiffRowType.MODIFIED -> colors.modifiedBackground
+            else -> colors.lineNumberBackground
         }
         val leftHighlightBg = when (row.type) {
             DiffRowType.DELETED -> colors.deletedHighlight
@@ -285,35 +297,28 @@ class DiffRowViewHolder(
             DiffRowType.MODIFIED -> colors.modifiedBackground
             else -> colors.unchangedBackground
         }
+        val rightGutterBg = when (row.type) {
+            DiffRowType.INSERTED -> colors.addedBackground
+            DiffRowType.MODIFIED -> colors.modifiedBackground
+            else -> colors.lineNumberBackground
+        }
         val rightHighlightBg = when (row.type) {
             DiffRowType.INSERTED -> colors.addedHighlight
             DiffRowType.MODIFIED -> colors.modifiedHighlight
             else -> Color.TRANSPARENT
         }
 
-        val leftGutterBg = when (row.type) {
-            DiffRowType.DELETED -> colors.deletedBackground
-            DiffRowType.MODIFIED -> colors.modifiedBackground
-            else -> colors.lineNumberBackground
-        }
-
-        val rightGutterBg = when (row.type) {
-            DiffRowType.INSERTED -> colors.addedBackground
-            DiffRowType.MODIFIED -> colors.modifiedBackground
-            else -> colors.lineNumberBackground
-        }
-
-        val leftSymbol = if (showDiffSymbols) {
+        val leftSymbol = if (row.left != null) {
             when (row.type) {
-                DiffRowType.DELETED, DiffRowType.MODIFIED -> " -"
-                else -> "  "
+                DiffRowType.DELETED, DiffRowType.MODIFIED -> "-"
+                else -> " "
             }
         } else ""
 
-        val rightSymbol = if (showDiffSymbols) {
+        val rightSymbol = if (row.right != null) {
             when (row.type) {
-                DiffRowType.INSERTED, DiffRowType.MODIFIED -> " +"
-                else -> "  "
+                DiffRowType.INSERTED, DiffRowType.MODIFIED -> "+"
+                else -> " "
             }
         } else ""
 
@@ -321,6 +326,7 @@ class DiffRowViewHolder(
             line = row.left,
             container = leftContainer,
             gutterText = leftGutterText,
+            prefixText = leftPrefixText,
             codeText = leftCodeText,
             bgColor = leftBg,
             gutterBgColor = leftGutterBg,
@@ -329,6 +335,7 @@ class DiffRowViewHolder(
             highlighter = highlighter,
             isDark = isDark,
             isLineWrap = isLineWrap,
+            showDiffSymbols = showDiffSymbols,
             sideLabel = "Original",
             symbol = leftSymbol
         )
@@ -337,6 +344,7 @@ class DiffRowViewHolder(
             line = row.right,
             container = rightContainer,
             gutterText = rightGutterText,
+            prefixText = rightPrefixText,
             codeText = rightCodeText,
             bgColor = rightBg,
             gutterBgColor = rightGutterBg,
@@ -345,6 +353,7 @@ class DiffRowViewHolder(
             highlighter = highlighter,
             isDark = isDark,
             isLineWrap = isLineWrap,
+            showDiffSymbols = showDiffSymbols,
             sideLabel = "Modified",
             symbol = rightSymbol
         )
@@ -354,6 +363,7 @@ class DiffRowViewHolder(
         line: DiffLine?,
         container: LinearLayout,
         gutterText: TextView,
+        prefixText: TextView,
         codeText: TextView,
         bgColor: Int,
         gutterBgColor: Int,
@@ -362,16 +372,38 @@ class DiffRowViewHolder(
         highlighter: SyntaxHighlighter,
         isDark: Boolean,
         isLineWrap: Boolean,
+        showDiffSymbols: Boolean,
         sideLabel: String,
         symbol: String = ""
     ) {
+        val density = container.context.resources.displayMetrics.density
+        val padHorizontalPx = (6 * density).toInt()
+        val padVerticalPx = (3 * density).toInt()
+        val codePadLeft = if (showDiffSymbols) (2 * density).toInt() else padHorizontalPx
+        codeText.setPadding(codePadLeft, padVerticalPx, padHorizontalPx, padVerticalPx)
+
+        if (showDiffSymbols) {
+            prefixText.visibility = View.VISIBLE
+            prefixText.text = symbol
+            prefixText.setTextColor(
+                when (symbol) {
+                    "-" -> Color.parseColor("#E53935")
+                    "+" -> Color.parseColor("#4CAF50")
+                    else -> colors.lineNumberTextColor
+                }
+            )
+        } else {
+            prefixText.visibility = View.GONE
+            prefixText.text = ""
+        }
+
         if (line != null) {
             container.setBackgroundColor(bgColor)
             gutterText.setBackgroundColor(gutterBgColor)
+            prefixText.setBackgroundColor(bgColor)
             gutterText.setTextColor(colors.lineNumberTextColor)
             codeText.setTextColor(colors.codeTextColor)
-            val lineNum = line.lineNumber?.toString() ?: ""
-            gutterText.text = if (lineNum.isNotEmpty()) "$lineNum$symbol" else ""
+            gutterText.text = line.lineNumber?.toString() ?: ""
             val highlighted = highlighter.highlight(
                 spans = line.spans,
                 defaultTextColor = colors.codeTextColor,
@@ -383,6 +415,7 @@ class DiffRowViewHolder(
         } else {
             container.setBackgroundColor(colors.noneTextBackground)
             gutterText.setBackgroundColor(colors.noneTextBackground)
+            prefixText.setBackgroundColor(colors.noneTextBackground)
             gutterText.setTextColor(colors.lineNumberTextColor)
             codeText.setTextColor(colors.codeTextColor)
             gutterText.text = ""
@@ -403,6 +436,7 @@ class DiffRowViewHolder(
             val dividerPx = (1 * density).toInt().coerceAtLeast(1)
             val padHorizontalPx = (6 * density).toInt()
             val padVerticalPx = (3 * density).toInt()
+            val prefixPx = (16 * density).toInt()
 
             val rootLayout = LinearLayout(context).apply {
                 layoutParams = RecyclerView.LayoutParams(
@@ -429,6 +463,12 @@ class DiffRowViewHolder(
             val leftGutterDivider = View(context).apply {
                 layoutParams = LinearLayout.LayoutParams(dividerPx, ViewGroup.LayoutParams.MATCH_PARENT)
             }
+            val leftPrefixText = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(prefixPx, ViewGroup.LayoutParams.MATCH_PARENT)
+                gravity = Gravity.CENTER
+                typeface = Typeface.MONOSPACE
+                setPadding(0, padVerticalPx, 0, padVerticalPx)
+            }
             val leftCodeText = TextView(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -448,6 +488,7 @@ class DiffRowViewHolder(
             }
             leftContainer.addView(leftGutterText)
             leftContainer.addView(leftGutterDivider)
+            leftContainer.addView(leftPrefixText)
             leftContainer.addView(leftScrollView)
 
             val centerDivider = View(context).apply {
@@ -469,6 +510,12 @@ class DiffRowViewHolder(
             val rightGutterDivider = View(context).apply {
                 layoutParams = LinearLayout.LayoutParams(dividerPx, ViewGroup.LayoutParams.MATCH_PARENT)
             }
+            val rightPrefixText = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(prefixPx, ViewGroup.LayoutParams.MATCH_PARENT)
+                gravity = Gravity.CENTER
+                typeface = Typeface.MONOSPACE
+                setPadding(0, padVerticalPx, 0, padVerticalPx)
+            }
             val rightCodeText = TextView(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -488,6 +535,7 @@ class DiffRowViewHolder(
             }
             rightContainer.addView(rightGutterText)
             rightContainer.addView(rightGutterDivider)
+            rightContainer.addView(rightPrefixText)
             rightContainer.addView(rightScrollView)
 
             rootLayout.addView(leftContainer)
@@ -499,12 +547,14 @@ class DiffRowViewHolder(
                 leftContainer = leftContainer,
                 leftGutterText = leftGutterText,
                 leftGutterDivider = leftGutterDivider,
+                leftPrefixText = leftPrefixText,
                 leftScrollView = leftScrollView,
                 leftCodeText = leftCodeText,
                 centerDivider = centerDivider,
                 rightContainer = rightContainer,
                 rightGutterText = rightGutterText,
                 rightGutterDivider = rightGutterDivider,
+                rightPrefixText = rightPrefixText,
                 rightScrollView = rightScrollView,
                 rightCodeText = rightCodeText,
                 leftSyncGroup = leftSyncGroup,
