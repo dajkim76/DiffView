@@ -1,55 +1,56 @@
 # DiffView
 
-Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffView** Android 라이브러리입니다.
+An Android Studio Diff Editor styled **Side-by-Side (Split) & Unified DiffView** Android library.
 
 [![](https://jitpack.io/v/dajkim76/DiffView.svg)](https://jitpack.io/#dajkim76/DiffView)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ---
 
-## 🌟 주요 기능
-0. Powered by A.I 
-   - 대부분의 코드는 **Gemini 3.7 Flash** 로 생성했습니다. 문제가 있다면 코드를 clone에서 A.I를 통해서 개선하세요. 이 문서의 초기 버전도 A.I로 작성됬습니다. 코드의 많은 부분은 충분한 코드 리뷰 없이 개발자 테스트만 거치고 commit했으므로 사용 적에 따라 테스트가 더 필요할 수있습니다.
-1. **2가지 Diff 모드 지원**:
-   - **Side-by-Side (Split) 모드**: 좌(Original) / 우(Modified) 2열 나란히 표시하며 좌우 라인을 완벽 정렬.
-   - **Unified (통합 위아래) 모드**: 하나의 뷰 안에서 변경 사항을 위아래 단일 열(`+` / `-`)로 표시.
-2. **세로 스크롤 완전 동기화**:
-   - 단일 `RecyclerView` 기반 뷰 재활용 구조로 좌우 세로 스크롤이 1px의 오차 없이 완벽히 동기화되며, 수만 줄의 대용량 파일도 부드럽게 렌더링.
-3. **컬럼/뷰 단위 가로 스크롤 동기화**:
-   - 짧은 줄이든 긴 줄이든 동일한 가상 캔버스 너비를 공유하여, 어느 줄을 잡고 드래그해도 해당 사이드의 모든 줄이 일체형으로 함께 가로 스크롤됨.
-   - 좌측과 우측의 가로 스크롤은 서로 독립적으로 동작.
-4. **인라인 Diff (단어/문자 단위 하이라이트 & 비교 단위 변경)**:
-   - 변경된(`MODIFIED`) 라인에 대해 단어(`WORD`, 기본값) 또는 문자(`CHARACTER`) 단위 LCS 알고리즘을 적용하여 실제로 수정된 텍스트 부분만 정밀하게 하이라이트.
-   - `setDiffGranularity(DiffGranularity.WORD)` / `setDiffGranularity(DiffGranularity.CHARACTER)`를 통해 동적으로 비교 단위 전환 가능.
-5. **Git / Android Studio 스타일 Context-aware Folding (미변경 라인 접기)**:
-   - 변경점 주변의 앞/뒤 문맥 라인(`contextLines`, 기본 3줄)은 유지하고, 중간의 긴 미변경 구간만 `⋯ N lines unchanged ⋯` 배너로 접기.
-   - 배너 클릭 시 개별 블록 펼치기/접기 및 전체 일괄 펼치기/접기 지원.
-6. **4가지 공백 무시 비교 옵션 (Whitespace Ignore Mode)**:
-   - `NONE`: 공백 엄격 비교 (기본값)
-   - `TRIM_LEADING_TRAILING`: 라인 앞/뒤 들여쓰기 공백 무시
-   - `COLLAPSE_WHITESPACE`: 연속된 공백 개수 무시
-   - `IGNORE_ALL`: 모든 공백 문자 무시
-7. **Line Wrap (자동 줄 바꿈) 지원**:
-   - `setLineWrap(true)`를 통해 긴 코드 라인을 가로 스크롤 대신 화면 너비에 맞춰 아래로 자동 줄 바꿈 가능.
-8. **다양한 언어의 Syntax Highlighting & Dark Theme 지원**:
-   - 기본값은 순수 텍스트(`PlainTextSyntaxHighlighter`)이며, 주요 프로그래밍 언어의 하이라이터를 기본 내장:
+## 🌟 Key Features
+
+0. **Powered by AI**:
+   - Most of the codebase was generated with **Gemini 3.7 Flash**. If you encounter issues, feel free to clone the repository and improve the code using AI. The initial documentation was also generated with AI.
+1. **2 Diff Modes Supported**:
+   - **Side-by-Side (Split) Mode**: Displays Original (left) and Modified (right) in 2 parallel columns with synchronized line alignment.
+   - **Unified Mode**: Displays changes in a single vertical stream (`+` / `-`).
+2. **Synchronized Vertical Scrolling**:
+   - Built on a single `RecyclerView` view-recycling architecture, ensuring 100% synchronized vertical scrolling without 1px misalignment and smooth rendering even for thousands of lines.
+3. **Column-wise Synchronized Horizontal Scrolling**:
+   - Short lines and long lines share the same virtual canvas width. Dragging any line horizontally scrolls all lines on that side together seamlessly.
+   - Left and right sides scroll horizontally independently.
+4. **Inline Diff (Word / Character Level Highlights & Configurable Granularity)**:
+   - Applies LCS algorithm on modified lines to highlight exact changed parts by words (`DiffGranularity.WORD`, default) or characters (`DiffGranularity.CHARACTER`).
+   - Dynamically switch granularity via `setDiffGranularity(...)`.
+5. **Git / Android Studio Style Context-aware Folding**:
+   - Preserves surrounding context lines (`contextLines`, default: 3) around changes, while collapsing long unchanged blocks into `⋯ N lines unchanged ⋯` banners.
+   - Supports individual block expanding/collapsing on banner click, as well as `expandAll()` / `collapseAll()`.
+6. **4 Whitespace Ignore Modes**:
+   - `NONE`: Strict whitespace comparison (default)
+   - `TRIM_LEADING_TRAILING`: Ignore leading and trailing indentations
+   - `COLLAPSE_WHITESPACE`: Ignore consecutive whitespace count differences
+   - `IGNORE_ALL`: Ignore all whitespace characters
+7. **Line Wrap Support**:
+   - Enable `setLineWrap(true)` to wrap long lines to fit the screen width instead of horizontal scrolling.
+8. **Multi-language Syntax Highlighting & Dark Theme**:
+   - Plain text by default (`PlainTextSyntaxHighlighter`), with built-in highlighters for major programming languages:
      - Kotlin (`KotlinSyntaxHighlighter`)
      - Java (`JavaSyntaxHighlighter`)
      - JavaScript / TypeScript (`JavaScriptSyntaxHighlighter`)
      - Python (`PythonSyntaxHighlighter`)
      - C / C++ (`CppSyntaxHighlighter`)
      - C# (`CSharpSyntaxHighlighter`)
-     - 파일명/확장자 기반 자동 선택: `SyntaxHighlighter.forFileName("main.py")` 또는 `SyntaxHighlighter.forExtension("js")`
-9. **UI 문자열/라벨 커스터마이징 & 다국어 지원**:
-   - `DiffLabels` 설정 클래스 또는 `setDiffLabels()`, `setHeaderTitles()`, `setUnifiedHeaderTitle()` API를 통해 헤더, 접기 배너 포맷 등 모든 UI 텍스트 커스텀 가능.
-   - `strings.xml` 및 한국어 `values-ko/strings.xml` 리소스 기본 내장 (앱에서 오버라이드 지원).
-10. **줄 번호 옆 변경 기호(`-` / `+`) 표시**:
-    - `setShowDiffSymbols(true)`를 통해 Side-by-Side 모드에서 각 라인의 변경 상태(`-` 삭제 / `+` 추가)를 줄 번호 옆에 함께 표시.
-11. **줄 번호(Gutter) 너비 조절**:
-    - `setGutterWidthDp(50)`을 통해 줄 번호 영역의 너비를 원하는 크기로 자유롭게 조정.
-12. **텍스트 선택 및 복사 제어**:
-    - `setTextIsSelectable(true)`를 통해 코드 텍스트 드래그 선택 및 복사 기능 활성화/비활성화 (기본값: `false`).
-13. Screenshots
+     - Auto-detection by filename or extension: `SyntaxHighlighter.forFileName("main.py")` or `SyntaxHighlighter.forExtension("js")`
+9. **Customizable UI Labels & Multi-language Support**:
+   - Easily customize all UI strings (headers, folding banner formats) via `DiffLabels` or `setDiffLabels()`, `setHeaderTitles()`, `setUnifiedHeaderTitle()`.
+   - Built-in string resources in English and Korean (`values-ko/strings.xml`).
+10. **Diff Change Symbols (`-` / `+`)**:
+    - `setShowDiffSymbols(true)` displays `-` (deleted) and `+` (added) indicators in front of code lines in Side-by-Side mode (default: `true`).
+11. **Adjustable Gutter (Line Number) Width**:
+    - `setGutterWidthDp(50)` allows adjusting the line number gutter width (default: `42dp`).
+12. **Text Selection & Copying**:
+    - Enable text selection and copying via `setTextIsSelectable(true)` (default: `false`).
+13. **Screenshots**
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot2](screenshot2.jpg)
 ![Screenshot3](screenshot3.jpg)
@@ -57,9 +58,9 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
 
 ---
 
-## 📦 JitPack 라이브러리 설치 방법
+## 📦 Installation (JitPack)
 
-### 1. `settings.gradle.kts`에 JitPack 저장소 추가
+### 1. Add JitPack repository in `settings.gradle.kts`
 
 ```kotlin
 dependencyResolutionManagement {
@@ -72,40 +73,40 @@ dependencyResolutionManagement {
 }
 ```
 
-### 2. `build.gradle.kts` (Module :app)에 라이브러리 추가
+### 2. Add dependency in `build.gradle.kts` (Module :app)
 
 ```kotlin
 dependencies {
-    implementation("com.github.dajkim76:DiffView:1.0.3")
+    implementation("com.github.dajkim76:DiffView:1.0.4")
 }
 ```
 
 ---
 
-## 📁 프로젝트 구조
+## 📁 Project Structure
 
 ```text
 DiffView/
-├── diffview/                     # 📦 핵심 Android Library 모듈 (배포 대상)
+├── diffview/                     # 📦 Core Android Library Module (Distribution Target)
 │   └── src/main/java/com/mdiwebma/diffview/
-│       ├── DiffView.kt                   # 최종 커스텀 FrameLayout 뷰 컴포넌트
-│       ├── DiffViewAdapter.kt            # Side-by-Side & Unified 지원 RecyclerView 어댑터
-│       ├── DiffColors.kt                 # Android Studio Light / Dark 색상 테마 팔레트
-│       ├── DiffLabels.kt                 # UI 텍스트/라벨 커스터마이징 및 다국어 지원 모델
-│       ├── SyntaxHighlighter.kt          # 문법 하이라이팅 인터페이스 및 Kotlin 구현체
-│       ├── FoldingManager.kt             # Git/AS 스타일 문맥 기반 라인 접기 매니저
-│       ├── SyncHorizontalScrollView.kt   # 컬럼 단위 가로 스크롤 동기화 ScrollView & Manager
-│       ├── model/DiffModels.kt           # DiffRow, DiffLine, DiffMode, WhitespaceIgnoreMode 등 모델
+│       ├── DiffView.kt                   # Main custom FrameLayout DiffView component
+│       ├── DiffViewAdapter.kt            # Side-by-Side & Unified RecyclerView Adapter
+│       ├── DiffColors.kt                 # Android Studio Light / Dark color theme palette
+│       ├── DiffLabels.kt                 # UI text/labels customization & localization model
+│       ├── SyntaxHighlighter.kt          # Syntax highlighting interface and implementations
+│       ├── FoldingManager.kt             # Git/AS style context-aware line folding manager
+│       ├── SyncHorizontalScrollView.kt   # Column-wise synchronized horizontal scroll view
+│       ├── model/DiffModels.kt           # DiffRow, DiffLine, DiffMode, WhitespaceIgnoreMode models
 │       └── engine/                       # DiffEngine, KotlinDiffEngine, InlineDiffCalculator
 │
-└── app/                          # 📱 데모 / 샘플 애플리케이션 (Android View & Compose 데모)
+└── app/                          # 📱 Demo / Sample Application (Android View & Compose Demos)
 ```
 
 ---
 
-## 🚀 기본 사용법
+## 🚀 Basic Usage
 
-### 1. XML 레이아웃에 추가
+### 1. Add to XML Layout
 
 ```xml
 <com.mdiwebma.diffview.DiffView
@@ -114,18 +115,20 @@ DiffView/
     android:layout_height="match_parent" />
 ```
 
-### 2. Kotlin 코드에서 제어
+### 2. Control in Kotlin Code
 
 ```kotlin
 import com.mdiwebma.diffview.KotlinSyntaxHighlighter
 import com.mdiwebma.diffview.DiffColors
+import com.mdiwebma.diffview.DiffLabels
 import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 
 val diffView = findViewById<DiffView>(R.id.diffView)
 
-// 1. 원본 및 수정본 소스 코드 설정 (비동기 계산 및 렌더링)
+// 1. Set original and modified source codes (Async computation & rendering)
 val originalCode = """
     fun calculate(x: Int): Int {
         return x * 2
@@ -140,33 +143,33 @@ val modifiedCode = """
 
 diffView.setContent(original = originalCode, modified = modifiedCode)
 
-// 2. Diff 모드 설정 (기본값: SIDE_BY_SIDE)
-diffView.setDiffMode(DiffMode.SIDE_BY_SIDE) // 좌우 2열 분할 모드
-// diffView.setDiffMode(DiffMode.UNIFIED)    // 위아래 단일 열 통합 모드
+// 2. Set Diff mode (default: SIDE_BY_SIDE)
+diffView.setDiffMode(DiffMode.SIDE_BY_SIDE) // 2-column split mode
+// diffView.setDiffMode(DiffMode.UNIFIED)    // 1-column unified inline mode
 
-// 3. 테마 설정 (Light / Dark), Default(Auto)
+// 3. Set Color Theme (Light / Dark), Default is Auto
 diffView.setDiffColors(DiffColors.Dark)
 
-// 4. 글꼴 크기 변경 (SP 단위)
+// 4. Set font size (SP unit)
 diffView.setTextSize(13f)
 
-// 5. 미변경 라인 접기 설정 (문맥 라인 수, 접기 임계치)
+// 5. Configure context-aware folding (enabled, context lines, threshold)
 diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
 
-// 6. 전체 펼치기 / 접기
+// 6. Expand / Collapse all folded blocks
 diffView.expandAll()
 diffView.collapseAll()
 
-// 7. 공백 무시 비교 옵션 설정 (NONE, TRIM_LEADING_TRAILING, COLLAPSE_WHITESPACE, IGNORE_ALL)
+// 7. Configure whitespace ignore mode (NONE, TRIM_LEADING_TRAILING, COLLAPSE_WHITESPACE, IGNORE_ALL)
 diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.TRIM_LEADING_TRAILING)
 
-// 8. 인라인 Diff 비교 단위 설정 (WORD(기본값) vs CHARACTER)
+// 8. Configure inline diff granularity (WORD (default) vs CHARACTER)
 diffView.setDiffGranularity(DiffGranularity.WORD)
 
-// 9. 자동 줄 바꿈 (Line Wrap) 설정 (기본값: false - 단일 행 가로 스크롤)
+// 9. Enable line wrapping (default: false - horizontal scrolling)
 diffView.setLineWrap(false)
 
-// 10. 문법 하이라이터 설정 (언어별 하이라이터 또는 파일명 기반 자동 감지)
+// 10. Configure syntax highlighter (language-specific or auto-detected by filename)
 diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
 // diffView.setSyntaxHighlighter(SyntaxHighlighter.forFileName("App.js"))
 // diffView.setSyntaxHighlighter(PythonSyntaxHighlighter())
@@ -174,7 +177,7 @@ diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
 // diffView.setSyntaxHighlighter(CppSyntaxHighlighter())
 // diffView.setSyntaxHighlighter(CSharpSyntaxHighlighter())
 
-// 11. UI 라벨/문자열 커스터마이징 (또는 strings.xml 오버라이드 지원)
+// 11. Customize UI labels and formatters (or override strings.xml)
 diffView.setDiffLabels(
     DiffLabels(
         originalHeader = "Before",
@@ -184,13 +187,13 @@ diffView.setDiffLabels(
     )
 )
 
-// 12. 줄 번호 옆 변경 기호(- / +) 표시 설정 (기본값: true)
+// 12. Show diff change symbols (+ / -) next to lines (default: true)
 diffView.setShowDiffSymbols(true)
 
-// 13. 줄 번호(Gutter) 영역 너비 조절 (DP 단위, 기본값: 42)
-diffView.setGutterWidthDp(50)
+// 13. Adjust line number gutter width (DP unit, default: 42dp)
+diffView.setGutterWidthDp(48)
 
-// 14. 텍스트 드래그 선택 및 복사 활성화 여부 (기본값: false)
+// 14. Enable text selection and copying (default: false)
 diffView.setTextIsSelectable(true)
 ```
 
