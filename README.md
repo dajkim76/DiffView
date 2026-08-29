@@ -63,7 +63,7 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.github.dajkim76:DiffView:1.0.1")
+    implementation("com.github.dajkim76:DiffView:1.0.2")
 }
 ```
 
@@ -78,6 +78,7 @@ DiffView/
 │       ├── DiffView.kt                   # 최종 커스텀 FrameLayout 뷰 컴포넌트
 │       ├── DiffViewAdapter.kt            # Side-by-Side & Unified 지원 RecyclerView 어댑터
 │       ├── DiffColors.kt                 # Android Studio Light / Dark 색상 테마 팔레트
+│       ├── DiffLabels.kt                 # UI 텍스트/라벨 커스터마이징 및 다국어 지원 모델
 │       ├── SyntaxHighlighter.kt          # 문법 하이라이팅 인터페이스 및 Kotlin 구현체
 │       ├── FoldingManager.kt             # Git/AS 스타일 문맥 기반 라인 접기 매니저
 │       ├── SyncHorizontalScrollView.kt   # 컬럼 단위 가로 스크롤 동기화 ScrollView & Manager
