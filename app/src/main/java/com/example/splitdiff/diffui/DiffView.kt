@@ -2,6 +2,7 @@ package com.example.splitdiff.diffui
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -25,6 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.max
 
 /**
  * Side-by-Side (Split) 및 Unified (통합 단일 열) 모드를 모두 지원하는
@@ -48,6 +50,8 @@ class DiffView @JvmOverloads constructor(
     private var foldingThreshold: Int = 5
     private val expandedFoldIds = mutableSetOf<Long>()
 
+    private var currentOriginalText: String = ""
+    private var currentModifiedText: String = ""
     private var currentDiffResult: DiffResult? = null
     private var diffJob: Job? = null
 
@@ -261,7 +265,9 @@ class DiffView @JvmOverloads constructor(
     fun setDiffMode(mode: DiffMode) {
         if (this.diffMode != mode) {
             this.diffMode = mode
+            adapter.resetScrollGroups()
             updateHeaderMode()
+            estimateAndPreloadContentWidths()
             updateDisplayItems()
         }
     }
@@ -276,7 +282,7 @@ class DiffView @JvmOverloads constructor(
             unifiedHeaderBox.visibility = GONE
         } else {
             leftHeaderBox.visibility = GONE
-            centerHeaderDivider.visibility = GONE
+            centerHeaderDivider.visibility = VISIBLE
             rightHeaderBox.visibility = GONE
             unifiedHeaderBox.visibility = VISIBLE
         }
@@ -286,8 +292,13 @@ class DiffView @JvmOverloads constructor(
      * 원본과 수정본 소스코드를 설정하고 비동기로 Diff를 계산합니다.
      */
     fun setContent(original: String, modified: String) {
+        currentOriginalText = original
+        currentModifiedText = modified
         diffJob?.cancel()
         expandedFoldIds.clear()
+        adapter.resetScrollGroups()
+        estimateAndPreloadContentWidths()
+        recyclerView.scrollToPosition(0)
         progressBar.visibility = VISIBLE
 
         diffJob = viewScope.launch {
@@ -297,11 +308,41 @@ class DiffView @JvmOverloads constructor(
                 }
                 currentDiffResult = result
                 updateStats(result)
+                estimateAndPreloadContentWidths()
                 updateDisplayItems()
             } finally {
                 progressBar.visibility = GONE
             }
         }
+    }
+
+    /**
+     * Monospace 폰트를 기준으로 각 사이드의 최대 라인 너비를 즉시 계산하여
+     * 첫 번째 라인부터 완벽하게 드래그 가로 스크롤이 작동하도록 사전 설정합니다.
+     */
+    private fun estimateAndPreloadContentWidths() {
+        val density = context.resources.displayMetrics.density
+        val paint = Paint().apply {
+            typeface = Typeface.MONOSPACE
+            textSize = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                adapter.textSizeSp,
+                context.resources.displayMetrics
+            )
+        }
+        val charWidth = paint.measureText("M")
+        val paddingPx = (16 * density).toInt()
+
+        val origMaxLen = currentOriginalText.lineSequence().maxOfOrNull { it.length } ?: 0
+        val modMaxLen = currentModifiedText.lineSequence().maxOfOrNull { it.length } ?: 0
+
+        val leftWidthPx = (origMaxLen * charWidth + paddingPx).toInt()
+        val rightWidthPx = (modMaxLen * charWidth + paddingPx).toInt()
+        val unifiedWidthPx = (max(origMaxLen, modMaxLen) * charWidth + paddingPx).toInt()
+
+        adapter.leftSyncGroup.reportContentWidth(leftWidthPx)
+        adapter.rightSyncGroup.reportContentWidth(rightWidthPx)
+        adapter.unifiedSyncGroup.reportContentWidth(unifiedWidthPx)
     }
 
     /**
@@ -316,6 +357,7 @@ class DiffView @JvmOverloads constructor(
      */
     fun setTextSize(sizeSp: Float) {
         adapter.textSizeSp = sizeSp
+        estimateAndPreloadContentWidths()
     }
 
     /**

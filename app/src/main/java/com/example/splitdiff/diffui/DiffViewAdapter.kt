@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
@@ -20,9 +19,13 @@ import com.example.splitdiff.model.DiffRow
 import com.example.splitdiff.model.DiffRowType
 
 /**
- * Side-by-Side 및 Unified 모드를 모두 지원하는 RecyclerView Diff 어댑터.
+ * Side-by-Side 및 Unified 모드를 모두 지원하며,
+ * 뷰/컬럼 단위로 가로 스크롤이 동기화되는 Diff 어댑터.
  */
 class DiffViewAdapter(
+    val leftSyncGroup: HorizontalScrollSyncGroup = HorizontalScrollSyncGroup(),
+    val rightSyncGroup: HorizontalScrollSyncGroup = HorizontalScrollSyncGroup(),
+    val unifiedSyncGroup: HorizontalScrollSyncGroup = HorizontalScrollSyncGroup(),
     private val onToggleFold: (Long) -> Unit
 ) : ListAdapter<DiffDisplayItem, RecyclerView.ViewHolder>(DiffItemCallback) {
 
@@ -62,8 +65,8 @@ class DiffViewAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
-            TYPE_SIDE_BY_SIDE_ROW -> DiffRowViewHolder.create(parent.context, gutterWidthDp)
-            TYPE_UNIFIED_ROW -> UnifiedRowViewHolder.create(parent.context, gutterWidthDp)
+            TYPE_SIDE_BY_SIDE_ROW -> DiffRowViewHolder.create(parent.context, gutterWidthDp, leftSyncGroup, rightSyncGroup)
+            TYPE_UNIFIED_ROW -> UnifiedRowViewHolder.create(parent.context, gutterWidthDp, unifiedSyncGroup)
             TYPE_FOLDED_HEADER -> FoldedHeaderViewHolder.create(parent.context, onToggleFold)
             else -> throw IllegalArgumentException("Unknown viewType: $viewType")
         }
@@ -99,6 +102,12 @@ class DiffViewAdapter(
         }
     }
 
+    fun resetScrollGroups() {
+        leftSyncGroup.reset()
+        rightSyncGroup.reset()
+        unifiedSyncGroup.reset()
+    }
+
     companion object {
         private const val TYPE_SIDE_BY_SIDE_ROW = 0
         private const val TYPE_UNIFIED_ROW = 1
@@ -117,21 +126,23 @@ class DiffViewAdapter(
 }
 
 /**
- * Side-by-Side (Split) 모드용 ViewHolder.
+ * Side-by-Side (Split) 모드용 ViewHolder (좌/우 독립적 뷰 단위 가로 스크롤).
  */
 class DiffRowViewHolder(
     itemView: View,
     private val leftContainer: LinearLayout,
     private val leftGutterText: TextView,
     private val leftGutterDivider: View,
-    private val leftScrollView: HorizontalScrollView,
+    private val leftScrollView: SyncHorizontalScrollView,
     private val leftCodeText: TextView,
     private val centerDivider: View,
     private val rightContainer: LinearLayout,
     private val rightGutterText: TextView,
     private val rightGutterDivider: View,
-    private val rightScrollView: HorizontalScrollView,
-    private val rightCodeText: TextView
+    private val rightScrollView: SyncHorizontalScrollView,
+    private val rightCodeText: TextView,
+    private val leftSyncGroup: HorizontalScrollSyncGroup,
+    private val rightSyncGroup: HorizontalScrollSyncGroup
 ) : RecyclerView.ViewHolder(itemView) {
 
     fun bind(
@@ -141,6 +152,14 @@ class DiffRowViewHolder(
         textSizeSp: Float,
         isDark: Boolean
     ) {
+        // SyncGroup 연결 및 현재 스크롤 위치 동기화
+        leftScrollView.syncGroup = leftSyncGroup
+        rightScrollView.syncGroup = rightSyncGroup
+        leftScrollView.scrollTo(leftSyncGroup.currentScrollX, 0)
+        rightScrollView.scrollTo(rightSyncGroup.currentScrollX, 0)
+        leftScrollView.applyContentMinWidth(leftSyncGroup.maxContentWidth)
+        rightScrollView.applyContentMinWidth(rightSyncGroup.maxContentWidth)
+
         leftGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         leftCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         rightGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
@@ -233,7 +252,12 @@ class DiffRowViewHolder(
     }
 
     companion object {
-        fun create(context: Context, gutterWidthDp: Int): DiffRowViewHolder {
+        fun create(
+            context: Context,
+            gutterWidthDp: Int,
+            leftSyncGroup: HorizontalScrollSyncGroup,
+            rightSyncGroup: HorizontalScrollSyncGroup
+        ): DiffRowViewHolder {
             val density = context.resources.displayMetrics.density
             val gutterPx = (gutterWidthDp * density).toInt()
             val dividerPx = (1 * density).toInt().coerceAtLeast(1)
@@ -273,7 +297,7 @@ class DiffRowViewHolder(
                 setTextIsSelectable(true)
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
-            val leftScrollView = HorizontalScrollView(context).apply {
+            val leftScrollView = SyncHorizontalScrollView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
@@ -312,7 +336,7 @@ class DiffRowViewHolder(
                 setTextIsSelectable(true)
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
-            val rightScrollView = HorizontalScrollView(context).apply {
+            val rightScrollView = SyncHorizontalScrollView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
@@ -338,14 +362,16 @@ class DiffRowViewHolder(
                 rightGutterText = rightGutterText,
                 rightGutterDivider = rightGutterDivider,
                 rightScrollView = rightScrollView,
-                rightCodeText = rightCodeText
+                rightCodeText = rightCodeText,
+                leftSyncGroup = leftSyncGroup,
+                rightSyncGroup = rightSyncGroup
             )
         }
     }
 }
 
 /**
- * Unified (통합 단일 열) 모드용 ViewHolder (Old Line #, New Line #, +/-, Code).
+ * Unified (통합 단일 열) 모드용 ViewHolder (전체 라인 가로 스크롤 동기화).
  */
 class UnifiedRowViewHolder(
     itemView: View,
@@ -354,8 +380,9 @@ class UnifiedRowViewHolder(
     private val newGutterText: TextView,
     private val gutterDivider: View,
     private val prefixText: TextView,
-    private val scrollView: HorizontalScrollView,
-    private val codeText: TextView
+    private val scrollView: SyncHorizontalScrollView,
+    private val codeText: TextView,
+    private val unifiedSyncGroup: HorizontalScrollSyncGroup
 ) : RecyclerView.ViewHolder(itemView) {
 
     fun bind(
@@ -365,6 +392,10 @@ class UnifiedRowViewHolder(
         textSizeSp: Float,
         isDark: Boolean
     ) {
+        scrollView.syncGroup = unifiedSyncGroup
+        scrollView.scrollTo(unifiedSyncGroup.currentScrollX, 0)
+        scrollView.applyContentMinWidth(unifiedSyncGroup.maxContentWidth)
+
         oldGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         newGutterText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         prefixText.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
@@ -420,7 +451,11 @@ class UnifiedRowViewHolder(
     }
 
     companion object {
-        fun create(context: Context, gutterWidthDp: Int): UnifiedRowViewHolder {
+        fun create(
+            context: Context,
+            gutterWidthDp: Int,
+            unifiedSyncGroup: HorizontalScrollSyncGroup
+        ): UnifiedRowViewHolder {
             val density = context.resources.displayMetrics.density
             val gutterPx = (gutterWidthDp * density).toInt()
             val dividerPx = (1 * density).toInt().coerceAtLeast(1)
@@ -472,7 +507,7 @@ class UnifiedRowViewHolder(
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
 
-            val scrollView = HorizontalScrollView(context).apply {
+            val scrollView = SyncHorizontalScrollView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
@@ -493,7 +528,8 @@ class UnifiedRowViewHolder(
                 gutterDivider = gutterDivider,
                 prefixText = prefixText,
                 scrollView = scrollView,
-                codeText = codeText
+                codeText = codeText,
+                unifiedSyncGroup = unifiedSyncGroup
             )
         }
     }
