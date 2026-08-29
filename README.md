@@ -9,7 +9,7 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
 
 ## 🌟 주요 기능
 0. Powered by A.I 
-   - 대부분의 코드는 **Gemini 3.7 Flash** 로 생성했습니다. 문제가 있다면 코드를 clone에서 A.I를 통해서 개선하세요. 
+   - 대부분의 코드는 **Gemini 3.7 Flash** 로 생성했습니다. 문제가 있다면 코드를 clone에서 A.I를 통해서 개선하세요. 이 문서의 초기 버전도 A.I로 작성됬습니다. 코드의 많은 부분은 충분한 코드 리뷰 없이 개발자 테스트만 거치고 commit했으므로 사용 적에 따라 테스트가 더 필요할 수있습니다.
 1. **2가지 Diff 모드 지원**:
    - **Side-by-Side (Split) 모드**: 좌(Original) / 우(Modified) 2열 나란히 표시하며 좌우 라인을 완벽 정렬.
    - **Unified (통합 위아래) 모드**: 하나의 뷰 안에서 변경 사항을 위아래 단일 열(`+` / `-`)로 표시.
@@ -51,7 +51,8 @@ Android Studio Diff Editor 스타일의 **Side-by-Side (Split) & Unified DiffVie
     - `setTextIsSelectable(true)`를 통해 코드 텍스트 드래그 선택 및 복사 기능 활성화/비활성화 (기본값: `false`).
 13. Screenshots
 ![Screenshot1](screenshot1.jpg)
-![Screenshot1](screenshot2.jpg)
+![Screenshot2](screenshot2.jpg)
+![Screenshot3](screenshot3.jpg)
 
 ---
 

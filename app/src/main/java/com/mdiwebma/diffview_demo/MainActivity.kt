@@ -14,7 +14,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.KotlinSyntaxHighlighter
+import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -69,17 +71,20 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         diffView = findViewById(R.id.diffview)
 
-        // DiffView 기본 설정
+        // Basic DiffView configuration
         diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
-        diffView.setTextSize(12.5f)
         diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
-        diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
+        diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.NONE)
+        diffView.setDiffGranularity(DiffGranularity.WORD)
         diffView.setLineWrap(false)
+        diffView.setTextSize(13f)
+        diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
         //diffView.setShowDiffSymbols(false)
         //diffView.setGutterWidthDp(55)
         //diffView.setTextIsSelectable(true)
 
-        // 초기 샘플 코드 표시
+        // Show initial sample code
+        diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
         diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
 //        diffView.expandAll()
 
@@ -124,11 +129,11 @@ class MainActivity : AppCompatActivity() {
     private fun fetchCommit(rawUrl: String) {
         val parsed = parseCommitUrl(rawUrl)
         if (parsed == null) {
-            Toast.makeText(this, "올바른 GitHub 커밋 URL을 입력하세요.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please enter a valid GitHub commit URL.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        setLoading(true, "커밋 정보 가져오는 중...")
+        setLoading(true, "Fetching commit info...")
 
         lifecycleScope.launch {
             try {
@@ -173,24 +178,24 @@ class MainActivity : AppCompatActivity() {
                 selectedFileIndex = 0
 
                 btnSelectFile.isEnabled = files.isNotEmpty()
-                setLoading(false, "커밋 로드 완료 (${files.size}개 파일). 파일 선택을 눌러주세요.")
+                setLoading(false, "Commit loaded (${files.size} files). Click 'Select File'.")
 
                 if (files.isNotEmpty()) {
                     showFileSelectionDialog()
                 } else {
-                    Toast.makeText(this@MainActivity, "커밋에 변경된 파일이 없습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "No changed files in this commit.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                setLoading(false, "오류: ${e.message}")
-                Toast.makeText(this@MainActivity, "커밋 가져오기 실패: ${e.message}", Toast.LENGTH_LONG).show()
+                setLoading(false, "Error: ${e.message}")
+                Toast.makeText(this@MainActivity, "Failed to fetch commit: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
 
     private fun showFileSelectionDialog() {
         if (commitFiles.isEmpty()) {
-            Toast.makeText(this, "선택할 파일이 없습니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "No files available to select.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -207,7 +212,7 @@ class MainActivity : AppCompatActivity() {
         }.toTypedArray()
 
         AlertDialog.Builder(this)
-            .setTitle("파일 선택 (${commitFiles.size}개)")
+            .setTitle("Select File (${commitFiles.size})")
             .setSingleChoiceItems(fileNames, tempSelectedIndex) { _, which ->
                 tempSelectedIndex = which
             }
@@ -217,7 +222,7 @@ class MainActivity : AppCompatActivity() {
                 loadDiffForFile(selectedFile)
                 dialog.dismiss()
             }
-            .setNegativeButton("취소", null)
+            .setNegativeButton("Cancel", null)
             .show()
     }
 
@@ -225,7 +230,7 @@ class MainActivity : AppCompatActivity() {
         val commitInfo = currentCommitInfo ?: return
         val parentSha = currentParentSha
 
-        setLoading(true, "'${fileInfo.filename}' 내용 로드 중...")
+        setLoading(true, "Loading '${fileInfo.filename}'...")
 
         lifecycleScope.launch {
             try {
@@ -235,7 +240,7 @@ class MainActivity : AppCompatActivity() {
                     val oldCacheFile = File(contentsDir, "${key}_old.txt")
                     val newCacheFile = File(contentsDir, "${key}_new.txt")
 
-                    // 1. Modified(신규) 내용 캐시 및 로드
+                    // 1. Cache and load Modified (new) content
                     val newContent = if (fileInfo.status == "removed") {
                         ""
                     } else if (newCacheFile.exists() && newCacheFile.length() > 0) {
@@ -248,7 +253,7 @@ class MainActivity : AppCompatActivity() {
                         fetched
                     }
 
-                    // 2. Original(이전) 내용 캐시 및 로드
+                    // 2. Cache and load Original (old) content
                     val oldContent = if (fileInfo.status == "added" || parentSha == null) {
                         ""
                     } else if (oldCacheFile.exists() && oldCacheFile.length() > 0) {
@@ -271,11 +276,11 @@ class MainActivity : AppCompatActivity() {
                 diffView.setSyntaxHighlighter(com.mdiwebma.diffview.SyntaxHighlighter.forFileName(fileInfo.filename))
                 diffView.setContent(original = origText, modified = modText)
                 //diffView.expandAll()
-                setLoading(false, "선택됨: ${fileInfo.filename}")
+                setLoading(false, "Selected: ${fileInfo.filename}")
             } catch (e: Exception) {
                 e.printStackTrace()
-                setLoading(false, "파일 로드 오류: ${e.message}")
-                Toast.makeText(this@MainActivity, "파일 로드 실패: ${e.message}", Toast.LENGTH_LONG).show()
+                setLoading(false, "File load error: ${e.message}")
+                Toast.makeText(this@MainActivity, "Failed to load file: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

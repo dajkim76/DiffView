@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="가져오기" />
+            android:text="Fetch" />
     </LinearLayout>
 
     <LinearLayout
@@ -67,7 +67,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="파일 선택" />
+            android:text="Select File" />
 
         <TextView
             android:id="@+id/tvStatus"
@@ -78,7 +78,7 @@
             android:textSize="12sp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:text="커밋 URL을 입력하고 가져오기를 누르세요." />
+            android:text="Enter a commit URL and click Fetch." />
 
         <ProgressBar
             android:id="@+id/progressBar"

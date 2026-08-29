@@ -20,7 +20,7 @@ import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffMode
 
 /**
- * Jetpack Compose를 사용하지 않는 순수 Android View 기반 DiffView 데모 액티비티.
+ * Android View based DiffView demo activity (without Jetpack Compose).
  */
 class DemoActivity : ComponentActivity() {
 
@@ -76,7 +76,7 @@ class DemoActivity : ComponentActivity() {
             insets
         }
 
-        // --- 상단 컨트롤 패널 ---
+        // --- Top Control Panel ---
         val controlContainer = LinearLayout(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -106,7 +106,7 @@ class DemoActivity : ComponentActivity() {
             diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
             updateModeButtons()
         }
-        modeUnifiedButton = createPillButton("Unified (위아래 표시)", isSelected = false) {
+        modeUnifiedButton = createPillButton("Unified (Inline)", isSelected = false) {
             currentMode = DiffMode.UNIFIED
             diffView.setDiffMode(DiffMode.UNIFIED)
             updateModeButtons()

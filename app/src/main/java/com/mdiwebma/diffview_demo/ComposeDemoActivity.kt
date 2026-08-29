@@ -116,7 +116,7 @@ fun DiffDemoScreen(
                             diffMode = DiffMode.UNIFIED
                             diffViewInstance?.setDiffMode(DiffMode.UNIFIED)
                         },
-                        label = { Text("Unified (위아래 표시)", fontSize = 12.sp) }
+                        label = { Text("Unified (Inline)", fontSize = 12.sp) }
                     )
 
                     Spacer(modifier = Modifier.padding(horizontal = 4.dp))
