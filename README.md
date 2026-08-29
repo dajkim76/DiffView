@@ -59,7 +59,7 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.github.dajkim76:DiffView:1.0.0")
+    implementation("com.github.dajkim76:DiffView:1.0.1")
 }
 ```
 
