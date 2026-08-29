@@ -3,6 +3,8 @@ package com.mdiwebma.diffview
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -10,9 +12,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.os.Build
-import android.text.Spannable
-import android.text.SpannableStringBuilder
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -306,12 +305,11 @@ class DiffRowViewHolder(
         isLineWrap: Boolean,
         sideLabel: String
     ) {
-        container.setBackgroundColor(bgColor)
-        gutterText.setBackgroundColor(if (line != null) gutterBgColor else colors.lineNumberBackground)
-        gutterText.setTextColor(colors.lineNumberTextColor)
-        codeText.setTextColor(colors.codeTextColor)
-
         if (line != null) {
+            container.setBackgroundColor(bgColor)
+            gutterText.setBackgroundColor(gutterBgColor)
+            gutterText.setTextColor(colors.lineNumberTextColor)
+            codeText.setTextColor(colors.codeTextColor)
             gutterText.text = line.lineNumber?.toString() ?: ""
             val highlighted = highlighter.highlight(
                 spans = line.spans,
@@ -322,6 +320,10 @@ class DiffRowViewHolder(
             codeText.text = if (isLineWrap) formatWrappedText(highlighted) else highlighted
             container.contentDescription = "$sideLabel line ${line.lineNumber}: ${line.content}"
         } else {
+            container.setBackgroundColor(colors.noneTextBackground)
+            gutterText.setBackgroundColor(colors.noneTextBackground)
+            gutterText.setTextColor(colors.lineNumberTextColor)
+            codeText.setTextColor(colors.codeTextColor)
             gutterText.text = ""
             codeText.text = ""
             container.contentDescription = "$sideLabel empty line"
@@ -352,7 +354,7 @@ class DiffRowViewHolder(
             }
 
             val leftContainer = LinearLayout(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.TOP
             }
@@ -378,7 +380,7 @@ class DiffRowViewHolder(
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val leftScrollView = SyncHorizontalScrollView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 addView(leftCodeText)
@@ -392,7 +394,7 @@ class DiffRowViewHolder(
             }
 
             val rightContainer = LinearLayout(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.TOP
             }
@@ -418,7 +420,7 @@ class DiffRowViewHolder(
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val rightScrollView = SyncHorizontalScrollView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 addView(rightCodeText)
@@ -617,7 +619,7 @@ class UnifiedRowViewHolder(
             }
 
             val scrollView = SyncHorizontalScrollView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 addView(codeText)
@@ -732,9 +734,11 @@ internal fun formatWrappedText(text: CharSequence): CharSequence {
             ssb.replace(0, leadingSpaceCount, nonBreakingLeading)
             ssb
         }
+
         is String -> {
             nonBreakingLeading + text.substring(leadingSpaceCount)
         }
+
         else -> {
             val ssb = SpannableStringBuilder(text)
             ssb.replace(0, leadingSpaceCount, nonBreakingLeading)
