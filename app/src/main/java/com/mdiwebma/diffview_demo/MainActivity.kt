@@ -2,7 +2,10 @@ package com.mdiwebma.diffview_demo
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -12,6 +15,8 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.model.DiffMode
@@ -55,12 +60,23 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.main)
 
-        findViewById<View>(R.id.btnComposeDemo).setOnClickListener {
-            startActivity(Intent(this, ComposeDemoActivity::class.java))
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                        WindowInsetsCompat.Type.displayCutout()
+            )
+            v.setPadding(
+                systemBars.left,
+                systemBars.top,
+                systemBars.right,
+                systemBars.bottom
+            )
+            insets
         }
-        findViewById<View>(R.id.btnViewDemo).setOnClickListener {
-            startActivity(Intent(this, DemoActivity::class.java))
-        }
+
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        toolbar.overflowIcon?.setTint(Color.WHITE)
 
         etCommitUrl = findViewById(R.id.etCommitUrl)
         btnFetchCommit = findViewById(R.id.btnFetchCommit)
@@ -95,9 +111,42 @@ class MainActivity : AppCompatActivity() {
         btnSelectFile.setOnClickListener {
             showFileSelectionDialog()
         }
+    }
 
-        findViewById<Button>(R.id.btnSaveImage).setOnClickListener {
-            saveDiffImage()
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_save_image -> {
+                saveDiffImage()
+                true
+            }
+
+            R.id.action_toggle_mode -> {
+                val newMode = if (diffView.getDiffMode() == DiffMode.SIDE_BY_SIDE) {
+                    DiffMode.UNIFIED
+                } else {
+                    DiffMode.SIDE_BY_SIDE
+                }
+                diffView.setDiffMode(newMode)
+                Toast.makeText(this, "모드: ${newMode.name}", Toast.LENGTH_SHORT).show()
+                true
+            }
+
+            R.id.action_compose_demo -> {
+                startActivity(Intent(this, ComposeDemoActivity::class.java))
+                true
+            }
+
+            R.id.action_view_demo -> {
+                startActivity(Intent(this, DemoActivity::class.java))
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

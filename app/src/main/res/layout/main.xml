@@ -1,32 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mainRootLayout"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="36dp">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="12dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btnComposeDemo"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
-            android:text="Compose Demo" />
-
-        <Button
-            android:id="@+id/btnViewDemo"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="View Demo" />
-    </LinearLayout>
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:title="@string/app_name"
+        app:titleTextColor="@android:color/white" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -52,29 +40,22 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="Fetch" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="4dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
 
         <Button
             android:id="@+id/btnSelectFile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Select File" />
+            android:text="File" />
+    </LinearLayout>
 
-        <Button
-            android:id="@+id/btnSaveImage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="Save Image" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="4dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/tvStatus"
