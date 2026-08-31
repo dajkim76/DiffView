@@ -577,7 +577,7 @@ class DiffRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
-                setSingleLine(true)
+                maxLines = 1
                 setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val leftGutterDivider = View(context).apply {
@@ -637,7 +637,7 @@ class DiffRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
-                setSingleLine(true)
+                maxLines = 1
                 setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val rightGutterDivider = View(context).apply {
@@ -910,7 +910,7 @@ class UnifiedRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
-                setSingleLine(true)
+                maxLines = 1
                 setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
 
@@ -918,7 +918,7 @@ class UnifiedRowViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
-                setSingleLine(true)
+                maxLines = 1
                 setPadding(0, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
 
@@ -1154,7 +1154,7 @@ class FoldedHeaderViewHolder(
                 layoutParams = LinearLayout.LayoutParams(gutterPx, ViewGroup.LayoutParams.MATCH_PARENT)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
                 typeface = Typeface.MONOSPACE
-                setSingleLine(true)
+                maxLines = 1
                 setPadding(0, padVerticalPx, leftGutterHorizontalPx, padVerticalPx)
             }
 
@@ -1179,7 +1179,7 @@ class FoldedHeaderViewHolder(
                 }
                 typeface = Typeface.MONOSPACE
                 gravity = Gravity.CENTER
-                isSingleLine = true
+                maxLines = 1
                 ellipsize = TextUtils.TruncateAt.MIDDLE
                 isClickable = true
                 isFocusable = true
