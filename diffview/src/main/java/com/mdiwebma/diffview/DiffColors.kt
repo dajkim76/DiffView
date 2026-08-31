@@ -24,7 +24,11 @@ data class DiffColors(
     @get:ColorInt val headerTextColor: Int,
     @get:ColorInt val foldedBannerBackground: Int,
     @get:ColorInt val foldedBannerTextColor: Int,
-    @get:ColorInt val codeTextColor: Int
+    @get:ColorInt val codeTextColor: Int,
+    @get:ColorInt val commentBackground: Int = Color.parseColor("#F6F8FA"),
+    @get:ColorInt val commentStroke: Int = Color.parseColor("#D0D7DE"),
+    @get:ColorInt val commentTextColor: Int = Color.parseColor("#24292F"),
+    @get:ColorInt val commentTimeColor: Int = Color.parseColor("#57606A")
 ) {
     companion object {
         val Light = DiffColors(
@@ -62,7 +66,11 @@ data class DiffColors(
             headerTextColor = Color.parseColor("#BCBEC4"),
             foldedBannerBackground = Color.parseColor("#2B2D30"),
             foldedBannerTextColor = Color.parseColor("#868A91"),
-            codeTextColor = Color.parseColor("#BCBEC4")
+            codeTextColor = Color.parseColor("#BCBEC4"),
+            commentBackground = Color.parseColor("#161B22"),
+            commentStroke = Color.parseColor("#30363D"),
+            commentTextColor = Color.parseColor("#C9D1D9"),
+            commentTimeColor = Color.parseColor("#8B949E")
         )
 
         fun defaultFor(context: Context): DiffColors {

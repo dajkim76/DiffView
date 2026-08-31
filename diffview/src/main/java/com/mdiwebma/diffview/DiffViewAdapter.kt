@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -15,8 +16,13 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import android.view.LayoutInflater
+import com.mdiwebma.diffview.comment.CodeComment
+import com.mdiwebma.diffview.comment.CodeCommentHelper
+import com.mdiwebma.diffview.comment.LineKey
 import com.mdiwebma.diffview.model.DiffDisplayItem
 import com.mdiwebma.diffview.model.DiffLine
+import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffRow
 import com.mdiwebma.diffview.model.DiffRowType
 import com.mdiwebma.diffview.model.FoldPosition
@@ -33,6 +39,15 @@ class DiffViewAdapter(
     private val onExpandDown: (Long) -> Unit = {},
     private val onExpandAll: (Long) -> Unit = {}
 ) : ListAdapter<DiffDisplayItem, RecyclerView.ViewHolder>(DiffItemCallback) {
+
+    var comments: Map<LineKey, CodeComment> = emptyMap()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    var onLineLongClick: ((LineKey, CodeComment?) -> Unit)? = null
+    var onCommentClick: ((LineKey, CodeComment) -> Unit)? = null
 
     private var _diffColors: DiffColors = DiffColors.Light
     var diffColors: DiffColors
@@ -100,6 +115,14 @@ class DiffViewAdapter(
             }
         }
 
+    var diffMode: DiffMode = DiffMode.SIDE_BY_SIDE
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
     /**
      * [diffColors]와 [isDark]를 한 번에 업데이트하여 [notifyDataSetChanged]를 한 번만 호출합니다.
      * [DiffView.applyColors]에서 두 값이 동시에 변경될 때 중복 리렌더링을 방지합니다.
@@ -142,7 +165,10 @@ class DiffViewAdapter(
                     isLineWrap = isLineWrap,
                     showDiffSymbols = showDiffSymbols,
                     gutterWidthDp = gutterWidthDp,
-                    isTextSelectable = isTextSelectable
+                    isTextSelectable = isTextSelectable,
+                    comments = comments,
+                    onLineLongClick = onLineLongClick,
+                    onCommentClick = onCommentClick
                 )
             }
 
@@ -155,7 +181,10 @@ class DiffViewAdapter(
                     isDark = isDark,
                     isLineWrap = isLineWrap,
                     gutterWidthDp = gutterWidthDp,
-                    isTextSelectable = isTextSelectable
+                    isTextSelectable = isTextSelectable,
+                    comments = comments,
+                    onLineLongClick = onLineLongClick,
+                    onCommentClick = onCommentClick
                 )
             }
 
@@ -165,7 +194,8 @@ class DiffViewAdapter(
                     colors = diffColors,
                     labels = diffLabels,
                     textSizeSp = textSizeSp,
-                    gutterWidthDp = gutterWidthDp
+                    gutterWidthDp = gutterWidthDp,
+                    diffMode = diffMode
                 )
             }
         }
@@ -199,19 +229,27 @@ class DiffViewAdapter(
  */
 class DiffRowViewHolder(
     itemView: View,
+    private val leftColumn: LinearLayout,
     private val leftContainer: LinearLayout,
     private val leftGutterText: TextView,
     private val leftGutterDivider: View,
     private val leftPrefixText: TextView,
     private val leftScrollView: SyncHorizontalScrollView,
     private val leftCodeText: TextView,
+    private val leftCommentView: View,
+    private val leftTvCommentTime: TextView,
+    private val leftTvCommentContent: TextView,
     private val centerDivider: View,
+    private val rightColumn: LinearLayout,
     private val rightContainer: LinearLayout,
     private val rightGutterText: TextView,
     private val rightGutterDivider: View,
     private val rightPrefixText: TextView,
     private val rightScrollView: SyncHorizontalScrollView,
     private val rightCodeText: TextView,
+    private val rightCommentView: View,
+    private val rightTvCommentTime: TextView,
+    private val rightTvCommentContent: TextView,
     private val leftSyncGroup: HorizontalScrollSyncGroup,
     private val rightSyncGroup: HorizontalScrollSyncGroup
 ) : RecyclerView.ViewHolder(itemView) {
@@ -225,15 +263,36 @@ class DiffRowViewHolder(
         isLineWrap: Boolean = false,
         showDiffSymbols: Boolean = true,
         gutterWidthDp: Int = 48,
-        isTextSelectable: Boolean = false
+        isTextSelectable: Boolean = false,
+        comments: Map<LineKey, CodeComment> = emptyMap(),
+        onLineLongClick: ((LineKey, CodeComment?) -> Unit)? = null,
+        onCommentClick: ((LineKey, CodeComment) -> Unit)? = null
     ) {
         val density = leftGutterText.context.resources.displayMetrics.density
         val gutterPx = (gutterWidthDp * density).toInt()
+        val dividerPx = (1 * density).toInt().coerceAtLeast(1)
+        val prefixPx = (16 * density).toInt()
+        val sideGutterTotalPx = gutterPx + dividerPx + (if (showDiffSymbols) prefixPx else 0)
+        val commentMarginStart = sideGutterTotalPx + (4 * density).toInt()
+
         if (leftGutterText.layoutParams.width != gutterPx) {
             leftGutterText.layoutParams = leftGutterText.layoutParams.apply { width = gutterPx }
         }
         if (rightGutterText.layoutParams.width != gutterPx) {
             rightGutterText.layoutParams = rightGutterText.layoutParams.apply { width = gutterPx }
+        }
+
+        (leftCommentView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+            if (lp.marginStart != commentMarginStart) {
+                lp.marginStart = commentMarginStart
+                leftCommentView.layoutParams = lp
+            }
+        }
+        (rightCommentView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+            if (lp.marginStart != commentMarginStart) {
+                lp.marginStart = commentMarginStart
+                rightCommentView.layoutParams = lp
+            }
         }
 
         leftCodeText.setTextIsSelectable(isTextSelectable)
@@ -325,12 +384,23 @@ class DiffRowViewHolder(
             }
         } else ""
 
+        val leftKey = row.left?.lineNumber?.let { LineKey(leftLine = it, rightLine = null) }
+        val leftComment = leftKey?.let { comments[it] }
+
+        val rightKey = row.right?.lineNumber?.let { LineKey(leftLine = null, rightLine = it) }
+        val rightComment = rightKey?.let { comments[it] }
+
         bindSide(
             line = row.left,
+            lineKey = leftKey,
+            comment = leftComment,
             container = leftContainer,
             gutterText = leftGutterText,
             prefixText = leftPrefixText,
             codeText = leftCodeText,
+            commentView = leftCommentView,
+            tvCommentTime = leftTvCommentTime,
+            tvCommentContent = leftTvCommentContent,
             bgColor = leftBg,
             gutterBgColor = leftGutterBg,
             highlightColor = leftHighlightBg,
@@ -340,15 +410,22 @@ class DiffRowViewHolder(
             isLineWrap = isLineWrap,
             showDiffSymbols = showDiffSymbols,
             sideLabel = "Original",
-            symbol = leftSymbol
+            symbol = leftSymbol,
+            onLineLongClick = onLineLongClick,
+            onCommentClick = onCommentClick
         )
 
         bindSide(
             line = row.right,
+            lineKey = rightKey,
+            comment = rightComment,
             container = rightContainer,
             gutterText = rightGutterText,
             prefixText = rightPrefixText,
             codeText = rightCodeText,
+            commentView = rightCommentView,
+            tvCommentTime = rightTvCommentTime,
+            tvCommentContent = rightTvCommentContent,
             bgColor = rightBg,
             gutterBgColor = rightGutterBg,
             highlightColor = rightHighlightBg,
@@ -358,16 +435,23 @@ class DiffRowViewHolder(
             isLineWrap = isLineWrap,
             showDiffSymbols = showDiffSymbols,
             sideLabel = "Modified",
-            symbol = rightSymbol
+            symbol = rightSymbol,
+            onLineLongClick = onLineLongClick,
+            onCommentClick = onCommentClick
         )
     }
 
     private fun bindSide(
         line: DiffLine?,
+        lineKey: LineKey?,
+        comment: CodeComment?,
         container: LinearLayout,
         gutterText: TextView,
         prefixText: TextView,
         codeText: TextView,
+        commentView: View,
+        tvCommentTime: TextView,
+        tvCommentContent: TextView,
         bgColor: Int,
         gutterBgColor: Int,
         highlightColor: Int,
@@ -377,7 +461,9 @@ class DiffRowViewHolder(
         isLineWrap: Boolean,
         showDiffSymbols: Boolean,
         sideLabel: String,
-        symbol: String = ""
+        symbol: String = "",
+        onLineLongClick: ((LineKey, CodeComment?) -> Unit)?,
+        onCommentClick: ((LineKey, CodeComment) -> Unit)?
     ) {
         val density = container.context.resources.displayMetrics.density
         val padHorizontalPx = (6 * density).toInt()
@@ -400,7 +486,7 @@ class DiffRowViewHolder(
             prefixText.text = ""
         }
 
-        if (line != null) {
+        if (line != null && lineKey != null) {
             container.setBackgroundColor(bgColor)
             gutterText.setBackgroundColor(gutterBgColor)
             prefixText.setBackgroundColor(bgColor)
@@ -415,6 +501,29 @@ class DiffRowViewHolder(
             )
             codeText.text = if (isLineWrap) formatWrappedText(highlighted) else highlighted
             container.contentDescription = "$sideLabel line ${line.lineNumber}: ${line.content}"
+
+            CodeCommentHelper.bindCommentView(
+                commentView = commentView,
+                tvContent = tvCommentContent,
+                tvTime = tvCommentTime,
+                comment = comment,
+                colors = colors,
+                onCommentClick = {
+                    if (comment != null) {
+                        onCommentClick?.invoke(lineKey, comment) ?: onLineLongClick?.invoke(lineKey, comment)
+                    }
+                },
+                onCommentLongClick = {
+                    onLineLongClick?.invoke(lineKey, comment)
+                }
+            )
+
+            val longClickListener = View.OnLongClickListener {
+                onLineLongClick?.invoke(lineKey, comment)
+                true
+            }
+            container.setOnLongClickListener(longClickListener)
+            codeText.setOnLongClickListener(longClickListener)
         } else {
             container.setBackgroundColor(colors.noneTextBackground)
             gutterText.setBackgroundColor(colors.noneTextBackground)
@@ -424,6 +533,9 @@ class DiffRowViewHolder(
             gutterText.text = ""
             codeText.text = ""
             container.contentDescription = "$sideLabel empty line"
+            commentView.visibility = View.GONE
+            container.setOnLongClickListener(null)
+            codeText.setOnLongClickListener(null)
         }
     }
 
@@ -451,8 +563,13 @@ class DiffRowViewHolder(
                 isBaselineAligned = false
             }
 
+            // Left Column
+            val leftColumn = LinearLayout(context).apply {
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                orientation = LinearLayout.VERTICAL
+            }
             val leftContainer = LinearLayout(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.TOP
             }
@@ -494,12 +611,25 @@ class DiffRowViewHolder(
             leftContainer.addView(leftPrefixText)
             leftContainer.addView(leftScrollView)
 
+            val leftCommentView = LayoutInflater.from(context).inflate(R.layout.view_code_comment, leftColumn, false)
+            val leftTvCommentTime = leftCommentView.findViewById<TextView>(R.id.tvCommentTime)
+            val leftTvCommentContent = leftCommentView.findViewById<TextView>(R.id.tvCommentContent)
+            leftCommentView.visibility = View.GONE
+
+            leftColumn.addView(leftContainer)
+            leftColumn.addView(leftCommentView)
+
             val centerDivider = View(context).apply {
                 layoutParams = LinearLayout.LayoutParams(dividerPx, ViewGroup.LayoutParams.MATCH_PARENT)
             }
 
+            // Right Column
+            val rightColumn = LinearLayout(context).apply {
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                orientation = LinearLayout.VERTICAL
+            }
             val rightContainer = LinearLayout(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.TOP
             }
@@ -541,25 +671,41 @@ class DiffRowViewHolder(
             rightContainer.addView(rightPrefixText)
             rightContainer.addView(rightScrollView)
 
-            rootLayout.addView(leftContainer)
+            val rightCommentView = LayoutInflater.from(context).inflate(R.layout.view_code_comment, rightColumn, false)
+            val rightTvCommentTime = rightCommentView.findViewById<TextView>(R.id.tvCommentTime)
+            val rightTvCommentContent = rightCommentView.findViewById<TextView>(R.id.tvCommentContent)
+            rightCommentView.visibility = View.GONE
+
+            rightColumn.addView(rightContainer)
+            rightColumn.addView(rightCommentView)
+
+            rootLayout.addView(leftColumn)
             rootLayout.addView(centerDivider)
-            rootLayout.addView(rightContainer)
+            rootLayout.addView(rightColumn)
 
             return DiffRowViewHolder(
                 itemView = rootLayout,
+                leftColumn = leftColumn,
                 leftContainer = leftContainer,
                 leftGutterText = leftGutterText,
                 leftGutterDivider = leftGutterDivider,
                 leftPrefixText = leftPrefixText,
                 leftScrollView = leftScrollView,
                 leftCodeText = leftCodeText,
+                leftCommentView = leftCommentView,
+                leftTvCommentTime = leftTvCommentTime,
+                leftTvCommentContent = leftTvCommentContent,
                 centerDivider = centerDivider,
+                rightColumn = rightColumn,
                 rightContainer = rightContainer,
                 rightGutterText = rightGutterText,
                 rightGutterDivider = rightGutterDivider,
                 rightPrefixText = rightPrefixText,
                 rightScrollView = rightScrollView,
                 rightCodeText = rightCodeText,
+                rightCommentView = rightCommentView,
+                rightTvCommentTime = rightTvCommentTime,
+                rightTvCommentContent = rightTvCommentContent,
                 leftSyncGroup = leftSyncGroup,
                 rightSyncGroup = rightSyncGroup
             )
@@ -573,12 +719,16 @@ class DiffRowViewHolder(
 class UnifiedRowViewHolder(
     itemView: View,
     private val rootContainer: LinearLayout,
+    private val lineContainer: LinearLayout,
     private val oldGutterText: TextView,
     private val newGutterText: TextView,
     private val gutterDivider: View,
     private val prefixText: TextView,
     private val scrollView: SyncHorizontalScrollView,
     private val codeText: TextView,
+    private val commentView: View,
+    private val tvCommentTime: TextView,
+    private val tvCommentContent: TextView,
     private val unifiedSyncGroup: HorizontalScrollSyncGroup
 ) : RecyclerView.ViewHolder(itemView) {
 
@@ -590,15 +740,30 @@ class UnifiedRowViewHolder(
         isDark: Boolean,
         isLineWrap: Boolean = false,
         gutterWidthDp: Int = 48,
-        isTextSelectable: Boolean = false
+        isTextSelectable: Boolean = false,
+        comments: Map<LineKey, CodeComment> = emptyMap(),
+        onLineLongClick: ((LineKey, CodeComment?) -> Unit)? = null,
+        onCommentClick: ((LineKey, CodeComment) -> Unit)? = null
     ) {
         val density = oldGutterText.context.resources.displayMetrics.density
         val gutterPx = (gutterWidthDp * density).toInt()
+        val dividerPx = (1 * density).toInt().coerceAtLeast(1)
+        val prefixPx = (16 * density).toInt()
+        val unifiedGutterTotalPx = (gutterPx * 2) + dividerPx + prefixPx
+        val commentMarginStart = unifiedGutterTotalPx + (4 * density).toInt()
+
         if (oldGutterText.layoutParams.width != gutterPx) {
             oldGutterText.layoutParams = oldGutterText.layoutParams.apply { width = gutterPx }
         }
         if (newGutterText.layoutParams.width != gutterPx) {
             newGutterText.layoutParams = newGutterText.layoutParams.apply { width = gutterPx }
+        }
+
+        (commentView.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+            if (lp.marginStart != commentMarginStart) {
+                lp.marginStart = commentMarginStart
+                commentView.layoutParams = lp
+            }
         }
 
         codeText.setTextIsSelectable(isTextSelectable)
@@ -681,6 +846,32 @@ class UnifiedRowViewHolder(
             else -> "unchanged"
         }
         rootContainer.contentDescription = "Line ${item.oldLineNumber ?: ""}/${item.newLineNumber ?: ""} $typeDesc: ${item.content}"
+
+        val lineKey = LineKey(leftLine = item.oldLineNumber, rightLine = item.newLineNumber)
+        val comment = comments[lineKey]
+
+        CodeCommentHelper.bindCommentView(
+            commentView = commentView,
+            tvContent = tvCommentContent,
+            tvTime = tvCommentTime,
+            comment = comment,
+            colors = colors,
+            onCommentClick = {
+                if (comment != null) {
+                    onCommentClick?.invoke(lineKey, comment) ?: onLineLongClick?.invoke(lineKey, comment)
+                }
+            },
+            onCommentLongClick = {
+                onLineLongClick?.invoke(lineKey, comment)
+            }
+        )
+
+        val longClickListener = View.OnLongClickListener {
+            onLineLongClick?.invoke(lineKey, comment)
+            true
+        }
+        lineContainer.setOnLongClickListener(longClickListener)
+        codeText.setOnLongClickListener(longClickListener)
     }
 
     companion object {
@@ -698,6 +889,15 @@ class UnifiedRowViewHolder(
 
             val rootLayout = LinearLayout(context).apply {
                 layoutParams = RecyclerView.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.TOP
+            }
+
+            val lineContainer = LinearLayout(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
@@ -752,21 +952,33 @@ class UnifiedRowViewHolder(
                 addView(codeText)
             }
 
-            rootLayout.addView(oldGutterText)
-            rootLayout.addView(newGutterText)
-            rootLayout.addView(gutterDivider)
-            rootLayout.addView(prefixText)
-            rootLayout.addView(scrollView)
+            lineContainer.addView(oldGutterText)
+            lineContainer.addView(newGutterText)
+            lineContainer.addView(gutterDivider)
+            lineContainer.addView(prefixText)
+            lineContainer.addView(scrollView)
+
+            val commentView = LayoutInflater.from(context).inflate(R.layout.view_code_comment, rootLayout, false)
+            val tvCommentTime = commentView.findViewById<TextView>(R.id.tvCommentTime)
+            val tvCommentContent = commentView.findViewById<TextView>(R.id.tvCommentContent)
+            commentView.visibility = View.GONE
+
+            rootLayout.addView(lineContainer)
+            rootLayout.addView(commentView)
 
             return UnifiedRowViewHolder(
                 itemView = rootLayout,
                 rootContainer = rootLayout,
+                lineContainer = lineContainer,
                 oldGutterText = oldGutterText,
                 newGutterText = newGutterText,
                 gutterDivider = gutterDivider,
                 prefixText = prefixText,
                 scrollView = scrollView,
                 codeText = codeText,
+                commentView = commentView,
+                tvCommentTime = tvCommentTime,
+                tvCommentContent = tvCommentContent,
                 unifiedSyncGroup = unifiedSyncGroup
             )
         }
@@ -823,13 +1035,16 @@ class FoldedHeaderViewHolder(
         colors: DiffColors,
         labels: DiffLabels,
         textSizeSp: Float,
-        gutterWidthDp: Int = 48
+        gutterWidthDp: Int = 48,
+        diffMode: DiffMode = DiffMode.SIDE_BY_SIDE
     ) {
         val density = leftGutterText.context.resources.displayMetrics.density
-        val gutterPx = (gutterWidthDp * density).toInt()
+        val singleGutterPx = (gutterWidthDp * density).toInt()
+        val gutterPx = if (diffMode == DiffMode.UNIFIED) singleGutterPx * 2 else singleGutterPx
         if (leftGutterText.layoutParams.width != gutterPx) {
             leftGutterText.layoutParams = leftGutterText.layoutParams.apply { width = gutterPx }
         }
+        leftGutterText.gravity = Gravity.CENTER
 
         currentItem = item
         itemView.setBackgroundColor(colors.foldedBannerBackground)
@@ -964,6 +1179,8 @@ class FoldedHeaderViewHolder(
                 }
                 typeface = Typeface.MONOSPACE
                 gravity = Gravity.CENTER
+                isSingleLine = true
+                ellipsize = TextUtils.TruncateAt.MIDDLE
                 isClickable = true
                 isFocusable = true
             }

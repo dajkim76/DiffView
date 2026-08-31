@@ -122,6 +122,7 @@ class DemoActivity : ComponentActivity() {
                 updatePresetButtons()
                 val (orig, mod) = presets[index].second
                 diffView.setContent(orig, mod)
+                diffView.setCommentContext("commit_preset_$index", "File_${index}.kt")
             }
             presetButtons.add(btn)
             row1.addView(btn)
@@ -246,6 +247,7 @@ class DemoActivity : ComponentActivity() {
             setHeaderTitles("Original Code", "Modified Code")
             val (orig, mod) = presets[selectedPresetIndex].second
             setContent(orig, mod)
+            setCommentContext("commit_preset_$selectedPresetIndex", "File_${selectedPresetIndex}.kt")
         }
 
         rootLayout.addView(controlContainer)

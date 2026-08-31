@@ -14,6 +14,10 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.mdiwebma.diffview.comment.CodeComment
+import com.mdiwebma.diffview.comment.CodeCommentHelper
+import com.mdiwebma.diffview.comment.CodeCommentManager
+import com.mdiwebma.diffview.comment.LineKey
 import com.mdiwebma.diffview.engine.DiffEngine
 import com.mdiwebma.diffview.engine.KotlinDiffEngine
 import com.mdiwebma.diffview.model.DiffDisplayItem
@@ -38,6 +42,14 @@ class DiffView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
+
+    val commentManager: CodeCommentManager = CodeCommentManager(context)
+    private var currentCommitHash: String? = null
+    private var currentFilePath: String? = null
+    private var isCommentsEnabled: Boolean = true
+
+    var onLineLongClickListener: ((LineKey, CodeComment?) -> Unit)? = null
+    var onCommentClickListener: ((LineKey, CodeComment) -> Unit)? = null
 
     private var diffEngine: DiffEngine = KotlinDiffEngine()
     private val viewScope = CoroutineScope(Dispatchers.Main + Job())
@@ -243,6 +255,44 @@ class DiffView @JvmOverloads constructor(
             }
         ).apply {
             this.diffLabels = this@DiffView.diffLabels
+            this.diffMode = this@DiffView.diffMode
+            this.onLineLongClick = { lineKey, currentComment ->
+                if (onLineLongClickListener != null) {
+                    onLineLongClickListener?.invoke(lineKey, currentComment)
+                } else if (isCommentsEnabled) {
+                    val commit = currentCommitHash ?: "HEAD"
+                    val path = currentFilePath ?: "default"
+                    CodeCommentHelper.handleLineLongClick(
+                        context = context,
+                        lineKey = lineKey,
+                        currentComment = currentComment,
+                        onSave = { text ->
+                            saveComment(commit, path, lineKey, text)
+                        },
+                        onDelete = {
+                            deleteComment(commit, path, lineKey)
+                        }
+                    )
+                }
+            }
+            this.onCommentClick = { lineKey, currentComment ->
+                if (onCommentClickListener != null) {
+                    onCommentClickListener?.invoke(lineKey, currentComment)
+                } else if (isCommentsEnabled) {
+                    val commit = currentCommitHash ?: "HEAD"
+                    val path = currentFilePath ?: "default"
+                    CodeCommentHelper.showEditCommentDialog(
+                        context = context,
+                        currentText = currentComment.text,
+                        onSave = { text ->
+                            saveComment(commit, path, lineKey, text)
+                        },
+                        onDelete = {
+                            deleteComment(commit, path, lineKey)
+                        }
+                    )
+                }
+            }
         }
         recyclerView.adapter = adapter
 
@@ -289,6 +339,7 @@ class DiffView @JvmOverloads constructor(
     fun setDiffMode(mode: DiffMode) {
         if (this.diffMode != mode) {
             this.diffMode = mode
+            adapter.diffMode = mode
             adapter.resetScrollGroups()
             updateHeaderMode()
             estimateAndPreloadContentWidths()
@@ -339,6 +390,7 @@ class DiffView @JvmOverloads constructor(
                 currentDiffResult = result
                 updateStats(result)
                 estimateAndPreloadContentWidths()
+                reloadComments()
                 updateDisplayItems()
             } finally {
                 progressBar.visibility = GONE
@@ -631,6 +683,58 @@ class DiffView @JvmOverloads constructor(
         // Set isDark first (no-op if unchanged) then diffColors which triggers the notify.
         adapter.applyTheme(diffColors = diffColors, isDark = isDark)
     }
+
+    /**
+     * 커밋 해시와 파일 경로를 설정하여 해당 파일에 저장된 코멘트를 비동기로 로드하고 표시합니다.
+     */
+    fun setCommentContext(commitHash: String, filePath: String) {
+        this.currentCommitHash = commitHash
+        this.currentFilePath = filePath
+        reloadComments()
+    }
+
+    /**
+     * 현재 설정된 커밋과 파일의 코멘트를 디스크/메모리에서 다시 로드합니다.
+     */
+    fun reloadComments() {
+        val commit = currentCommitHash ?: return
+        val path = currentFilePath ?: return
+        viewScope.launch {
+            val loaded = commentManager.loadComments(commit, path)
+            adapter.comments = loaded
+        }
+    }
+
+    /**
+     * 특정 라인에 코멘트를 저장하고 뷰를 갱신합니다.
+     */
+    fun saveComment(commitHash: String, filePath: String, key: LineKey, text: String) {
+        viewScope.launch {
+            commentManager.saveComment(commitHash, filePath, key, text)
+            val updated = commentManager.loadComments(commitHash, filePath)
+            adapter.comments = updated
+        }
+    }
+
+    /**
+     * 특정 라인의 코멘트를 삭제하고 뷰를 갱신합니다.
+     */
+    fun deleteComment(commitHash: String, filePath: String, key: LineKey) {
+        viewScope.launch {
+            commentManager.deleteComment(commitHash, filePath, key)
+            val updated = commentManager.loadComments(commitHash, filePath)
+            adapter.comments = updated
+        }
+    }
+
+    /**
+     * 라인 롱클릭을 통한 코멘트 기능 활성화/비활성화 여부 설정.
+     */
+    fun setCommentsEnabled(enabled: Boolean) {
+        this.isCommentsEnabled = enabled
+    }
+
+    fun isCommentsEnabled(): Boolean = isCommentsEnabled
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- GitHub Comment Theme Colors -->
+    <color name="github_comment_bg">#F6F8FA</color>
+    <color name="github_comment_stroke">#D0D7DE</color>
+    <color name="github_comment_text">#24292F</color>
+    <color name="github_comment_time">#57606A</color>
+</resources>

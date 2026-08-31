@@ -1,6 +1,7 @@
 package com.mdiwebma.diffview_demo
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -69,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         diffView = findViewById(R.id.diffview)
 
         // Basic DiffView configuration
-        diffView.setDiffMode(DiffMode.UNIFIED)
+        //diffView.setDiffMode(DiffMode.UNIFIED)
 //        diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
 //        diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.NONE)
 //        diffView.setDiffGranularity(DiffGranularity.WORD)
@@ -83,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         // Show initial sample code
         //diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
         diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
+        diffView.setCommentContext("sample_initial_commit", "MainActivity.kt")
 //        diffView.expandAll()
 
         btnFetchCommit.setOnClickListener {
@@ -272,6 +274,7 @@ class MainActivity : AppCompatActivity() {
                 )
                 diffView.setSyntaxHighlighter(com.mdiwebma.diffview.SyntaxHighlighter.forFileName(fileInfo.filename))
                 diffView.setContent(original = origText, modified = modText)
+                diffView.setCommentContext(commitInfo.commitSha, fileInfo.filename)
                 //diffView.expandAll()
                 setLoading(false, "Selected: ${fileInfo.filename}")
             } catch (e: Exception) {
@@ -286,6 +289,15 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = if (loading) View.VISIBLE else View.GONE
         btnFetchCommit.isEnabled = !loading
         tvStatus.text = message
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
+        } else {
+            diffView.setDiffMode(DiffMode.UNIFIED)
+        }
     }
 
     companion object {
