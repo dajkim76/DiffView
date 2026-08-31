@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -20,6 +21,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview_demo.box.AppBoxStore
+import com.mdiwebma.diffview_demo.box.CompareEntity
+import io.objectbox.Box
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -110,6 +114,14 @@ class MainActivity : AppCompatActivity() {
 
         btnSelectFile.setOnClickListener {
             showFileSelectionDialog()
+        }
+
+        // AppBoxStore
+        val compareBox: Box<CompareEntity> = AppBoxStore.getInstance(this).getBox()
+        compareBox.put(CompareEntity(beforeText = SAMPLE_ORIGINAL, afterText = SAMPLE_MODIFIED, count = 123))
+        //compareBox.removeAll()
+        compareBox.all.forEach {
+            Log.e("__T", "id=${it.id} title=${it.title}, count=${it.count}")
         }
     }
 
