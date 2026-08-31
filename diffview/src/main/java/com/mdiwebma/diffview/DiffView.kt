@@ -1,9 +1,15 @@
 package com.mdiwebma.diffview
 
+import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
@@ -735,6 +741,144 @@ class DiffView @JvmOverloads constructor(
     }
 
     fun isCommentsEnabled(): Boolean = isCommentsEnabled
+
+    /**
+     * 현재 화면에 표시되고 있는 영역(Viewport)을 [Bitmap]으로 캡처합니다.
+     * View의 기본 [draw] 메서드를 사용하여 화면에 렌더링된 상태 그대로 캡처합니다.
+     */
+    fun captureVisibleBitmap(): Bitmap? {
+        if (width <= 0 || height <= 0) return null
+        val bitmap = try {
+            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            return null
+        }
+        val canvas = Canvas(bitmap)
+        draw(canvas)
+        return bitmap
+    }
+
+    /**
+     * DiffView의 전체 내용(헤더 및 스크롤 끝까지의 모든 행)을 [Bitmap]으로 캡처합니다.
+     * UI 스레드에서 호출되어야 하며, 전체 내용이 렌더링된 비트맵을 반환합니다.
+     */
+    fun captureFullBitmap(): Bitmap? {
+        val w = if (width > 0) width else resources.displayMetrics.widthPixels
+        if (w <= 0) return null
+
+        val widthSpec = MeasureSpec.makeMeasureSpec(w, MeasureSpec.EXACTLY)
+        val unspecifiedSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+
+        // 1. Measure Header
+        headerLayout.measure(widthSpec, unspecifiedSpec)
+        val headerHeight = headerLayout.measuredHeight
+        headerLayout.measure(widthSpec, MeasureSpec.makeMeasureSpec(headerHeight, MeasureSpec.EXACTLY))
+        headerLayout.layout(0, 0, w, headerHeight)
+
+        headerDivider.measure(widthSpec, unspecifiedSpec)
+        val dividerHeight = headerDivider.measuredHeight
+        headerDivider.measure(widthSpec, MeasureSpec.makeMeasureSpec(dividerHeight, MeasureSpec.EXACTLY))
+        headerDivider.layout(0, 0, w, dividerHeight)
+
+        // 2. Measure all RecyclerView items
+        val itemCount = adapter.itemCount
+        val viewHolders = ArrayList<RecyclerView.ViewHolder>(itemCount)
+        val itemHeights = IntArray(itemCount)
+        var itemsTotalHeight = 0
+
+        for (i in 0 until itemCount) {
+            val viewType = adapter.getItemViewType(i)
+            val holder = adapter.createViewHolder(recyclerView, viewType)
+            adapter.onBindViewHolder(holder, i)
+
+            // Pass 1: compute wrap_content height
+            holder.itemView.measure(widthSpec, unspecifiedSpec)
+            val h = holder.itemView.measuredHeight.coerceAtLeast(1)
+            itemHeights[i] = h
+            itemsTotalHeight += h
+
+            // Pass 2: layout with exact height so match_parent children have valid bounds
+            holder.itemView.measure(widthSpec, MeasureSpec.makeMeasureSpec(h, MeasureSpec.EXACTLY))
+            holder.itemView.layout(0, 0, w, h)
+
+            viewHolders.add(holder)
+        }
+
+        val totalHeight = (headerHeight + dividerHeight + itemsTotalHeight).coerceAtLeast(1)
+
+        val bitmap = try {
+            Bitmap.createBitmap(w, totalHeight, Bitmap.Config.ARGB_8888)
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            return null
+        }
+
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(diffColors.unchangedBackground)
+
+        // 3. Draw Header
+        headerLayout.draw(canvas)
+        canvas.translate(0f, headerHeight.toFloat())
+
+        headerDivider.draw(canvas)
+        canvas.translate(0f, dividerHeight.toFloat())
+
+        // 4. Draw all items
+        for (i in 0 until itemCount) {
+            val holder = viewHolders[i]
+            val h = itemHeights[i]
+            holder.itemView.draw(canvas)
+            canvas.translate(0f, h.toFloat())
+        }
+
+        return bitmap
+    }
+
+    /**
+     * 캡처한 비트맵을 기기의 사진 갤러리(Pictures/DiffView)에 PNG 파일로 비동기 저장합니다.
+     */
+    suspend fun saveBitmapToGallery(
+        context: Context,
+        bitmap: Bitmap,
+        filename: String = "Diff_${System.currentTimeMillis()}"
+    ): Uri? = withContext(Dispatchers.IO) {
+        val resolver = context.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "$filename.png")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/DiffView")
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+        }
+
+        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        }
+
+        val itemUri = resolver.insert(collection, contentValues) ?: return@withContext null
+
+        try {
+            resolver.openOutputStream(itemUri)?.use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                contentValues.clear()
+                contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+                resolver.update(itemUri, contentValues, null, null)
+            }
+            itemUri
+        } catch (e: Exception) {
+            e.printStackTrace()
+            try {
+                resolver.delete(itemUri, null, null)
+            } catch (_: Exception) {}
+            null
+        }
+    }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()

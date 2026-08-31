@@ -601,7 +601,7 @@ class DiffRowViewHolder(
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val leftScrollView = SyncHorizontalScrollView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 addView(leftCodeText)
@@ -661,7 +661,7 @@ class DiffRowViewHolder(
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val rightScrollView = SyncHorizontalScrollView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 addView(rightCodeText)
@@ -946,7 +946,7 @@ class UnifiedRowViewHolder(
             }
 
             val scrollView = SyncHorizontalScrollView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 addView(codeText)

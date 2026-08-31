@@ -95,6 +95,57 @@ class MainActivity : AppCompatActivity() {
         btnSelectFile.setOnClickListener {
             showFileSelectionDialog()
         }
+
+        findViewById<Button>(R.id.btnSaveImage).setOnClickListener {
+            saveDiffImage()
+        }
+    }
+
+    private fun saveDiffImage() {
+        val options = arrayOf(
+            "보이는 부분만 저장 (Visible Viewport)",
+            "전체 내용 저장 (Full Diff)"
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle("이미지 저장 (Save Image)")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> executeImageCapture(isFull = false)
+                    1 -> executeImageCapture(isFull = true)
+                }
+            }
+            .show()
+    }
+
+    private fun executeImageCapture(isFull: Boolean) {
+        val modeLabel = if (isFull) "전체 Diff" else "현재 화면"
+        setLoading(true, "Capturing $modeLabel image...")
+
+        val bitmap = if (isFull) {
+            diffView.captureFullBitmap()
+        } else {
+            diffView.captureVisibleBitmap()
+        }
+
+        if (bitmap == null) {
+            setLoading(false, "Failed to capture $modeLabel.")
+            Toast.makeText(this, "Failed to capture $modeLabel image.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val suffix = if (isFull) "full" else "visible"
+        val filename = "DiffView_${suffix}_${System.currentTimeMillis()}"
+
+        lifecycleScope.launch {
+            val uri = diffView.saveBitmapToGallery(this@MainActivity, bitmap, filename)
+            setLoading(false, if (uri != null) "$modeLabel 저장 완료!" else "$modeLabel 저장 실패")
+            if (uri != null) {
+                Toast.makeText(this@MainActivity, "Saved to Pictures/DiffView ($filename.png)", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this@MainActivity, "Failed to save image.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun parseCommitUrl(rawUrl: String): CommitUrlInfo? {

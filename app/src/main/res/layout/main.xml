@@ -69,6 +69,13 @@
             android:enabled="false"
             android:text="Select File" />
 
+        <Button
+            android:id="@+id/btnSaveImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="Save Image" />
+
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="0dp"
