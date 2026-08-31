@@ -171,6 +171,7 @@ class KotlinDiffEngine(
                     originalIndex += origSize
                     modifiedIndex += modSize
                 }
+
                 is DeleteDelta -> {
                     for (i in 0 until delta.source.lines.size) {
                         val origLineIndex = originalIndex + i
@@ -184,6 +185,7 @@ class KotlinDiffEngine(
                     }
                     originalIndex += delta.source.lines.size
                 }
+
                 is InsertDelta -> {
                     for (i in 0 until delta.target.lines.size) {
                         val modLineIndex = modifiedIndex + i
@@ -197,6 +199,7 @@ class KotlinDiffEngine(
                     }
                     modifiedIndex += delta.target.lines.size
                 }
+
                 else -> {
                     val origSize = delta.source.lines.size
                     for (i in 0 until origSize) {

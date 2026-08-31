@@ -15,6 +15,7 @@ class CodeCommentManager(private val baseDir: File) {
     constructor(context: Context) : this(File(context.filesDir, "code_comments"))
 
     private val gson = Gson()
+
     // Cache: [commitHash:filePath] -> [LineKey -> CodeComment]
     private val memoryCache = mutableMapOf<String, MutableMap<LineKey, CodeComment>>()
 

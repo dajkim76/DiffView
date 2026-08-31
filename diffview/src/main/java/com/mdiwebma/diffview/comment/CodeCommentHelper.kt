@@ -1,21 +1,20 @@
 package com.mdiwebma.diffview.comment
 
 import android.content.Context
+import android.graphics.drawable.GradientDrawable
 import android.text.InputType
 import android.text.format.DateFormat
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.FrameLayout
-import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import com.mdiwebma.diffview.R
-import android.graphics.drawable.GradientDrawable
-import com.mdiwebma.diffview.DiffColors
-import android.view.Gravity
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
-import android.util.TypedValue
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import com.mdiwebma.diffview.DiffColors
+import com.mdiwebma.diffview.R
 import java.util.Date
 
 /**

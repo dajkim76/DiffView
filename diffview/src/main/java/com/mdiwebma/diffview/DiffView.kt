@@ -875,7 +875,8 @@ class DiffView @JvmOverloads constructor(
             e.printStackTrace()
             try {
                 resolver.delete(itemUri, null, null)
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
             null
         }
     }

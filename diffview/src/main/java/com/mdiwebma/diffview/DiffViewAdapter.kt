@@ -8,6 +8,7 @@ import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -16,7 +17,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import android.view.LayoutInflater
 import com.mdiwebma.diffview.comment.CodeComment
 import com.mdiwebma.diffview.comment.CodeCommentHelper
 import com.mdiwebma.diffview.comment.LineKey
