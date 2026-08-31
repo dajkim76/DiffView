@@ -22,6 +22,7 @@ import com.mdiwebma.diffview.comment.CodeCommentHelper
 import com.mdiwebma.diffview.comment.LineKey
 import com.mdiwebma.diffview.model.DiffDisplayItem
 import com.mdiwebma.diffview.model.DiffLine
+import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffRow
 import com.mdiwebma.diffview.model.DiffRowType
@@ -85,12 +86,18 @@ class DiffViewAdapter(
             }
         }
 
-    var isTextSelectable: Boolean = false
+    var longTabAction: DiffLongTabAction = DiffLongTabAction.NONE
         set(value) {
             if (field != value) {
                 field = value
                 notifyDataSetChanged()
             }
+        }
+
+    var isTextSelectable: Boolean
+        get() = longTabAction == DiffLongTabAction.TEXT_SELECTABLE
+        set(value) {
+            longTabAction = if (value) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.NONE
         }
 
     var diffLabels: DiffLabels = DiffLabels.Default
@@ -165,7 +172,7 @@ class DiffViewAdapter(
                     isLineWrap = isLineWrap,
                     showDiffSymbols = showDiffSymbols,
                     gutterWidthDp = gutterWidthDp,
-                    isTextSelectable = isTextSelectable,
+                    longTabAction = longTabAction,
                     comments = comments,
                     onLineLongClick = onLineLongClick,
                     onCommentClick = onCommentClick
@@ -181,7 +188,7 @@ class DiffViewAdapter(
                     isDark = isDark,
                     isLineWrap = isLineWrap,
                     gutterWidthDp = gutterWidthDp,
-                    isTextSelectable = isTextSelectable,
+                    longTabAction = longTabAction,
                     comments = comments,
                     onLineLongClick = onLineLongClick,
                     onCommentClick = onCommentClick
@@ -263,7 +270,7 @@ class DiffRowViewHolder(
         isLineWrap: Boolean = false,
         showDiffSymbols: Boolean = true,
         gutterWidthDp: Int = 48,
-        isTextSelectable: Boolean = false,
+        longTabAction: DiffLongTabAction = DiffLongTabAction.NONE,
         comments: Map<LineKey, CodeComment> = emptyMap(),
         onLineLongClick: ((LineKey, CodeComment?) -> Unit)? = null,
         onCommentClick: ((LineKey, CodeComment) -> Unit)? = null
@@ -295,8 +302,9 @@ class DiffRowViewHolder(
             }
         }
 
-        leftCodeText.setTextIsSelectable(isTextSelectable)
-        rightCodeText.setTextIsSelectable(isTextSelectable)
+        val isSelectable = longTabAction == DiffLongTabAction.TEXT_SELECTABLE
+        leftCodeText.setTextIsSelectable(isSelectable)
+        rightCodeText.setTextIsSelectable(isSelectable)
 
         leftScrollView.isLineWrap = isLineWrap
         rightScrollView.isLineWrap = isLineWrap
@@ -416,6 +424,7 @@ class DiffRowViewHolder(
             showDiffSymbols = showDiffSymbols,
             sideLabel = "Original",
             symbol = leftSymbol,
+            longTabAction = longTabAction,
             onLineLongClick = onLineLongClick,
             onCommentClick = onCommentClick
         )
@@ -442,6 +451,7 @@ class DiffRowViewHolder(
             showDiffSymbols = showDiffSymbols,
             sideLabel = "Modified",
             symbol = rightSymbol,
+            longTabAction = longTabAction,
             onLineLongClick = onLineLongClick,
             onCommentClick = onCommentClick
         )
@@ -469,6 +479,7 @@ class DiffRowViewHolder(
         showDiffSymbols: Boolean,
         sideLabel: String,
         symbol: String = "",
+        longTabAction: DiffLongTabAction = DiffLongTabAction.NONE,
         onLineLongClick: ((LineKey, CodeComment?) -> Unit)?,
         onCommentClick: ((LineKey, CodeComment) -> Unit)?
     ) {
@@ -529,12 +540,17 @@ class DiffRowViewHolder(
                 commentView.visibility = View.GONE
             }
 
-            val longClickListener = View.OnLongClickListener {
-                onLineLongClick?.invoke(lineKey, comment)
-                true
+            if (longTabAction == DiffLongTabAction.COMMENT) {
+                val longClickListener = View.OnLongClickListener {
+                    onLineLongClick?.invoke(lineKey, comment)
+                    true
+                }
+                container.setOnLongClickListener(longClickListener)
+                codeText.setOnLongClickListener(longClickListener)
+            } else {
+                container.setOnLongClickListener(null)
+                codeText.setOnLongClickListener(null)
             }
-            container.setOnLongClickListener(longClickListener)
-            codeText.setOnLongClickListener(longClickListener)
         } else {
             container.setBackgroundColor(colors.noneTextBackground)
             gutterText.setBackgroundColor(colors.noneTextBackground)
@@ -751,7 +767,7 @@ class UnifiedRowViewHolder(
         isDark: Boolean,
         isLineWrap: Boolean = false,
         gutterWidthDp: Int = 48,
-        isTextSelectable: Boolean = false,
+        longTabAction: DiffLongTabAction = DiffLongTabAction.NONE,
         comments: Map<LineKey, CodeComment> = emptyMap(),
         onLineLongClick: ((LineKey, CodeComment?) -> Unit)? = null,
         onCommentClick: ((LineKey, CodeComment) -> Unit)? = null
@@ -777,7 +793,8 @@ class UnifiedRowViewHolder(
             }
         }
 
-        codeText.setTextIsSelectable(isTextSelectable)
+        val isSelectable = longTabAction == DiffLongTabAction.TEXT_SELECTABLE
+        codeText.setTextIsSelectable(isSelectable)
         scrollView.isLineWrap = isLineWrap
         codeText.isSingleLine = !isLineWrap
         codeText.gravity = Gravity.TOP or Gravity.START
@@ -877,12 +894,17 @@ class UnifiedRowViewHolder(
             }
         )
 
-        val longClickListener = View.OnLongClickListener {
-            onLineLongClick?.invoke(lineKey, comment)
-            true
+        if (longTabAction == DiffLongTabAction.COMMENT) {
+            val longClickListener = View.OnLongClickListener {
+                onLineLongClick?.invoke(lineKey, comment)
+                true
+            }
+            lineContainer.setOnLongClickListener(longClickListener)
+            codeText.setOnLongClickListener(longClickListener)
+        } else {
+            lineContainer.setOnLongClickListener(null)
+            codeText.setOnLongClickListener(null)
         }
-        lineContainer.setOnLongClickListener(longClickListener)
-        codeText.setOnLongClickListener(longClickListener)
     }
 
     companion object {

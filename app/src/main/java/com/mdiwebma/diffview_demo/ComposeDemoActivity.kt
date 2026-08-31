@@ -35,6 +35,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.mdiwebma.diffview.DiffColors
 import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.model.DiffGranularity
+import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview_demo.ui.theme.SplitDiffTheme
 
@@ -239,7 +240,7 @@ fun DiffDemoScreen(
                     OutlinedButton(
                         onClick = {
                             isTextSelectable = !isTextSelectable
-                            diffViewInstance?.setTextIsSelectable(isTextSelectable)
+                            diffViewInstance?.setLongTabAction(if (isTextSelectable) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.COMMENT)
                         },
                         contentPadding = ButtonDefaults.TextButtonContentPadding
                     ) {
@@ -290,7 +291,7 @@ fun DiffDemoScreen(
                     setDiffGranularity(diffGranularity)
                     setLineWrap(isLineWrap)
                     setShowDiffSymbols(showDiffSymbols)
-                    setTextIsSelectable(isTextSelectable)
+                    setLongTabAction(if (isTextSelectable) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.COMMENT)
                     setHeaderTitles("Original Code", "Modified Code")
                     val (orig, mod) = presets[selectedPreset].second
                     setContent(orig, mod)
@@ -306,7 +307,7 @@ fun DiffDemoScreen(
                 view.setDiffGranularity(diffGranularity)
                 view.setLineWrap(isLineWrap)
                 view.setShowDiffSymbols(showDiffSymbols)
-                view.setTextIsSelectable(isTextSelectable)
+                view.setLongTabAction(if (isTextSelectable) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.COMMENT)
                 diffViewInstance = view
             }
         )

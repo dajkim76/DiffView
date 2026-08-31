@@ -28,6 +28,7 @@ import com.mdiwebma.diffview.engine.DiffEngine
 import com.mdiwebma.diffview.engine.KotlinDiffEngine
 import com.mdiwebma.diffview.model.DiffDisplayItem
 import com.mdiwebma.diffview.model.DiffGranularity
+import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffResult
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
@@ -68,7 +69,7 @@ class DiffView @JvmOverloads constructor(
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
     private var isLineWrap: Boolean = false
     private var showDiffSymbols: Boolean = true
-    private var isTextSelectable: Boolean = false
+    private var longTabAction: DiffLongTabAction = DiffLongTabAction.NONE
     private var gutterWidthDp: Int = 48
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
@@ -480,18 +481,33 @@ class DiffView @JvmOverloads constructor(
     fun getGutterWidthDp(): Int = gutterWidthDp
 
     /**
-     * 코드 텍스트의 드래그 선택 및 복사 가능 여부 설정.
-     * - true: 코드 텍스트 선택 및 복사 가능
-     * - false: 텍스트 선택 비활성화 (기본값)
+     * 코드 라인을 롱탭(Long-press)했을 때의 동작 옵션 설정.
+     * - [DiffLongTabAction.NONE]: 롱탭 동작 없음 (기본값)
+     * - [DiffLongTabAction.TEXT_SELECTABLE]: 텍스트 드래그 및 복사 모드
+     * - [DiffLongTabAction.COMMENT]: 코드 라인 코멘트 추가/수정/삭제 모드
      */
-    fun setTextIsSelectable(selectable: Boolean) {
-        if (this.isTextSelectable != selectable) {
-            this.isTextSelectable = selectable
-            adapter.isTextSelectable = selectable
+    fun setLongTabAction(action: DiffLongTabAction) {
+        if (this.longTabAction != action) {
+            this.longTabAction = action
+            adapter.longTabAction = action
         }
     }
 
-    fun isTextSelectable(): Boolean = isTextSelectable
+    fun getLongTabAction(): DiffLongTabAction = longTabAction
+
+    /**
+     * @deprecated Use [setLongTabAction] with [DiffLongTabAction] instead.
+     */
+    @Deprecated(
+        "Use setLongTabAction(DiffLongTabAction) instead",
+        ReplaceWith("setLongTabAction(if (selectable) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.NONE)")
+    )
+    fun setTextIsSelectable(selectable: Boolean) {
+        setLongTabAction(if (selectable) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.NONE)
+    }
+
+    @Deprecated("Use getLongTabAction() instead")
+    fun isTextSelectable(): Boolean = longTabAction == DiffLongTabAction.TEXT_SELECTABLE
 
     private fun updateGutterWidths() {
         val density = context.resources.displayMetrics.density

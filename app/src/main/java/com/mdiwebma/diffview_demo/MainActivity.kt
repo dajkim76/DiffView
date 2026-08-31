@@ -20,6 +20,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview_demo.box.AppBoxStore
 import com.mdiwebma.diffview_demo.box.CompareEntity
@@ -104,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         // Show initial sample code
         //diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
         diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
+        diffView.setLongTabAction(DiffLongTabAction.COMMENT)
         diffView.setCommentContext("sample_initial_commit", "MainActivity.kt")
 //        diffView.expandAll()
 

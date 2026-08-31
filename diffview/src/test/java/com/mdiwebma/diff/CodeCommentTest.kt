@@ -148,4 +148,16 @@ class CodeCommentTest {
         assertNull(commentManager.getComment(commit, filePath, leftOnlyKey))
         assertNull(commentManager.getComment(commit, filePath, rightOnlyKey))
     }
+
+    @Test
+    fun testDiffLongTabAction_EnumValues() {
+        val none = com.mdiwebma.diffview.model.DiffLongTabAction.NONE
+        val textSelectable = com.mdiwebma.diffview.model.DiffLongTabAction.TEXT_SELECTABLE
+        val comment = com.mdiwebma.diffview.model.DiffLongTabAction.COMMENT
+
+        assertEquals("NONE", none.name)
+        assertEquals("TEXT_SELECTABLE", textSelectable.name)
+        assertEquals("COMMENT", comment.name)
+        assertEquals(3, com.mdiwebma.diffview.model.DiffLongTabAction.entries.size)
+    }
 }

@@ -48,8 +48,9 @@ An Android Studio Diff Editor styled **Side-by-Side (Split) & Unified DiffView**
     - `setShowDiffSymbols(true)` displays `-` (deleted) and `+` (added) indicators in front of code lines in Side-by-Side mode (default: `true`).
 11. **Adjustable Gutter (Line Number) Width**:
     - `setGutterWidthDp(50)` allows adjusting the line number gutter width (default: `42dp`).
-12. **Text Selection & Copying**:
-    - Enable text selection and copying via `setTextIsSelectable(true)` (default: `false`).
+12. **Line Long-Press Action (None, Text Selection & Code Comments)**:
+    - Configure long-press interaction via `setLongTabAction(DiffLongTabAction.NONE)` (default: `NONE`).
+    - Options: `NONE`, `TEXT_SELECTABLE` (drag selection/copying), `COMMENT` (line comment dialog).
 13. **Screenshots**
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot2](screenshot2.jpg)
@@ -123,6 +124,7 @@ import com.mdiwebma.diffview.DiffColors
 import com.mdiwebma.diffview.DiffLabels
 import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.model.DiffGranularity
+import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 
@@ -193,8 +195,8 @@ diffView.setShowDiffSymbols(true)
 // 13. Adjust line number gutter width (DP unit, default: 42dp)
 diffView.setGutterWidthDp(48)
 
-// 14. Enable text selection and copying (default: false)
-diffView.setTextIsSelectable(true)
+// 14. Configure line long-press action (NONE (default), TEXT_SELECTABLE, COMMENT)
+diffView.setLongTabAction(DiffLongTabAction.TEXT_SELECTABLE)
 ```
 
 ---

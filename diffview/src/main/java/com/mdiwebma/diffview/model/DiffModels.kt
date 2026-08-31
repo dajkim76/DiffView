@@ -64,6 +64,26 @@ enum class DiffMode {
 }
 
 /**
+ * 코드 라인을 롱탭(Long-press)했을 때의 동작 옵션
+ */
+enum class DiffLongTabAction {
+    /**
+     * 아무 동작도 하지 않음 (기본값)
+     */
+    NONE,
+
+    /**
+     * 텍스트를 드래그 선택 및 복사할 수 있는 모드
+     */
+    TEXT_SELECTABLE,
+
+    /**
+     * 코드 라인에 코멘트를 추가/수정/삭제하는 다이얼로그 모드
+     */
+    COMMENT
+}
+
+/**
  * 인라인 차이점 하이라이트 단위
  */
 enum class DiffGranularity {
