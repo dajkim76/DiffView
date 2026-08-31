@@ -11,6 +11,7 @@ composeBom = "2024.09.00"
 kotlinDiffUtils = "1.3.0"
 gson = "2.10.1"
 coroutines = "1.9.0"
+objectbox = "5.4.2"
 
 [libraries]
 google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
@@ -32,9 +33,13 @@ androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview"
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0" }
 kotlin-diff-utils = { group = "io.github.petertrr", name = "kotlin-multiplatform-diff", version.ref = "kotlinDiffUtils" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+objectbox-android-objectbrowser = { group = "io.objectbox", name = "objectbox-android-objectbrowser", version.ref = "objectbox" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+objectbox = { id = "io.objectbox", version.ref = "objectbox" }
 
