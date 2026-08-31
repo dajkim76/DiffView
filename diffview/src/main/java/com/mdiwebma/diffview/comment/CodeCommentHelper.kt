@@ -22,7 +22,7 @@ import java.util.Date
  */
 object CodeCommentHelper {
 
-    private val DEFAULT_EMOJIS = listOf("👍", "🚀", "❤️", "💡", "⚠️", "❓", "🎉", "🔥")
+    private val DEFAULT_EMOJIS = listOf("👍", "👀", "❤️", "🚀", "🔥", "💡", "🤔", "❓", "⚠️", "🐛", "👏", "🙏")
 
     /**
      * Resolves a comment for a given LineKey with fallback support for unchanged lines.
