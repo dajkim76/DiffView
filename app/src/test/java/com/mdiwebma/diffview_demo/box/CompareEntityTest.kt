@@ -35,7 +35,7 @@ class CompareEntityTest {
 
         val box = store.boxFor(CompareEntity::class.java)
 
-        // 1. Without specifying title (null/empty passed to constructor)
+        // 1. Without specifying title (default empty string)
         val entity1 = CompareEntity(
             beforeText = "before",
             afterText = "after"
@@ -44,9 +44,9 @@ class CompareEntityTest {
 
         val fetched1 = box.get(id1)
         assertNotNull(fetched1)
-        assertEquals("No Title ^^", fetched1.title)
+        assertEquals("", fetched1.title)
 
-        // 2. With empty title -> should fallback to "No Title ^^"
+        // 2. With empty title
         val entity2 = CompareEntity(
             title = "",
             beforeText = "before2",
@@ -55,7 +55,7 @@ class CompareEntityTest {
         val id2 = box.put(entity2)
 
         val fetched2 = box.get(id2)
-        assertEquals("No Title ^^", fetched2.title)
+        assertEquals("", fetched2.title)
 
         // 3. With explicit title
         val entity3 = CompareEntity(

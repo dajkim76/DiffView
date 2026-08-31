@@ -121,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         compareBox.put(CompareEntity(beforeText = SAMPLE_ORIGINAL, afterText = SAMPLE_MODIFIED, count = 123))
         //compareBox.removeAll()
         compareBox.all.forEach {
-            Log.e("__T", "id=${it.id} title=${it.title}, count=${it.count}")
+            Log.e("__T", "id=${it.id} title2=${it.title2}, title3=${it.title3}, count=${it.count}")
         }
     }
 
@@ -272,9 +272,13 @@ class MainActivity : AppCompatActivity() {
                     val parsedFiles = mutableListOf<CommitFileInfo>()
                     for (i in 0 until filesArray.length()) {
                         val fileObj = filesArray.getJSONObject(i)
+                        val filename = fileObj.getString("filename")
+                        if (isBinaryFile(filename)) {
+                            continue
+                        }
                         parsedFiles.add(
                             CommitFileInfo(
-                                filename = fileObj.getString("filename"),
+                                filename = filename,
                                 status = fileObj.optString("status", "modified"),
                                 previousFilename = if (fileObj.has("previous_filename")) fileObj.getString("previous_filename") else null
                             )
@@ -380,10 +384,10 @@ class MainActivity : AppCompatActivity() {
                     Pair(oldContent, newContent)
                 }
 
-                diffView.setHeaderTitles(
-                    original = fileInfo.previousFilename ?: fileInfo.filename,
-                    modified = fileInfo.filename
-                )
+                //diffView.setHeaderTitles(
+                //    original = fileInfo.previousFilename ?: fileInfo.filename,
+                //    modified = fileInfo.filename
+                //)
                 diffView.setSyntaxHighlighter(com.mdiwebma.diffview.SyntaxHighlighter.forFileName(fileInfo.filename))
                 diffView.setContent(original = origText, modified = modText)
                 diffView.setCommentContext(commitInfo.commitSha, fileInfo.filename)
@@ -485,5 +489,25 @@ data class UserProfile(
     }
 }
 """.trimIndent()
+
+        private val BINARY_EXTENSIONS = hashSetOf(
+            // Images
+            "png", "jpg", "jpeg", "gif", "webp", "ico", "bmp", "tiff", "tif", "heic", "heif", "psd", "ai", "raw", "svgz",
+            // Archives & Compressed
+            "zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar", "jar", "aar", "war", "apk", "aab", "ipa",
+            // Binaries & Libraries
+            "so", "dylib", "dll", "class", "exe", "bin", "o", "a", "lib", "obj", "elf", "dex",
+            // Documents & Fonts
+            "pdf", "ttf", "otf", "woff", "woff2", "eot", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+            // Media (Audio/Video)
+            "mp3", "wav", "ogg", "flac", "m4a", "aac", "mp4", "mov", "avi", "mkv", "webm", "flv", "3gp",
+            // Database & Box
+            "db", "sqlite", "sqlite3", "mdb"
+        )
+
+        fun isBinaryFile(filename: String): Boolean {
+            val ext = filename.substringAfterLast('.', "").lowercase()
+            return BINARY_EXTENSIONS.contains(ext)
+        }
     }
 }
