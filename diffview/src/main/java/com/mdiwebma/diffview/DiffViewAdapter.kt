@@ -384,16 +384,21 @@ class DiffRowViewHolder(
             }
         } else ""
 
-        val leftKey = row.left?.lineNumber?.let { LineKey(leftLine = it, rightLine = null) }
-        val leftComment = leftKey?.let { comments[it] }
+        val unchangedKey = if (row.type == DiffRowType.UNCHANGED && row.left?.lineNumber != null && row.right?.lineNumber != null) {
+            LineKey(leftLine = row.left.lineNumber, rightLine = row.right.lineNumber)
+        } else null
 
-        val rightKey = row.right?.lineNumber?.let { LineKey(leftLine = null, rightLine = it) }
-        val rightComment = rightKey?.let { comments[it] }
+        val leftKey = unchangedKey ?: row.left?.lineNumber?.let { LineKey(leftLine = it, rightLine = null) }
+        val leftComment = CodeCommentHelper.getCommentForLine(comments, leftKey)
+
+        val rightKey = unchangedKey ?: row.right?.lineNumber?.let { LineKey(leftLine = null, rightLine = it) }
+        val rightComment = CodeCommentHelper.getCommentForLine(comments, rightKey)
 
         bindSide(
             line = row.left,
             lineKey = leftKey,
             comment = leftComment,
+            showCommentView = row.type != DiffRowType.UNCHANGED,
             container = leftContainer,
             gutterText = leftGutterText,
             prefixText = leftPrefixText,
@@ -419,6 +424,7 @@ class DiffRowViewHolder(
             line = row.right,
             lineKey = rightKey,
             comment = rightComment,
+            showCommentView = true,
             container = rightContainer,
             gutterText = rightGutterText,
             prefixText = rightPrefixText,
@@ -445,6 +451,7 @@ class DiffRowViewHolder(
         line: DiffLine?,
         lineKey: LineKey?,
         comment: CodeComment?,
+        showCommentView: Boolean = true,
         container: LinearLayout,
         gutterText: TextView,
         prefixText: TextView,
@@ -502,21 +509,25 @@ class DiffRowViewHolder(
             codeText.text = if (isLineWrap) formatWrappedText(highlighted) else highlighted
             container.contentDescription = "$sideLabel line ${line.lineNumber}: ${line.content}"
 
-            CodeCommentHelper.bindCommentView(
-                commentView = commentView,
-                tvContent = tvCommentContent,
-                tvTime = tvCommentTime,
-                comment = comment,
-                colors = colors,
-                onCommentClick = {
-                    if (comment != null) {
-                        onCommentClick?.invoke(lineKey, comment) ?: onLineLongClick?.invoke(lineKey, comment)
+            if (showCommentView) {
+                CodeCommentHelper.bindCommentView(
+                    commentView = commentView,
+                    tvContent = tvCommentContent,
+                    tvTime = tvCommentTime,
+                    comment = comment,
+                    colors = colors,
+                    onCommentClick = {
+                        if (comment != null) {
+                            onCommentClick?.invoke(lineKey, comment) ?: onLineLongClick?.invoke(lineKey, comment)
+                        }
+                    },
+                    onCommentLongClick = {
+                        onLineLongClick?.invoke(lineKey, comment)
                     }
-                },
-                onCommentLongClick = {
-                    onLineLongClick?.invoke(lineKey, comment)
-                }
-            )
+                )
+            } else {
+                commentView.visibility = View.GONE
+            }
 
             val longClickListener = View.OnLongClickListener {
                 onLineLongClick?.invoke(lineKey, comment)
@@ -848,7 +859,7 @@ class UnifiedRowViewHolder(
         rootContainer.contentDescription = "Line ${item.oldLineNumber ?: ""}/${item.newLineNumber ?: ""} $typeDesc: ${item.content}"
 
         val lineKey = LineKey(leftLine = item.oldLineNumber, rightLine = item.newLineNumber)
-        val comment = comments[lineKey]
+        val comment = CodeCommentHelper.getCommentForLine(comments, lineKey)
 
         CodeCommentHelper.bindCommentView(
             commentView = commentView,

@@ -121,4 +121,31 @@ class CodeCommentTest {
         assertEquals("Comment 1", loaded[key1]?.text)
         assertEquals("Comment 2", loaded[key2]?.text)
     }
+
+    @Test
+    fun testUnchangedLineKey_FallbackAndSync() = runTest {
+        val commit = "commit1234"
+        val filePath = "src/main/Test.kt"
+        val unchangedKey = LineKey(leftLine = 10, rightLine = 10)
+        val leftOnlyKey = LineKey(leftLine = 10, rightLine = null)
+        val rightOnlyKey = LineKey(leftLine = null, rightLine = 10)
+
+        // 1. Save with unchanged key (e.g. from Unified mode or SideBySide unchanged row)
+        commentManager.saveComment(commit, filePath, unchangedKey, "Unchanged line comment")
+
+        // 2. Query via direct get and fallback
+        val getDirect = commentManager.getComment(commit, filePath, unchangedKey)
+        val getLeft = commentManager.getComment(commit, filePath, leftOnlyKey)
+        val getRight = commentManager.getComment(commit, filePath, rightOnlyKey)
+
+        assertEquals("Unchanged line comment", getDirect?.text)
+        assertEquals("Unchanged line comment", getLeft?.text)
+        assertEquals("Unchanged line comment", getRight?.text)
+
+        // 3. Delete via left-only key cleans up
+        commentManager.deleteComment(commit, filePath, leftOnlyKey)
+        assertNull(commentManager.getComment(commit, filePath, unchangedKey))
+        assertNull(commentManager.getComment(commit, filePath, leftOnlyKey))
+        assertNull(commentManager.getComment(commit, filePath, rightOnlyKey))
+    }
 }

@@ -71,7 +71,8 @@ class CodeCommentManager(private val baseDir: File) {
      */
     fun getComment(commitHash: String, filePath: String, key: LineKey): CodeComment? {
         val cacheKey = getCacheKey(commitHash, filePath)
-        return memoryCache[cacheKey]?.get(key)
+        val map = memoryCache[cacheKey] ?: return null
+        return CodeCommentHelper.getCommentForLine(map, key)
     }
 
     /**
@@ -82,6 +83,16 @@ class CodeCommentManager(private val baseDir: File) {
         val comment: CodeComment
         synchronized(memoryCache) {
             val map = memoryCache.getOrPut(cacheKey) { mutableMapOf() }
+            if (key.leftLine != null && key.rightLine != null) {
+                map.remove(LineKey(key.leftLine, null))
+                map.remove(LineKey(null, key.rightLine))
+            } else if (key.leftLine != null) {
+                val keysToRemove = map.keys.filter { it.leftLine == key.leftLine && it != key }
+                keysToRemove.forEach { map.remove(it) }
+            } else if (key.rightLine != null) {
+                val keysToRemove = map.keys.filter { it.rightLine == key.rightLine && it != key }
+                keysToRemove.forEach { map.remove(it) }
+            }
             comment = CodeComment(text = text, updatedAt = System.currentTimeMillis())
             map[key] = comment
         }
@@ -95,7 +106,20 @@ class CodeCommentManager(private val baseDir: File) {
     suspend fun deleteComment(commitHash: String, filePath: String, key: LineKey) {
         val cacheKey = getCacheKey(commitHash, filePath)
         synchronized(memoryCache) {
-            memoryCache[cacheKey]?.remove(key)
+            val map = memoryCache[cacheKey]
+            if (map != null) {
+                map.remove(key)
+                if (key.leftLine != null && key.rightLine != null) {
+                    map.remove(LineKey(key.leftLine, null))
+                    map.remove(LineKey(null, key.rightLine))
+                } else if (key.leftLine != null) {
+                    val keysToRemove = map.keys.filter { it.leftLine == key.leftLine }
+                    keysToRemove.forEach { map.remove(it) }
+                } else if (key.rightLine != null) {
+                    val keysToRemove = map.keys.filter { it.rightLine == key.rightLine }
+                    keysToRemove.forEach { map.remove(it) }
+                }
+            }
         }
         persistToFile(commitHash, filePath)
     }

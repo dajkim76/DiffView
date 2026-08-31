@@ -26,6 +26,23 @@ object CodeCommentHelper {
     private val DEFAULT_EMOJIS = listOf("👍", "🚀", "❤️", "💡", "⚠️", "❓", "🎉", "🔥")
 
     /**
+     * Resolves a comment for a given LineKey with fallback support for unchanged lines.
+     */
+    fun getCommentForLine(comments: Map<LineKey, CodeComment>, key: LineKey?): CodeComment? {
+        if (key == null) return null
+        comments[key]?.let { return it }
+        if (key.leftLine != null && key.rightLine != null) {
+            comments[LineKey(leftLine = key.leftLine, rightLine = null)]?.let { return it }
+            comments[LineKey(leftLine = null, rightLine = key.rightLine)]?.let { return it }
+        } else if (key.leftLine != null) {
+            comments.entries.firstOrNull { it.key.leftLine == key.leftLine }?.value?.let { return it }
+        } else if (key.rightLine != null) {
+            comments.entries.firstOrNull { it.key.rightLine == key.rightLine }?.value?.let { return it }
+        }
+        return null
+    }
+
+    /**
      * Shows the comment input/action flow when a code line is long clicked.
      */
     fun handleLineLongClick(
