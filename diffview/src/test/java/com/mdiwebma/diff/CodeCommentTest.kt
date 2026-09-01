@@ -160,4 +160,29 @@ class CodeCommentTest {
         assertEquals("COMMENT", comment.name)
         assertEquals(3, com.mdiwebma.diffview.model.DiffLongTabAction.entries.size)
     }
+
+    @Test
+    fun testDiffCommentLabels_DefaultValues() {
+        val labels = com.mdiwebma.diffview.comment.DiffCommentLabels.Default
+        assertEquals("Add Comment", labels.addTitle)
+        assertEquals("Edit Comment", labels.editTitle)
+        assertEquals("Delete Comment", labels.deleteTitle)
+        assertEquals("Save", labels.actionSave)
+        assertEquals("Cancel", labels.actionCancel)
+        assertEquals("Delete", labels.actionDelete)
+    }
+
+    @Test
+    fun testDiffSettingLabels_DefaultValues() {
+        val labels = com.mdiwebma.diffview.DiffSettingLabels.Default
+        assertEquals("DiffView Settings", labels.dialogTitle)
+        assertEquals("Diff Mode", labels.diffModeTitle)
+        assertEquals("Side-by-Side", labels.modeSideBySide)
+        assertEquals("Unified", labels.modeUnified)
+        assertEquals("Theme", labels.themeTitle)
+        assertEquals("Light", labels.themeLight)
+        assertEquals("Dark", labels.themeDark)
+        assertEquals("Code Folding", labels.foldingTitle)
+        assertEquals("Close", labels.closeButton)
+    }
 }

@@ -48,13 +48,14 @@ object CodeCommentHelper {
         context: Context,
         lineKey: LineKey,
         currentComment: CodeComment?,
+        labels: DiffCommentLabels = DiffCommentLabels.fromContext(context),
         onSave: (String) -> Unit,
         onDelete: () -> Unit
     ) {
         if (currentComment == null) {
-            showAddCommentDialog(context, lineKey, onSave)
+            showAddCommentDialog(context, lineKey, labels, onSave)
         } else {
-            showEditCommentDialog(context, currentComment.text, onSave, onDelete)
+            showEditCommentDialog(context, currentComment.text, labels, onSave, onDelete)
         }
     }
 
@@ -64,12 +65,14 @@ object CodeCommentHelper {
     fun showAddCommentDialog(
         context: Context,
         lineKey: LineKey,
+        labels: DiffCommentLabels = DiffCommentLabels.fromContext(context),
         onSave: (String) -> Unit
     ) {
         showCommentInputDialog(
             context = context,
-            titleRes = R.string.comment_add_title,
+            titleText = labels.addTitle,
             initialText = "",
+            labels = labels,
             onSave = onSave,
             onDelete = null
         )
@@ -81,13 +84,15 @@ object CodeCommentHelper {
     fun showEditCommentDialog(
         context: Context,
         currentText: String,
+        labels: DiffCommentLabels = DiffCommentLabels.fromContext(context),
         onSave: (String) -> Unit,
         onDelete: (() -> Unit)? = null
     ) {
         showCommentInputDialog(
             context = context,
-            titleRes = R.string.comment_edit_title,
+            titleText = labels.editTitle,
             initialText = currentText,
+            labels = labels,
             onSave = onSave,
             onDelete = onDelete
         )
@@ -95,9 +100,9 @@ object CodeCommentHelper {
 
     private fun showCommentInputDialog(
         context: Context,
-        titleRes: Int,
+        titleText: String,
         initialText: String = "",
-        hintRes: Int = R.string.comment_hint,
+        labels: DiffCommentLabels = DiffCommentLabels.fromContext(context),
         onSave: (String) -> Unit,
         onDelete: (() -> Unit)? = null
     ) {
@@ -117,7 +122,7 @@ object CodeCommentHelper {
                 setText(initialText)
                 setSelection(initialText.length)
             }
-            hint = context.getString(hintRes)
+            hint = labels.hint
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
             minLines = 3
             isVerticalScrollBarEnabled = true
@@ -175,19 +180,19 @@ object CodeCommentHelper {
         rootLayout.addView(emojiScrollView)
 
         val builder = AlertDialog.Builder(context)
-            .setTitle(titleRes)
+            .setTitle(titleText)
             .setView(rootLayout)
-            .setPositiveButton(R.string.comment_action_save) { _, _ ->
+            .setPositiveButton(labels.actionSave) { _, _ ->
                 val text = editText.text.toString().trim()
                 if (text.isNotEmpty()) {
                     onSave(text)
                 }
             }
-            .setNegativeButton(R.string.comment_action_cancel, null)
+            .setNegativeButton(labels.actionCancel, null)
 
         if (onDelete != null) {
-            builder.setNeutralButton(R.string.comment_action_delete) { _, _ ->
-                showDeleteConfirmDialog(context, onDelete)
+            builder.setNeutralButton(labels.actionDelete) { _, _ ->
+                showDeleteConfirmDialog(context, labels, onDelete)
             }
         }
 
@@ -205,15 +210,16 @@ object CodeCommentHelper {
      */
     fun showDeleteConfirmDialog(
         context: Context,
+        labels: DiffCommentLabels = DiffCommentLabels.fromContext(context),
         onDelete: () -> Unit
     ) {
         AlertDialog.Builder(context)
-            .setTitle(R.string.comment_delete_title)
-            .setMessage(R.string.comment_delete_confirm)
-            .setPositiveButton(R.string.comment_action_delete) { _, _ ->
+            .setTitle(labels.deleteTitle)
+            .setMessage(labels.deleteConfirm)
+            .setPositiveButton(labels.actionDelete) { _, _ ->
                 onDelete()
             }
-            .setNegativeButton(R.string.comment_action_cancel, null)
+            .setNegativeButton(labels.actionCancel, null)
             .show()
     }
 

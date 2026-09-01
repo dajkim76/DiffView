@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mdiwebma.diffview.comment.CodeComment
 import com.mdiwebma.diffview.comment.CodeCommentHelper
 import com.mdiwebma.diffview.comment.CodeCommentManager
+import com.mdiwebma.diffview.comment.DiffCommentLabels
 import com.mdiwebma.diffview.comment.LineKey
 import com.mdiwebma.diffview.engine.DiffEngine
 import com.mdiwebma.diffview.engine.KotlinDiffEngine
@@ -64,7 +65,9 @@ class DiffView @JvmOverloads constructor(
     private var diffMode: DiffMode = DiffMode.SIDE_BY_SIDE
     private var diffColors: DiffColors = DiffColors.defaultFor(context)
     private var diffLabels: DiffLabels = DiffLabels.fromContext(context)
-    private var isDark: Boolean = false
+    private var commentLabels: DiffCommentLabels = DiffCommentLabels.fromContext(context)
+    private var settingLabels: DiffSettingLabels = DiffSettingLabels.fromContext(context)
+    private var isDark: Boolean = (diffColors == DiffColors.Dark)
     private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
     private var isLineWrap: Boolean = false
@@ -83,6 +86,7 @@ class DiffView @JvmOverloads constructor(
 
     // UI Elements
     private val headerLayout: LinearLayout
+    private val btnSettings: TextView
     private val leftHeaderBox: LinearLayout
     private val leftSpacer: View
     private val leftHeaderTitle: TextView
@@ -111,6 +115,7 @@ class DiffView @JvmOverloads constructor(
         val dividerPx = (1 * density).toInt().coerceAtLeast(1)
         val padHorizontalPx = (8 * density).toInt()
         val padVerticalPx = (8 * density).toInt()
+        val settingsWidthPx = (32 * density).toInt()
 
         // 1. Root Container
         val contentContainer = LinearLayout(context).apply {
@@ -225,11 +230,33 @@ class DiffView @JvmOverloads constructor(
         statsLayout.addView(deletedBadge)
         statsLayout.addView(modifiedBadge)
 
+        // Settings Button (Top-right ⚙️)
+        btnSettings = TextView(context).apply {
+            text = "⚙️"
+            textSize = 14f
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(settingsWidthPx, settingsWidthPx).apply {
+                marginStart = (4 * density).toInt()
+            }
+            val outValue = TypedValue()
+            context.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)
+            if (outValue.resourceId != 0) {
+                setBackgroundResource(outValue.resourceId)
+            }
+            isClickable = true
+            isFocusable = true
+            contentDescription = "DiffView Settings"
+            setOnClickListener {
+                showSettingsDialog()
+            }
+        }
+
         headerLayout.addView(leftHeaderBox)
         headerLayout.addView(centerHeaderDivider)
         headerLayout.addView(rightHeaderBox)
         headerLayout.addView(unifiedHeaderBox)
         headerLayout.addView(statsLayout)
+        headerLayout.addView(btnSettings)
 
         headerDivider = View(context).apply {
             layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dividerPx)
@@ -273,6 +300,7 @@ class DiffView @JvmOverloads constructor(
                         context = context,
                         lineKey = lineKey,
                         currentComment = currentComment,
+                        labels = commentLabels,
                         onSave = { text ->
                             saveComment(commit, path, lineKey, text)
                         },
@@ -291,6 +319,7 @@ class DiffView @JvmOverloads constructor(
                     CodeCommentHelper.showEditCommentDialog(
                         context = context,
                         currentText = currentComment.text,
+                        labels = commentLabels,
                         onSave = { text ->
                             saveComment(commit, path, lineKey, text)
                         },
@@ -494,6 +523,49 @@ class DiffView @JvmOverloads constructor(
     }
 
     fun getLongTabAction(): DiffLongTabAction = longTabAction
+
+    /**
+     * 설정 다이얼로그(Settings Dialog)를 화면에 표시합니다.
+     */
+    fun showSettingsDialog() {
+        DiffSettingDialog.show(this)
+    }
+
+    /**
+     * 상단 헤더 맨 왼쪽의 설정(⚙️) 버튼 노출 여부를 설정합니다.
+     */
+    fun setSettingsButtonVisible(visible: Boolean) {
+        btnSettings.visibility = if (visible) VISIBLE else GONE
+        updateGutterWidths()
+    }
+
+    fun isSettingsButtonVisible(): Boolean = btnSettings.visibility == VISIBLE
+
+    /**
+     * 코멘트 다이얼로그 라벨 설정 ([DiffCommentLabels]).
+     */
+    fun setCommentLabels(labels: DiffCommentLabels) {
+        this.commentLabels = labels
+    }
+
+    fun getCommentLabels(): DiffCommentLabels = commentLabels
+
+    /**
+     * 설정 다이얼로그 라벨 설정 ([DiffSettingLabels]).
+     */
+    fun setSettingLabels(labels: DiffSettingLabels) {
+        this.settingLabels = labels
+    }
+
+    fun getSettingLabels(): DiffSettingLabels = settingLabels
+
+    fun isDark(): Boolean = isDark
+
+    fun getTextSize(): Float = adapter.textSizeSp
+
+    fun isFoldingEnabled(): Boolean = isFoldingEnabled
+
+    fun getSyntaxHighlighter(): SyntaxHighlighter = adapter.syntaxHighlighter
 
     private fun updateGutterWidths() {
         val density = context.resources.displayMetrics.density

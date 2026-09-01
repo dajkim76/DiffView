@@ -21,4 +21,40 @@
     <string name="comment_action_save">저장</string>
     <string name="comment_action_cancel">취소</string>
     <string name="comment_action_delete">삭제</string>
+
+    <!-- Option Dialog Strings -->
+    <string name="diffview_opt_dialog_title">DiffView 설정</string>
+    <string name="diffview_opt_diff_mode">비교 모드</string>
+    <string name="diffview_opt_mode_side_by_side">나란히 보기 (Side-by-Side)</string>
+    <string name="diffview_opt_mode_unified">통합 보기 (Unified)</string>
+    <string name="diffview_opt_theme">테마</string>
+    <string name="diffview_opt_theme_light">라이트 (Light)</string>
+    <string name="diffview_opt_theme_dark">다크 (Dark)</string>
+    <string name="diffview_opt_text_size">글자 크기</string>
+    <string name="diffview_opt_folding">코드 접기 (Folding)</string>
+    <string name="diffview_opt_folding_on">켜짐 (ON)</string>
+    <string name="diffview_opt_folding_off">꺼짐 (OFF)</string>
+    <string name="diffview_opt_collapse_all">모두 접기</string>
+    <string name="diffview_opt_whitespace">공백 무시</string>
+    <string name="diffview_opt_ws_none">엄격한 비교 (None)</string>
+    <string name="diffview_opt_ws_trim">앞/뒤 공백 무시 (Trim)</string>
+    <string name="diffview_opt_ws_collapse">연속 공백 압축 (Collapse)</string>
+    <string name="diffview_opt_ws_ignore_all">모든 공백 무시 (Ignore All)</string>
+    <string name="diffview_opt_granularity">하이라이트 단위</string>
+    <string name="diffview_opt_granularity_word">단어 단위 (Word)</string>
+    <string name="diffview_opt_granularity_char">문자 단위 (Character)</string>
+    <string name="diffview_opt_line_wrap">줄바꿈 (Line Wrap)</string>
+    <string name="diffview_opt_line_wrap_on">줄바꿈 켜짐 (Wrap ON)</string>
+    <string name="diffview_opt_line_wrap_off">줄바꿈 꺼짐 (Wrap OFF)</string>
+    <string name="diffview_opt_symbols">변경 기호 (+/-)</string>
+    <string name="diffview_opt_symbols_on">기호 표시 (ON)</string>
+    <string name="diffview_opt_symbols_off">기호 숨김 (OFF)</string>
+    <string name="diffview_opt_long_tab">코드 라인 롱탭 액션</string>
+    <string name="diffview_opt_long_tab_none">동작 없음 (None)</string>
+    <string name="diffview_opt_long_tab_selectable">텍스트 선택/복사</string>
+    <string name="diffview_opt_long_tab_comment">코멘트 작성</string>
+    <string name="diffview_opt_syntax">구문 강조 (Syntax)</string>
+    <string name="diffview_opt_syntax_kotlin">Kotlin</string>
+    <string name="diffview_opt_syntax_plain">일반 텍스트 (Plain Text)</string>
+    <string name="diffview_opt_close">닫기</string>
 </resources>
