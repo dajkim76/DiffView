@@ -189,5 +189,7 @@ class CodeCommentTest {
         assertEquals("Image Saved", labels.imageSavedTitle)
         assertEquals("View", labels.actionView)
         assertEquals("Share", labels.actionShare)
+        assertEquals("All code blocks expanded.", labels.expandAllSuccess)
+        assertEquals("All code blocks collapsed.", labels.collapseAllSuccess)
     }
 }

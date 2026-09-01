@@ -58,7 +58,10 @@ An Android Studio Diff Editor styled **Side-by-Side (Split) & Unified DiffView**
     - Toggle header action buttons via `setSettingsButtonVisible(boolean)` or `setMoreButtonVisible(boolean)`.
 14. **Customizable Dialog Labels (`DiffSettingLabels`, `DiffCommentLabels`)**:
     - Fully customize all UI strings for settings, image exporting, and code comment dialogs.
-15. **Screenshots**
+15. **Settings Persistence via SharedPreferences (`DiffViewPreferences`)**:
+    - Easily persist and restore all DiffView viewer configurations (diff mode, theme, text size, folding, whitespace, wrap, symbols, and long-press action) using `diffView.savePreferences()` and `diffView.loadPreferences()`.
+    - Supports auto-saving directly from the settings dialog (`diffView.showSettingsDialog(autoSave = true)`).
+16. **Screenshots**
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot2](screenshot2.jpg)
 ![Screenshot3](screenshot3.jpg)
@@ -232,6 +235,12 @@ diffView.setCommentLabels(
         actionSave = "Submit"
     )
 )
+
+// 18. Persist & Restore Settings using SharedPreferences
+diffView.configurePreferences(prefsName = "my_diff_prefs", keyPrefix = "fileA_", autoSave = true)
+diffView.loadPreferences() // Loads settings using the configured prefsName & keyPrefix
+diffView.showSettingsDialog() // Automatically persists changes to the configured prefsName & keyPrefix
+diffView.savePreferences() // Explicit save with configured defaults
 ```
 
 ---

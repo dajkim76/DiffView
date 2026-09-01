@@ -20,7 +20,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
-import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview_demo.box.AppBoxStore
 import com.mdiwebma.diffview_demo.box.CompareEntity
@@ -90,23 +89,14 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         diffView = findViewById(R.id.diffview)
 
-        // Basic DiffView configuration
-        //diffView.setDiffMode(DiffMode.UNIFIED)
-//        diffView.setFoldingEnabled(enabled = true, contextLines = 3, threshold = 8)
-//        diffView.setWhitespaceIgnoreMode(WhitespaceIgnoreMode.NONE)
-//        diffView.setDiffGranularity(DiffGranularity.WORD)
-//        diffView.setLineWrap(true)
-//        diffView.setTextSize(13f)
-//        diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
-        //diffView.setShowDiffSymbols(false)
-        //diffView.setGutterWidthDp(55)
-        //diffView.setTextIsSelectable(true)
-        //diffView.setSettingsButtonVisible(false)
+        // Load persisted DiffView preferences (diffMode, theme, textSize, folding, syntax, etc.)
+        diffView.loadPreferences()
+        diffView.setAutoSavePreferences(true)
 
         // Show initial sample code
         //diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
         diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
-        diffView.setLongTabAction(DiffLongTabAction.COMMENT)
+        //diffView.setLongTabAction(DiffLongTabAction.COMMENT)
         diffView.setCommentContext("sample_initial_commit", "MainActivity.kt")
 //        diffView.expandAll()
 
@@ -370,9 +360,9 @@ class MainActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
+            //diffView.setDiffMode(DiffMode.SIDE_BY_SIDE)
         } else {
-            diffView.setDiffMode(DiffMode.UNIFIED)
+            //diffView.setDiffMode(DiffMode.UNIFIED)
         }
     }
 

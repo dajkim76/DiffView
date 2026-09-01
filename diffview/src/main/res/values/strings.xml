@@ -66,4 +66,6 @@
     <string name="diffview_image_save_failed">Failed to save diff image.</string>
     <string name="diffview_action_view">View</string>
     <string name="diffview_action_share">Share</string>
+    <string name="diffview_expand_all_success">All code blocks expanded.</string>
+    <string name="diffview_collapse_all_success">All code blocks collapsed.</string>
 </resources>

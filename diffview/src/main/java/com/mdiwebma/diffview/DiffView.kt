@@ -3,6 +3,7 @@ package com.mdiwebma.diffview
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -83,6 +84,9 @@ class DiffView @JvmOverloads constructor(
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
     private var foldingThreshold: Int = 8
+    private var preferencesName: String = DiffViewPreferences.DEFAULT_PREFS_NAME
+    private var preferencesKeyPrefix: String = ""
+    private var isAutoSavePreferences: Boolean = false
     private val expandedFoldMap = mutableMapOf<Long, FoldExpansionState>()
 
     private var currentOriginalText: String = ""
@@ -562,10 +566,54 @@ class DiffView @JvmOverloads constructor(
     fun getLongTabAction(): DiffLongTabAction = longTabAction
 
     /**
-     * 설정 다이얼로그(Settings Dialog)를 화면에 표시합니다.
+     * DiffView 설정의 SharedPreferences 저장소 환경(이름, 키 접두사, 자동 저장 여부)을 한 번에 구성합니다.
+     * @param prefsName SharedPreferences 파일 이름 (기본값: "diffview_preferences")
+     * @param keyPrefix SharedPreferences 키 접두사 (기본값: "")
+     * @param autoSave 설정 다이얼로그에서 변경 시 자동 저장 여부 (기본값: false)
      */
-    fun showSettingsDialog() {
-        DiffSettingDialog.show(this)
+    fun configurePreferences(
+        prefsName: String = DiffViewPreferences.DEFAULT_PREFS_NAME,
+        keyPrefix: String = "",
+        autoSave: Boolean = false
+    ) {
+        this.preferencesName = prefsName
+        this.preferencesKeyPrefix = keyPrefix
+        this.isAutoSavePreferences = autoSave
+    }
+
+    fun setPreferencesName(name: String) {
+        this.preferencesName = name
+    }
+
+    fun getPreferencesName(): String = preferencesName
+
+    fun setPreferencesKeyPrefix(prefix: String) {
+        this.preferencesKeyPrefix = prefix
+    }
+
+    fun getPreferencesKeyPrefix(): String = preferencesKeyPrefix
+
+    /**
+     * 설정 변경 시 SharedPreferences에 자동 영구 저장할지 여부를 설정합니다 (기본값: false).
+     */
+    fun setAutoSavePreferences(enabled: Boolean) {
+        this.isAutoSavePreferences = enabled
+    }
+
+    fun isAutoSavePreferences(): Boolean = isAutoSavePreferences
+
+    /**
+     * 설정 다이얼로그(Settings Dialog)를 화면에 표시합니다.
+     * @param autoSave 설정 변경 시 자동으로 SharedPreferences에 영구 저장할지 여부 (기본값: [isAutoSavePreferences])
+     * @param prefsName SharedPreferences 파일 이름 (기본값: [getPreferencesName])
+     * @param keyPrefix SharedPreferences 키 접두사 (기본값: [getPreferencesKeyPrefix])
+     */
+    fun showSettingsDialog(
+        autoSave: Boolean = this.isAutoSavePreferences,
+        prefsName: String = this.preferencesName,
+        keyPrefix: String = this.preferencesKeyPrefix
+    ) {
+        DiffSettingDialog.show(this, autoSave = autoSave, prefsName = prefsName, keyPrefix = keyPrefix)
     }
 
     /**
@@ -707,7 +755,88 @@ class DiffView @JvmOverloads constructor(
 
     fun isFoldingEnabled(): Boolean = isFoldingEnabled
 
+    fun getContextLines(): Int = contextLines
+
+    fun getFoldingThreshold(): Int = foldingThreshold
+
     fun getSyntaxHighlighter(): SyntaxHighlighter = adapter.syntaxHighlighter
+
+    /**
+     * 현재 DiffView의 모든 설정값을 [DiffViewPreferences] 객체로 내보냅니다.
+     */
+    fun exportPreferences(): DiffViewPreferences {
+        return DiffViewPreferences(
+            diffMode = diffMode,
+            isDark = isDark,
+            textSizeSp = adapter.textSizeSp,
+            isFoldingEnabled = isFoldingEnabled,
+            contextLines = contextLines,
+            foldingThreshold = foldingThreshold,
+            whitespaceIgnoreMode = whitespaceIgnoreMode,
+            diffGranularity = diffGranularity,
+            isLineWrap = isLineWrap,
+            showDiffSymbols = showDiffSymbols,
+            longTabAction = longTabAction
+        )
+    }
+
+    /**
+     * [DiffViewPreferences] 객체의 설정값을 DiffView에 일괄 적용합니다.
+     */
+    fun applyPreferences(preferences: DiffViewPreferences) {
+        setDiffMode(preferences.diffMode)
+        setDiffColors(if (preferences.isDark) DiffColors.Dark else DiffColors.Light, isDark = preferences.isDark)
+        setTextSize(preferences.textSizeSp)
+        setFoldingEnabled(preferences.isFoldingEnabled, preferences.contextLines, preferences.foldingThreshold)
+        setWhitespaceIgnoreMode(preferences.whitespaceIgnoreMode)
+        setDiffGranularity(preferences.diffGranularity)
+        setLineWrap(preferences.isLineWrap)
+        setShowDiffSymbols(preferences.showDiffSymbols)
+        setLongTabAction(preferences.longTabAction)
+    }
+
+    /**
+     * 현재 설정을 지정된 [SharedPreferences]에 저장합니다.
+     */
+    fun savePreferences(
+        sharedPreferences: SharedPreferences,
+        keyPrefix: String = this.preferencesKeyPrefix
+    ) {
+        exportPreferences().saveTo(sharedPreferences, keyPrefix)
+    }
+
+    /**
+     * 지정된 [SharedPreferences]에서 설정을 불러와 DiffView에 적용합니다.
+     */
+    fun loadPreferences(
+        sharedPreferences: SharedPreferences,
+        keyPrefix: String = this.preferencesKeyPrefix
+    ) {
+        val prefs = DiffViewPreferences.loadFrom(sharedPreferences, keyPrefix, default = exportPreferences())
+        applyPreferences(prefs)
+    }
+
+    /**
+     * 기본 SharedPreferences(또는 지정된 이름의 SharedPreferences)에 현재 설정을 저장합니다.
+     */
+    fun savePreferences(
+        prefsName: String = this.preferencesName,
+        keyPrefix: String = this.preferencesKeyPrefix
+    ) {
+        val sp = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        savePreferences(sp, keyPrefix)
+    }
+
+    /**
+     * 기본 SharedPreferences(또는 지정된 이름의 SharedPreferences)에서 설정을 로드하여 적용합니다.
+     */
+    fun loadPreferences(
+        prefsName: String = this.preferencesName,
+        keyPrefix: String = this.preferencesKeyPrefix
+    ) {
+        val sp = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        loadPreferences(sp, keyPrefix)
+    }
 
     private fun updateGutterWidths() {
         val density = context.resources.displayMetrics.density

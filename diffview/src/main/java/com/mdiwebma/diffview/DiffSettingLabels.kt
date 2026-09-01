@@ -47,7 +47,9 @@ data class DiffSettingLabels(
     val imageSavedMessage: String = "Diff image has been saved to Pictures/DiffView.",
     val imageSaveFailed: String = "Failed to save diff image.",
     val actionView: String = "View",
-    val actionShare: String = "Share"
+    val actionShare: String = "Share",
+    val expandAllSuccess: String = "All code blocks expanded.",
+    val collapseAllSuccess: String = "All code blocks collapsed."
 ) {
     companion object {
         val Default = DiffSettingLabels()
@@ -98,7 +100,9 @@ data class DiffSettingLabels(
                 imageSavedMessage = context.getString(R.string.diffview_image_saved_msg),
                 imageSaveFailed = context.getString(R.string.diffview_image_save_failed),
                 actionView = context.getString(R.string.diffview_action_view),
-                actionShare = context.getString(R.string.diffview_action_share)
+                actionShare = context.getString(R.string.diffview_action_share),
+                expandAllSuccess = context.getString(R.string.diffview_expand_all_success),
+                collapseAllSuccess = context.getString(R.string.diffview_collapse_all_success)
             )
         }
     }

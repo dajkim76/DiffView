@@ -12,6 +12,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
@@ -23,7 +24,12 @@ import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
  */
 object DiffSettingDialog {
 
-    fun show(diffView: DiffView) {
+    fun show(
+        diffView: DiffView,
+        autoSave: Boolean = false,
+        prefsName: String = DiffViewPreferences.DEFAULT_PREFS_NAME,
+        keyPrefix: String = ""
+    ) {
         val context = diffView.context
         val labels = diffView.getSettingLabels()
         val density = context.resources.displayMetrics.density
@@ -102,6 +108,36 @@ object DiffSettingDialog {
             }
         }
 
+        fun createActionButton(text: String, isEnabled: Boolean = true, onClick: () -> Unit): Button {
+            return Button(context).apply {
+                this.text = text
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+                isAllCaps = false
+                gravity = Gravity.CENTER
+                minHeight = (36 * density).toInt()
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginEnd = (4 * density).toInt()
+                }
+                setPadding((4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
+
+                val bg = GradientDrawable().apply {
+                    cornerRadius = 6 * density
+                    val strokeColor = if (isAppDark) Color.parseColor("#444C56") else Color.parseColor("#C0C8D0")
+                    val bgColor = if (isAppDark) Color.parseColor("#1F242C") else Color.parseColor("#F3F6F9")
+                    setColor(bgColor)
+                    setStroke((1 * density).toInt().coerceAtLeast(1), strokeColor)
+                }
+                background = bg
+                val textColor = if (isAppDark) Color.parseColor("#58A6FF") else Color.parseColor("#0969DA")
+                setTextColor(textColor)
+                this.isEnabled = isEnabled
+                alpha = if (isEnabled) 1.0f else 0.4f
+                setOnClickListener {
+                    if (isEnabled) onClick()
+                }
+            }
+        }
+
         var refreshUI: (() -> Unit)? = null
 
         fun buildContent() {
@@ -164,19 +200,28 @@ object DiffSettingDialog {
 
             // 4. Code Folding
             container.addView(createSectionTitle(labels.foldingTitle))
-            val foldRow = createButtonRow()
             val isFolding = diffView.isFoldingEnabled()
-            foldRow.addView(createOptionButton(if (isFolding) labels.foldingOn else labels.foldingOff, isFolding) {
-                diffView.setFoldingEnabled(!isFolding)
+            val foldToggleRow = createButtonRow()
+            foldToggleRow.addView(createOptionButton(labels.foldingOn, isFolding) {
+                diffView.setFoldingEnabled(true)
                 refreshUI?.invoke()
             })
-            foldRow.addView(createOptionButton(labels.expandAll, false) {
+            foldToggleRow.addView(createOptionButton(labels.foldingOff, !isFolding) {
+                diffView.setFoldingEnabled(false)
+                refreshUI?.invoke()
+            })
+            container.addView(foldToggleRow)
+
+            val foldActionRow = createButtonRow()
+            foldActionRow.addView(createActionButton("↕️ ${labels.expandAll}", isEnabled = isFolding) {
                 diffView.expandAll()
+                Toast.makeText(context, labels.expandAllSuccess, Toast.LENGTH_SHORT).show()
             })
-            foldRow.addView(createOptionButton(labels.collapseAll, false) {
+            foldActionRow.addView(createActionButton("➖ ${labels.collapseAll}", isEnabled = isFolding) {
                 diffView.collapseAll()
+                Toast.makeText(context, labels.collapseAllSuccess, Toast.LENGTH_SHORT).show()
             })
-            container.addView(foldRow)
+            container.addView(foldActionRow)
 
             // 5. Whitespace Ignore Mode
             container.addView(createSectionTitle(labels.whitespaceTitle))
@@ -249,60 +294,12 @@ object DiffSettingDialog {
                 refreshUI?.invoke()
             })
             container.addView(longTabRow)
-
-            // 9. Syntax Highlighting
-            container.addView(createSectionTitle(labels.syntaxTitle))
-            val syntaxRow = createButtonRow()
-            val currentHighlighter = diffView.getSyntaxHighlighter()
-            val currentHighlighterName = when (currentHighlighter) {
-                is KotlinSyntaxHighlighter -> labels.syntaxKotlin
-                is JavaSyntaxHighlighter -> "Java"
-                is JavaScriptSyntaxHighlighter -> "JavaScript / TypeScript"
-                is PythonSyntaxHighlighter -> "Python"
-                is CppSyntaxHighlighter -> "C / C++"
-                is CSharpSyntaxHighlighter -> "C#"
-                else -> labels.syntaxPlain
-            }
-
-            val syntaxLanguages = listOf(
-                labels.syntaxPlain to { PlainTextSyntaxHighlighter },
-                labels.syntaxKotlin to { KotlinSyntaxHighlighter() },
-                "Java" to { JavaSyntaxHighlighter() },
-                "JavaScript / TypeScript" to { JavaScriptSyntaxHighlighter() },
-                "Python" to { PythonSyntaxHighlighter() },
-                "C / C++" to { CppSyntaxHighlighter() },
-                "C#" to { CSharpSyntaxHighlighter() }
-            )
-
-            syntaxRow.addView(createOptionButton("$currentHighlighterName  ▾", true) {
-                val names = syntaxLanguages.map { it.first }.toTypedArray()
-                val currentSelectedIndex = syntaxLanguages.indexOfFirst {
-                    when (currentHighlighter) {
-                        is KotlinSyntaxHighlighter -> it.first == labels.syntaxKotlin
-                        is JavaSyntaxHighlighter -> it.first == "Java"
-                        is JavaScriptSyntaxHighlighter -> it.first == "JavaScript / TypeScript"
-                        is PythonSyntaxHighlighter -> it.first == "Python"
-                        is CppSyntaxHighlighter -> it.first == "C / C++"
-                        is CSharpSyntaxHighlighter -> it.first == "C#"
-                        else -> it.first == labels.syntaxPlain
-                    }
-                }.coerceAtLeast(0)
-
-                AlertDialog.Builder(context)
-                    .setTitle(labels.syntaxTitle)
-                    .setSingleChoiceItems(names, currentSelectedIndex) { dialog, which ->
-                        val selectedCreator = syntaxLanguages[which].second
-                        diffView.setSyntaxHighlighter(selectedCreator())
-                        refreshUI?.invoke()
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton(labels.closeButton, null)
-                    .show()
-            })
-            container.addView(syntaxRow)
         }
 
         refreshUI = {
+            if (autoSave) {
+                diffView.savePreferences(prefsName, keyPrefix)
+            }
             buildContent()
         }
 
@@ -312,6 +309,11 @@ object DiffSettingDialog {
             .setTitle(labels.dialogTitle)
             .setView(scrollView)
             .setPositiveButton(labels.closeButton, null)
+            .setOnDismissListener {
+                if (autoSave) {
+                    diffView.savePreferences(prefsName, keyPrefix)
+                }
+            }
             .show()
     }
 }

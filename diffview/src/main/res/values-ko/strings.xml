@@ -66,4 +66,6 @@
     <string name="diffview_image_save_failed">이미지 저장에 실패했습니다.</string>
     <string name="diffview_action_view">보기</string>
     <string name="diffview_action_share">공유</string>
+    <string name="diffview_expand_all_success">모든 블록을 확장했습니다.</string>
+    <string name="diffview_collapse_all_success">모든 블록을 접었습니다.</string>
 </resources>
