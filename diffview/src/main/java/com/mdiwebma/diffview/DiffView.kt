@@ -641,10 +641,37 @@ class DiffView @JvmOverloads constructor(
      */
     fun showMoreMenu(anchor: View = btnMore) {
         val popup = PopupMenu(context, anchor)
-        popup.menu.add(0, 1, 0, settingLabels.menuSaveVisibleImage)
-        popup.menu.add(0, 2, 1, settingLabels.menuSaveFullImage)
+        val isFolding = isFoldingEnabled()
+
+        popup.menu.add(0, 10, 0, "↕️ ${settingLabels.expandAll}").apply {
+            isEnabled = isFolding
+        }
+        popup.menu.add(0, 11, 1, "➖ ${settingLabels.collapseAll}").apply {
+            isEnabled = isFolding
+        }
+        popup.menu.add(0, 12, 2, "🎨 ${settingLabels.syntaxTitle}")
+        popup.menu.add(0, 1, 3, settingLabels.menuSaveVisibleImage)
+        popup.menu.add(0, 2, 4, settingLabels.menuSaveFullImage)
+
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                10 -> {
+                    expandAll()
+                    Toast.makeText(context, settingLabels.expandAllSuccess, Toast.LENGTH_SHORT).show()
+                    true
+                }
+
+                11 -> {
+                    collapseAll()
+                    Toast.makeText(context, settingLabels.collapseAllSuccess, Toast.LENGTH_SHORT).show()
+                    true
+                }
+
+                12 -> {
+                    showSyntaxSelectionDialog()
+                    true
+                }
+
                 1 -> {
                     executeImageCapture(isFull = false)
                     true
@@ -659,6 +686,37 @@ class DiffView @JvmOverloads constructor(
             }
         }
         popup.show()
+    }
+
+    /**
+     * 지원되는 문법 하이라이트 언어를 AlertDialog 싱글 초이스로 선택하는 다이얼로그를 표시합니다.
+     */
+    fun showSyntaxSelectionDialog() {
+        val languages = listOf(
+            settingLabels.syntaxPlain to PlainTextSyntaxHighlighter,
+            "Kotlin" to KotlinSyntaxHighlighter(),
+            "Java" to JavaSyntaxHighlighter(),
+            "JavaScript / TypeScript" to JavaScriptSyntaxHighlighter(),
+            "Python" to PythonSyntaxHighlighter(),
+            "C / C++" to CppSyntaxHighlighter(),
+            "C#" to CSharpSyntaxHighlighter()
+        )
+        val currentHighlighter = getSyntaxHighlighter()
+        val currentIndex = languages.indexOfFirst { (_, highlighter) ->
+            highlighter::class == currentHighlighter::class
+        }.let { if (it == -1) 0 else it }
+
+        val items = languages.map { it.first }.toTypedArray()
+
+        AlertDialog.Builder(context)
+            .setTitle(settingLabels.syntaxTitle)
+            .setSingleChoiceItems(items, currentIndex) { dialog, which ->
+                val (_, selectedHighlighter) = languages[which]
+                setSyntaxHighlighter(selectedHighlighter)
+                dialog.dismiss()
+            }
+            .setNegativeButton(settingLabels.closeButton, null)
+            .show()
     }
 
     /**

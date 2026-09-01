@@ -107,36 +107,6 @@ object DiffSettingDialog {
             }
         }
 
-        fun createActionButton(text: String, isEnabled: Boolean = true, onClick: () -> Unit): TextView {
-            return TextView(context).apply {
-                this.text = text
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
-                isAllCaps = false
-                gravity = Gravity.CENTER
-                minHeight = (30 * density).toInt()
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                    marginEnd = (4 * density).toInt()
-                }
-                setPadding((4 * density).toInt(), (2 * density).toInt(), (4 * density).toInt(), (2 * density).toInt())
-
-                val bg = GradientDrawable().apply {
-                    cornerRadius = 4 * density
-                    val strokeColor = if (isAppDark) Color.parseColor("#444C56") else Color.parseColor("#C0C8D0")
-                    val bgColor = if (isAppDark) Color.parseColor("#1F242C") else Color.parseColor("#F3F6F9")
-                    setColor(bgColor)
-                    setStroke((1 * density).toInt().coerceAtLeast(1), strokeColor)
-                }
-                background = bg
-                val textColor = if (isAppDark) Color.parseColor("#58A6FF") else Color.parseColor("#0969DA")
-                setTextColor(textColor)
-                this.isEnabled = isEnabled
-                alpha = if (isEnabled) 1.0f else 0.4f
-                setOnClickListener {
-                    if (isEnabled) onClick()
-                }
-            }
-        }
-
         var refreshUI: (() -> Unit)? = null
 
         fun buildContent() {
@@ -210,17 +180,6 @@ object DiffSettingDialog {
                 refreshUI?.invoke()
             })
             container.addView(foldToggleRow)
-
-            val foldActionRow = createButtonRow()
-            foldActionRow.addView(createActionButton("↕️ ${labels.expandAll}", isEnabled = isFolding) {
-                diffView.expandAll()
-                Toast.makeText(context, labels.expandAllSuccess, Toast.LENGTH_SHORT).show()
-            })
-            foldActionRow.addView(createActionButton("➖ ${labels.collapseAll}", isEnabled = isFolding) {
-                diffView.collapseAll()
-                Toast.makeText(context, labels.collapseAllSuccess, Toast.LENGTH_SHORT).show()
-            })
-            container.addView(foldActionRow)
 
             // 5. Whitespace Ignore Mode
             container.addView(createSectionTitle(labels.whitespaceTitle))
