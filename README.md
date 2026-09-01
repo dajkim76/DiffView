@@ -10,7 +10,7 @@ An Android Studio Diff Editor styled **Side-by-Side (Split) & Unified DiffView**
 ## 🌟 Key Features
 
 0. **Powered by AI**:
-   - Most of the codebase was generated with **Gemini 3.7 Flash**. If you encounter issues, feel free to clone the repository and improve the code using AI. The initial documentation was also generated with AI.
+   - Most of the codebase was generated with **Gemini 3.7 Flash**. If you encounter issues, feel free to clone the repository and improve the code using AI. This documentation was also generated with AI.
 1. **2 Diff Modes Supported**:
    - **Side-by-Side (Split) Mode**: Displays Original (left) and Modified (right) in 2 parallel columns with synchronized line alignment.
    - **Unified Mode**: Displays changes in a single vertical stream (`+` / `-`).
@@ -56,8 +56,9 @@ An Android Studio Diff Editor styled **Side-by-Side (Split) & Unified DiffView**
     - **More (⋮)**: Popup menu for exporting diffs as images (**Visible Viewport** or **Full Diff**). Automatically provides **View** and **Share** dialog actions upon completion.
     - Programmatically trigger via `showSettingsDialog()`, `showMoreMenu()`, or `executeImageCapture(isFull)`.
     - Toggle header action buttons via `setSettingsButtonVisible(boolean)` or `setMoreButtonVisible(boolean)`.
-14. **Customizable Dialog Labels (`DiffSettingLabels`, `DiffCommentLabels`)**:
-    - Fully customize all UI strings for settings, image exporting, and code comment dialogs.
+14. **Multi-language Presets & Customizable Labels (`DiffSettingLabels`, `DiffCommentLabels`)**:
+    - Built-in localization presets for **17 languages**: English, Korean (`ko`), Japanese (`ja`), Simplified Chinese (`zh-CN`), Traditional Chinese (`zh-TW`), Spanish (`es`), French (`fr`), German (`de`), Portuguese (`pt`), Russian (`ru`), Italian (`it`), Indonesian (`in`), Vietnamese (`vi`), Thai (`th`), Hindi (`hi`), Arabic (`ar`), and Turkish (`tr`).
+    - Fully customize all UI strings for settings, image exporting, and code comment dialogs via `DiffSettingLabels` and `DiffCommentLabels`.
 15. **Settings Persistence via SharedPreferences (`DiffViewPreferences`)**:
     - Easily persist and restore all DiffView viewer configurations (diff mode, theme, text size, folding, whitespace, wrap, symbols, and long-press action) using `diffView.savePreferences()` and `diffView.loadPreferences()`.
     - Supports auto-saving directly from the settings dialog (`diffView.showSettingsDialog(autoSave = true)`).
@@ -92,25 +93,67 @@ dependencies {
 }
 ```
 
+### 3. Storage Permissions (Optional — for Android 9 and below)
+
+- **Android 10+ (API 29+)**: Uses **Scoped Storage** (`MediaStore`). **No storage permissions required** to export diff images to `Pictures/DiffView`.
+- **Android 9 and below (API ≤ 28)**: If your app targets and runs on Android 9 or lower and uses image export, declare the legacy write permission in your `AndroidManifest.xml`:
+  ```xml
+  <uses-permission
+      android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+      android:maxSdkVersion="28" />
+  ```
+
 ---
 
 ## 📁 Project Structure
 
 ```text
 DiffView/
-├── diffview/                     # 📦 Core Android Library Module (Distribution Target)
-│   └── src/main/java/com/mdiwebma/diffview/
-│       ├── DiffView.kt                   # Main custom FrameLayout DiffView component
-│       ├── DiffViewAdapter.kt            # Side-by-Side & Unified RecyclerView Adapter
-│       ├── DiffColors.kt                 # Android Studio Light / Dark color theme palette
-│       ├── DiffLabels.kt                 # UI text/labels customization & localization model
-│       ├── SyntaxHighlighter.kt          # Syntax highlighting interface and implementations
-│       ├── FoldingManager.kt             # Git/AS style context-aware line folding manager
-│       ├── SyncHorizontalScrollView.kt   # Column-wise synchronized horizontal scroll view
-│       ├── model/DiffModels.kt           # DiffRow, DiffLine, DiffMode, WhitespaceIgnoreMode models
-│       └── engine/                       # DiffEngine, KotlinDiffEngine, InlineDiffCalculator
+├── diffview/                               # 📦 Core Android Library Module (Distribution Target)
+│   └── src/main/
+│       ├── java/com/mdiwebma/diffview/
+│       │   ├── DiffView.kt                 # Main custom FrameLayout DiffView component (settings, image export, API)
+│       │   ├── DiffViewAdapter.kt          # Side-by-Side & Unified RecyclerView Adapter
+│       │   ├── DiffViewPreferences.kt      # SharedPreferences persistence model & helpers
+│       │   ├── DiffSettingDialog.kt        # Interactive real-time settings modal dialog
+│       │   ├── DiffSettingLabels.kt        # Settings & image export UI labels model
+│       │   ├── DiffColors.kt               # Android Studio Light / Dark color theme palette
+│       │   ├── DiffLabels.kt               # Header & folded banner UI labels model
+│       │   ├── SyntaxHighlighter.kt        # Syntax highlighting (Kotlin, Java, JS, Python, C++, C#)
+│       │   ├── FoldingManager.kt           # Git/AS-style context-aware unchanged line folding manager
+│       │   ├── SyncHorizontalScrollView.kt # Column-wise synchronized horizontal scroll view
+│       │   ├── comment/                    # 💬 Code line comment system
+│       │   │   ├── CodeComment.kt          # Comment data model
+│       │   │   ├── CodeCommentManager.kt   # Comment CRUD operations manager
+│       │   │   ├── CodeCommentHelper.kt    # Comment input/edit/delete modal dialog helpers
+│       │   │   ├── DiffCommentLabels.kt    # Comment dialog UI localization labels
+│       │   │   └── LineKey.kt              # Left/Right line identifier key
+│       │   ├── engine/                     # ⚙️ Diff calculation engine
+│       │   │   ├── DiffEngine.kt           # Diff computation interface
+│       │   │   ├── KotlinDiffEngine.kt     # Myers diff engine implementation
+│       │   │   └── InlineDiffCalculator.kt # Word & Character level inline difference calculator
+│       │   └── model/                      # 📐 Data models
+│       │       └── DiffModels.kt           # DiffRow, DiffLine, DiffMode, WhitespaceIgnoreMode, DiffGranularity
+│       └── res/                            # 🌐 Localization resources (17 Language Presets)
+│           ├── values/                     # Default (English)
+│           ├── values-ko/                  # Korean (한국어)
+│           ├── values-ja/                  # Japanese (日本語)
+│           ├── values-zh-rCN/              # Simplified Chinese (简体中文)
+│           ├── values-zh-rTW/              # Traditional Chinese (繁體中文)
+│           ├── values-es/                  # Spanish (Español)
+│           ├── values-fr/                  # French (Français)
+│           ├── values-de/                  # German (Deutsch)
+│           ├── values-pt/                  # Portuguese (Português)
+│           ├── values-ru/                  # Russian (Русский)
+│           ├── values-it/                  # Italian (Italiano)
+│           ├── values-in/                  # Indonesian (Bahasa Indonesia)
+│           ├── values-vi/                  # Vietnamese (Tiếng Việt)
+│           ├── values-th/                  # Thai (ไทย)
+│           ├── values-hi/                  # Hindi (हिन्दी)
+│           ├── values-ar/                  # Arabic (العربية)
+│           └── values-tr/                  # Turkish (Türkçe)
 │
-└── app/                          # 📱 Demo / Sample Application (Android View & Compose Demos)
+└── app/                                    # 📱 Demo Application (Samples with ObjectBox history & live editing)
 ```
 
 ---

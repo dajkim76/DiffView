@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diffview_header_original">Originale</string>
+    <string name="diffview_header_modified">Modificato</string>
+    <string name="diffview_header_unified">Unificato (+ / -)</string>
+    <string name="diffview_header_old_gutter">Vec</string>
+    <string name="diffview_header_new_gutter">Nuo</string>
+    <string name="diffview_folded_banner">⋯ %1$d righe non modificate (%2$s / %3$s) ⋯</string>
+    <string name="diffview_expand_up">▲ Su</string>
+    <string name="diffview_expand_down">▼ Giù</string>
+    <string name="diffview_expand_all">Espandi tutto</string>
+
+    <!-- Code Comment Strings -->
+    <string name="diffview_comment_add_title">Aggiungi commento</string>
+    <string name="diffview_comment_edit_title">Modifica commento</string>
+    <string name="diffview_comment_delete_title">Elimina commento</string>
+    <string name="diffview_comment_delete_confirm">Eliminare questo commento?</string>
+    <string name="diffview_comment_hint">Scrivi un commento...</string>
+    <string name="diffview_comment_menu_edit">Modifica</string>
+    <string name="diffview_comment_menu_delete">Elimina</string>
+    <string name="diffview_comment_action_save">Salva</string>
+    <string name="diffview_comment_action_cancel">Annulla</string>
+    <string name="diffview_comment_action_delete">Elimina</string>
+
+    <!-- Option Dialog Strings -->
+    <string name="diffview_opt_dialog_title">Impostazioni DiffView</string>
+    <string name="diffview_opt_diff_mode">Modo Diff</string>
+    <string name="diffview_opt_mode_side_by_side">Affiancato</string>
+    <string name="diffview_opt_mode_unified">Unificato</string>
+    <string name="diffview_opt_theme">Tema</string>
+    <string name="diffview_opt_theme_light">Chiaro</string>
+    <string name="diffview_opt_theme_dark">Scuro</string>
+    <string name="diffview_opt_text_size">Dimensione testo</string>
+    <string name="diffview_opt_folding">Chiusura codice</string>
+    <string name="diffview_opt_folding_on">ON</string>
+    <string name="diffview_opt_folding_off">OFF</string>
+    <string name="diffview_opt_collapse_all">Comprimi tutto</string>
+    <string name="diffview_opt_whitespace">Ignora spazi</string>
+    <string name="diffview_opt_ws_none">Rigoroso</string>
+    <string name="diffview_opt_ws_trim">Ignora bordi</string>
+    <string name="diffview_opt_ws_collapse">Comprimi</string>
+    <string name="diffview_opt_ws_ignore_all">Ignora tutti</string>
+    <string name="diffview_opt_granularity">Granularità</string>
+    <string name="diffview_opt_granularity_word">Parola</string>
+    <string name="diffview_opt_granularity_char">Carattere</string>
+    <string name="diffview_opt_line_wrap">A capo</string>
+    <string name="diffview_opt_line_wrap_on">A capo ON</string>
+    <string name="diffview_opt_line_wrap_off">A capo OFF</string>
+    <string name="diffview_opt_symbols">Simboli (+/-)</string>
+    <string name="diffview_opt_symbols_on">Mostra</string>
+    <string name="diffview_opt_symbols_off">Nascondi</string>
+    <string name="diffview_opt_long_tab">Pressione lunga</string>
+    <string name="diffview_opt_long_tab_none">Nessuna</string>
+    <string name="diffview_opt_long_tab_selectable">Selezione testo</string>
+    <string name="diffview_opt_long_tab_comment">Commento</string>
+    <string name="diffview_opt_syntax">Sintassi</string>
+    <string name="diffview_opt_syntax_kotlin">Kotlin</string>
+    <string name="diffview_opt_syntax_plain">Testo semplice</string>
+    <string name="diffview_opt_close">Chiudi</string>
+
+    <!-- More Menu & Image Save Strings -->
+    <string name="diffview_more_save_visible">Salva vista attuale</string>
+    <string name="diffview_more_save_full">Salva Diff completo</string>
+    <string name="diffview_image_saved_title">Immagine salvata</string>
+    <string name="diffview_image_saved_msg">Immagine salvata in Pictures/DiffView.</string>
+    <string name="diffview_image_save_failed">Salvataggio non riuscito.</string>
+    <string name="diffview_action_view">Visualizza</string>
+    <string name="diffview_action_share">Condividi</string>
+    <string name="diffview_expand_all_success">Tutti i blocchi espansi.</string>
+    <string name="diffview_collapse_all_success">Tutti i blocchi compressi.</string>
+</resources>

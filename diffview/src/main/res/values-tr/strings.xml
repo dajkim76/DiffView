@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diffview_header_original">Orijinal</string>
+    <string name="diffview_header_modified">Değiştirilmiş</string>
+    <string name="diffview_header_unified">Birleşik (+ / -)</string>
+    <string name="diffview_header_old_gutter">Eski</string>
+    <string name="diffview_header_new_gutter">Yeni</string>
+    <string name="diffview_folded_banner">⋯ %1$d değişmeyen satır (%2$s / %3$s) ⋯</string>
+    <string name="diffview_expand_up">▲ Yukarı</string>
+    <string name="diffview_expand_down">▼ Aşağı</string>
+    <string name="diffview_expand_all">Tümünü Genişlet</string>
+
+    <!-- Code Comment Strings -->
+    <string name="diffview_comment_add_title">Yorum Ekle</string>
+    <string name="diffview_comment_edit_title">Yorumu Düzenle</string>
+    <string name="diffview_comment_delete_title">Yorumu Sil</string>
+    <string name="diffview_comment_delete_confirm">Bu yorumu silmek istiyor musunuz?</string>
+    <string name="diffview_comment_hint">Bir yorum yazın...</string>
+    <string name="diffview_comment_menu_edit">Düzenle</string>
+    <string name="diffview_comment_menu_delete">Sil</string>
+    <string name="diffview_comment_action_save">Kaydet</string>
+    <string name="diffview_comment_action_cancel">İptal</string>
+    <string name="diffview_comment_action_delete">Sil</string>
+
+    <!-- Option Dialog Strings -->
+    <string name="diffview_opt_dialog_title">DiffView Ayarları</string>
+    <string name="diffview_opt_diff_mode">Diff Modu</string>
+    <string name="diffview_opt_mode_side_by_side">Yan Yana</string>
+    <string name="diffview_opt_mode_unified">Birleşik</string>
+    <string name="diffview_opt_theme">Tema</string>
+    <string name="diffview_opt_theme_light">Açık</string>
+    <string name="diffview_opt_theme_dark">Koyu</string>
+    <string name="diffview_opt_text_size">Metin Boyutu</string>
+    <string name="diffview_opt_folding">Kod Katlama</string>
+    <string name="diffview_opt_folding_on">ON</string>
+    <string name="diffview_opt_folding_off">OFF</string>
+    <string name="diffview_opt_collapse_all">Tümünü Katla</string>
+    <string name="diffview_opt_whitespace">Boşluklar</string>
+    <string name="diffview_opt_ws_none">Katı</string>
+    <string name="diffview_opt_ws_trim">Kenarları Yoksay</string>
+    <string name="diffview_opt_ws_collapse">Daralt</string>
+    <string name="diffview_opt_ws_ignore_all">Tümünü Yoksay</string>
+    <string name="diffview_opt_granularity">Hassasiyet</string>
+    <string name="diffview_opt_granularity_word">Kelime</string>
+    <string name="diffview_opt_granularity_char">Karakter</string>
+    <string name="diffview_opt_line_wrap">Satır Kaydırma</string>
+    <string name="diffview_opt_line_wrap_on">Kaydırma ON</string>
+    <string name="diffview_opt_line_wrap_off">Kaydırma OFF</string>
+    <string name="diffview_opt_symbols">Semboller (+/-)</string>
+    <string name="diffview_opt_symbols_on">Göster</string>
+    <string name="diffview_opt_symbols_off">Gizle</string>
+    <string name="diffview_opt_long_tab">Uzun Basma</string>
+    <string name="diffview_opt_long_tab_none">Yok</string>
+    <string name="diffview_opt_long_tab_selectable">Metin Seç</string>
+    <string name="diffview_opt_long_tab_comment">Yorum</string>
+    <string name="diffview_opt_syntax">Sözdizimi</string>
+    <string name="diffview_opt_syntax_kotlin">Kotlin</string>
+    <string name="diffview_opt_syntax_plain">Düz Metin</string>
+    <string name="diffview_opt_close">Kapat</string>
+
+    <!-- More Menu & Image Save Strings -->
+    <string name="diffview_more_save_visible">Görünümü Kaydet</string>
+    <string name="diffview_more_save_full">Tam Diff\'i Kaydet</string>
+    <string name="diffview_image_saved_title">Resim Kaydedildi</string>
+    <string name="diffview_image_saved_msg">Resim Pictures/DiffView dizinine kaydedildi.</string>
+    <string name="diffview_image_save_failed">Kayıt başarısız.</string>
+    <string name="diffview_action_view">Görüntüle</string>
+    <string name="diffview_action_share">Paylaş</string>
+    <string name="diffview_expand_all_success">Tüm bloklar genişletildi.</string>
+    <string name="diffview_collapse_all_success">Tüm bloklar katlandı.</string>
+</resources>

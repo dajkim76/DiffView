@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diffview_header_original">原始代码</string>
+    <string name="diffview_header_modified">修改代码</string>
+    <string name="diffview_header_unified">统一变更 (+ / -)</string>
+    <string name="diffview_header_old_gutter">旧</string>
+    <string name="diffview_header_new_gutter">新</string>
+    <string name="diffview_folded_banner">⋯ %1$d 行未变更 (%2$s / %3$s) ⋯</string>
+    <string name="diffview_expand_up">▲ 向上展开</string>
+    <string name="diffview_expand_down">▼ 向下展开</string>
+    <string name="diffview_expand_all">全部展开</string>
+
+    <!-- Code Comment Strings -->
+    <string name="diffview_comment_add_title">添加评论</string>
+    <string name="diffview_comment_edit_title">编辑评论</string>
+    <string name="diffview_comment_delete_title">删除评论</string>
+    <string name="diffview_comment_delete_confirm">确定要删除此评论吗？</string>
+    <string name="diffview_comment_hint">输入评论...</string>
+    <string name="diffview_comment_menu_edit">编辑</string>
+    <string name="diffview_comment_menu_delete">删除</string>
+    <string name="diffview_comment_action_save">保存</string>
+    <string name="diffview_comment_action_cancel">取消</string>
+    <string name="diffview_comment_action_delete">删除</string>
+
+    <!-- Option Dialog Strings -->
+    <string name="diffview_opt_dialog_title">DiffView 设置</string>
+    <string name="diffview_opt_diff_mode">对比模式</string>
+    <string name="diffview_opt_mode_side_by_side">分栏对比</string>
+    <string name="diffview_opt_mode_unified">统一合并</string>
+    <string name="diffview_opt_theme">主题</string>
+    <string name="diffview_opt_theme_light">浅色</string>
+    <string name="diffview_opt_theme_dark">深色</string>
+    <string name="diffview_opt_text_size">字号大小</string>
+    <string name="diffview_opt_folding">代码折叠</string>
+    <string name="diffview_opt_folding_on">ON</string>
+    <string name="diffview_opt_folding_off">OFF</string>
+    <string name="diffview_opt_collapse_all">全部折叠</string>
+    <string name="diffview_opt_whitespace">忽略空格</string>
+    <string name="diffview_opt_ws_none">标准 (严格)</string>
+    <string name="diffview_opt_ws_trim">忽略首尾空格</string>
+    <string name="diffview_opt_ws_collapse">压缩连续空格</string>
+    <string name="diffview_opt_ws_ignore_all">忽略全部空格</string>
+    <string name="diffview_opt_granularity">高亮粒度</string>
+    <string name="diffview_opt_granularity_word">按单词</string>
+    <string name="diffview_opt_granularity_char">按字符</string>
+    <string name="diffview_opt_line_wrap">自动换行</string>
+    <string name="diffview_opt_line_wrap_on">换行开启</string>
+    <string name="diffview_opt_line_wrap_off">换行关闭</string>
+    <string name="diffview_opt_symbols">差异符号 (+/-)</string>
+    <string name="diffview_opt_symbols_on">显示符号</string>
+    <string name="diffview_opt_symbols_off">隐藏符号</string>
+    <string name="diffview_opt_long_tab">长按操作</string>
+    <string name="diffview_opt_long_tab_none">无</string>
+    <string name="diffview_opt_long_tab_selectable">选择文本</string>
+    <string name="diffview_opt_long_tab_comment">评论</string>
+    <string name="diffview_opt_syntax">语法高亮</string>
+    <string name="diffview_opt_syntax_kotlin">Kotlin</string>
+    <string name="diffview_opt_syntax_plain">纯文本</string>
+    <string name="diffview_opt_close">关闭</string>
+
+    <!-- More Menu & Image Save Strings -->
+    <string name="diffview_more_save_visible">保存当前画面</string>
+    <string name="diffview_more_save_full">保存完整Diff</string>
+    <string name="diffview_image_saved_title">图片已保存</string>
+    <string name="diffview_image_saved_msg">图片已保存至 Pictures/DiffView。</string>
+    <string name="diffview_image_save_failed">保存图片失败。</string>
+    <string name="diffview_action_view">查看</string>
+    <string name="diffview_action_share">分享</string>
+    <string name="diffview_expand_all_success">已展开所有代码块。</string>
+    <string name="diffview_collapse_all_success">已折叠所有代码块。</string>
+</resources>

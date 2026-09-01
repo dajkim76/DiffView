@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diffview_header_original">Asli</string>
+    <string name="diffview_header_modified">Diubah</string>
+    <string name="diffview_header_unified">Terpadu (+ / -)</string>
+    <string name="diffview_header_old_gutter">Lama</string>
+    <string name="diffview_header_new_gutter">Baru</string>
+    <string name="diffview_folded_banner">⋯ %1$d baris tidak berubah (%2$s / %3$s) ⋯</string>
+    <string name="diffview_expand_up">▲ Atas</string>
+    <string name="diffview_expand_down">▼ Bawah</string>
+    <string name="diffview_expand_all">Perluas Semua</string>
+
+    <!-- Code Comment Strings -->
+    <string name="diffview_comment_add_title">Tambah Komentar</string>
+    <string name="diffview_comment_edit_title">Edit Komentar</string>
+    <string name="diffview_comment_delete_title">Hapus Komentar</string>
+    <string name="diffview_comment_delete_confirm">Hapus komentar ini?</string>
+    <string name="diffview_comment_hint">Tulis komentar...</string>
+    <string name="diffview_comment_menu_edit">Edit</string>
+    <string name="diffview_comment_menu_delete">Hapus</string>
+    <string name="diffview_comment_action_save">Simpan</string>
+    <string name="diffview_comment_action_cancel">Batal</string>
+    <string name="diffview_comment_action_delete">Hapus</string>
+
+    <!-- Option Dialog Strings -->
+    <string name="diffview_opt_dialog_title">Pengaturan DiffView</string>
+    <string name="diffview_opt_diff_mode">Mode Diff</string>
+    <string name="diffview_opt_mode_side_by_side">Berdampingan</string>
+    <string name="diffview_opt_mode_unified">Terpadu</string>
+    <string name="diffview_opt_theme">Tema</string>
+    <string name="diffview_opt_theme_light">Terang</string>
+    <string name="diffview_opt_theme_dark">Gelap</string>
+    <string name="diffview_opt_text_size">Ukuran Teks</string>
+    <string name="diffview_opt_folding">Lipat Kode</string>
+    <string name="diffview_opt_folding_on">ON</string>
+    <string name="diffview_opt_folding_off">OFF</string>
+    <string name="diffview_opt_collapse_all">Lipat Semua</string>
+    <string name="diffview_opt_whitespace">Abaikan Spasi</string>
+    <string name="diffview_opt_ws_none">Ketat</string>
+    <string name="diffview_opt_ws_trim">Abaikan Tepi</string>
+    <string name="diffview_opt_ws_collapse">Padatkan</string>
+    <string name="diffview_opt_ws_ignore_all">Abaikan Semua</string>
+    <string name="diffview_opt_granularity">Granularitas</string>
+    <string name="diffview_opt_granularity_word">Kata</string>
+    <string name="diffview_opt_granularity_char">Karakter</string>
+    <string name="diffview_opt_line_wrap">Bungkus Baris</string>
+    <string name="diffview_opt_line_wrap_on">Bungkus ON</string>
+    <string name="diffview_opt_line_wrap_off">Bungkus OFF</string>
+    <string name="diffview_opt_symbols">Simbol (+/-)</string>
+    <string name="diffview_opt_symbols_on">Tampilkan</string>
+    <string name="diffview_opt_symbols_off">Sembunyikan</string>
+    <string name="diffview_opt_long_tab">Tekan Lama</string>
+    <string name="diffview_opt_long_tab_none">Tidak Ada</string>
+    <string name="diffview_opt_long_tab_selectable">Pilih Teks</string>
+    <string name="diffview_opt_long_tab_comment">Komentar</string>
+    <string name="diffview_opt_syntax">Sintaks</string>
+    <string name="diffview_opt_syntax_kotlin">Kotlin</string>
+    <string name="diffview_opt_syntax_plain">Teks Biasa</string>
+    <string name="diffview_opt_close">Tutup</string>
+
+    <!-- More Menu & Image Save Strings -->
+    <string name="diffview_more_save_visible">Simpan Tampilan</string>
+    <string name="diffview_more_save_full">Simpan Diff Lengkap</string>
+    <string name="diffview_image_saved_title">Gambar Disimpan</string>
+    <string name="diffview_image_saved_msg">Gambar disimpan ke Pictures/DiffView.</string>
+    <string name="diffview_image_save_failed">Gagal menyimpan gambar.</string>
+    <string name="diffview_action_view">Lihat</string>
+    <string name="diffview_action_share">Bagikan</string>
+    <string name="diffview_expand_all_success">Semua blok diperluas.</string>
+    <string name="diffview_collapse_all_success">Semua blok dilipat.</string>
+</resources>

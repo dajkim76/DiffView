@@ -26,16 +26,16 @@ data class DiffCommentLabels(
          */
         fun fromContext(context: Context): DiffCommentLabels {
             return DiffCommentLabels(
-                addTitle = context.getString(R.string.comment_add_title),
-                editTitle = context.getString(R.string.comment_edit_title),
-                deleteTitle = context.getString(R.string.comment_delete_title),
-                deleteConfirm = context.getString(R.string.comment_delete_confirm),
-                hint = context.getString(R.string.comment_hint),
-                menuEdit = context.getString(R.string.comment_menu_edit),
-                menuDelete = context.getString(R.string.comment_menu_delete),
-                actionSave = context.getString(R.string.comment_action_save),
-                actionCancel = context.getString(R.string.comment_action_cancel),
-                actionDelete = context.getString(R.string.comment_action_delete)
+                addTitle = context.getString(R.string.diffview_comment_add_title),
+                editTitle = context.getString(R.string.diffview_comment_edit_title),
+                deleteTitle = context.getString(R.string.diffview_comment_delete_title),
+                deleteConfirm = context.getString(R.string.diffview_comment_delete_confirm),
+                hint = context.getString(R.string.diffview_comment_hint),
+                menuEdit = context.getString(R.string.diffview_comment_menu_edit),
+                menuDelete = context.getString(R.string.diffview_comment_menu_delete),
+                actionSave = context.getString(R.string.diffview_comment_action_save),
+                actionCancel = context.getString(R.string.diffview_comment_action_cancel),
+                actionDelete = context.getString(R.string.diffview_comment_action_delete)
             )
         }
     }

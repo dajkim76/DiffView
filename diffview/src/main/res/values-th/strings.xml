@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diffview_header_original">ต้นฉบับ</string>
+    <string name="diffview_header_modified">แก้ไขแล้ว</string>
+    <string name="diffview_header_unified">รวม (+ / -)</string>
+    <string name="diffview_header_old_gutter">เดิม</string>
+    <string name="diffview_header_new_gutter">ใหม่</string>
+    <string name="diffview_folded_banner">⋯ ไม่เปลี่ยนแปลง %1$d บรรทัด (%2$s / %3$s) ⋯</string>
+    <string name="diffview_expand_up">▲ ขึ้น</string>
+    <string name="diffview_expand_down">▼ ลง</string>
+    <string name="diffview_expand_all">ขยายทั้งหมด</string>
+
+    <!-- Code Comment Strings -->
+    <string name="diffview_comment_add_title">เพิ่มความคิดเห็น</string>
+    <string name="diffview_comment_edit_title">แก้ไขความคิดเห็น</string>
+    <string name="diffview_comment_delete_title">ลบความคิดเห็น</string>
+    <string name="diffview_comment_delete_confirm">ต้องการลบความคิดเห็นนี้หรือไม่?</string>
+    <string name="diffview_comment_hint">เขียนความคิดเห็น...</string>
+    <string name="diffview_comment_menu_edit">แก้ไข</string>
+    <string name="diffview_comment_menu_delete">ลบ</string>
+    <string name="diffview_comment_action_save">บันทึก</string>
+    <string name="diffview_comment_action_cancel">ยกเลิก</string>
+    <string name="diffview_comment_action_delete">ลบ</string>
+
+    <!-- Option Dialog Strings -->
+    <string name="diffview_opt_dialog_title">การตั้งค่า DiffView</string>
+    <string name="diffview_opt_diff_mode">โหมด Diff</string>
+    <string name="diffview_opt_mode_side_by_side">ซ้ายขวา</string>
+    <string name="diffview_opt_mode_unified">รวม</string>
+    <string name="diffview_opt_theme">ธีม</string>
+    <string name="diffview_opt_theme_light">สว่าง</string>
+    <string name="diffview_opt_theme_dark">มืด</string>
+    <string name="diffview_opt_text_size">ขนาดตัวอักษร</string>
+    <string name="diffview_opt_folding">การพับโค้ด</string>
+    <string name="diffview_opt_folding_on">ON</string>
+    <string name="diffview_opt_folding_off">OFF</string>
+    <string name="diffview_opt_collapse_all">พับทั้งหมด</string>
+    <string name="diffview_opt_whitespace">ละเว้นช่องว่าง</string>
+    <string name="diffview_opt_ws_none">เคร่งครัด</string>
+    <string name="diffview_opt_ws_trim">ละเว้นหัว/ท้าย</string>
+    <string name="diffview_opt_ws_collapse">รวมช่องว่าง</string>
+    <string name="diffview_opt_ws_ignore_all">ละเว้นทั้งหมด</string>
+    <string name="diffview_opt_granularity">การไฮไลต์</string>
+    <string name="diffview_opt_granularity_word">คำ</string>
+    <string name="diffview_opt_granularity_char">ตัวอักษร</string>
+    <string name="diffview_opt_line_wrap">ตัดบรรทัด</string>
+    <string name="diffview_opt_line_wrap_on">ตัดบรรทัด ON</string>
+    <string name="diffview_opt_line_wrap_off">ตัดบรรทัด OFF</string>
+    <string name="diffview_opt_symbols">สัญลักษณ์ (+/-)</string>
+    <string name="diffview_opt_symbols_on">แสดง</string>
+    <string name="diffview_opt_symbols_off">ซ่อน</string>
+    <string name="diffview_opt_long_tab">แตะค้าง</string>
+    <string name="diffview_opt_long_tab_none">ไม่มี</string>
+    <string name="diffview_opt_long_tab_selectable">เลือกข้อความ</string>
+    <string name="diffview_opt_long_tab_comment">ความคิดเห็น</string>
+    <string name="diffview_opt_syntax">ไวยากรณ์</string>
+    <string name="diffview_opt_syntax_kotlin">Kotlin</string>
+    <string name="diffview_opt_syntax_plain">ข้อความธรรมดา</string>
+    <string name="diffview_opt_close">ปิด</string>
+
+    <!-- More Menu & Image Save Strings -->
+    <string name="diffview_more_save_visible">บันทึกหน้าจอ</string>
+    <string name="diffview_more_save_full">บันทึก Diff ทั้งหมด</string>
+    <string name="diffview_image_saved_title">บันทึกรูปภาพแล้ว</string>
+    <string name="diffview_image_saved_msg">บันทึกรูปภาพไปยัง Pictures/DiffView แล้ว</string>
+    <string name="diffview_image_save_failed">บันทึกรูปภาพไม่สำเร็จ</string>
+    <string name="diffview_action_view">ดู</string>
+    <string name="diffview_action_share">แชร์</string>
+    <string name="diffview_expand_all_success">ขยายบล็อกทั้งหมดแล้ว</string>
+    <string name="diffview_collapse_all_success">พับบล็อกทั้งหมดแล้ว</string>
+</resources>
