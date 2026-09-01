@@ -232,6 +232,9 @@ object CodeCommentHelper {
         tvTime: TextView?,
         comment: CodeComment?,
         colors: DiffColors? = null,
+        contentSizeSp: Float? = null,
+        dateSizeSp: Float? = null,
+        showCommentDate: Boolean = true,
         onCommentClick: (() -> Unit)? = null,
         onCommentLongClick: (() -> Unit)? = null
     ) {
@@ -242,6 +245,7 @@ object CodeCommentHelper {
 
         commentView.visibility = View.VISIBLE
         tvContent.text = comment.text
+        contentSizeSp?.let { tvContent.setTextSize(TypedValue.COMPLEX_UNIT_SP, it) }
 
         colors?.let { c ->
             val bg = GradientDrawable().apply {
@@ -255,8 +259,14 @@ object CodeCommentHelper {
         }
 
         tvTime?.let {
-            val dateFormatted = DateFormat.format("yyyy-MM-dd HH:mm", Date(comment.updatedAt))
-            it.text = dateFormatted
+            if (showCommentDate) {
+                it.visibility = View.VISIBLE
+                dateSizeSp?.let { size -> it.setTextSize(TypedValue.COMPLEX_UNIT_SP, size) }
+                val dateFormatted = DateFormat.format("yyyy-MM-dd HH:mm", Date(comment.updatedAt))
+                it.text = dateFormatted
+            } else {
+                it.visibility = View.GONE
+            }
         }
 
         if (onCommentClick != null) {

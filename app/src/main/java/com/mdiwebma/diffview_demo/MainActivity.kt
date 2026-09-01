@@ -97,6 +97,7 @@ class MainActivity : AppCompatActivity() {
         //diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
         diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
         //diffView.setLongTabAction(DiffLongTabAction.COMMENT)
+        diffView.setCommentTextSizes(11f, 9f)
         diffView.setCommentContext("sample_initial_commit", "MainActivity.kt")
 //        diffView.expandAll()
 

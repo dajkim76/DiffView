@@ -70,6 +70,24 @@ class DiffViewAdapter(
             notifyDataSetChanged()
         }
 
+    var commentTextSizeSp: Float = 12f
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    var commentDateTextSizeSp: Float = 11f
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    var showCommentDate: Boolean = true
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
     var isLineWrap: Boolean = false
         set(value) {
             if (field != value) {
@@ -168,6 +186,9 @@ class DiffViewAdapter(
                     gutterWidthDp = gutterWidthDp,
                     longTabAction = longTabAction,
                     comments = comments,
+                    commentTextSizeSp = commentTextSizeSp,
+                    commentDateTextSizeSp = commentDateTextSizeSp,
+                    showCommentDate = showCommentDate,
                     onLineLongClick = onLineLongClick,
                     onCommentClick = onCommentClick
                 )
@@ -184,6 +205,9 @@ class DiffViewAdapter(
                     gutterWidthDp = gutterWidthDp,
                     longTabAction = longTabAction,
                     comments = comments,
+                    commentTextSizeSp = commentTextSizeSp,
+                    commentDateTextSizeSp = commentDateTextSizeSp,
+                    showCommentDate = showCommentDate,
                     onLineLongClick = onLineLongClick,
                     onCommentClick = onCommentClick
                 )
@@ -266,6 +290,9 @@ class DiffRowViewHolder(
         gutterWidthDp: Int = 48,
         longTabAction: DiffLongTabAction = DiffLongTabAction.NONE,
         comments: Map<LineKey, CodeComment> = emptyMap(),
+        commentTextSizeSp: Float = 12f,
+        commentDateTextSizeSp: Float = 11f,
+        showCommentDate: Boolean = true,
         onLineLongClick: ((LineKey, CodeComment?) -> Unit)? = null,
         onCommentClick: ((LineKey, CodeComment) -> Unit)? = null
     ) {
@@ -419,6 +446,9 @@ class DiffRowViewHolder(
             sideLabel = "Original",
             symbol = leftSymbol,
             longTabAction = longTabAction,
+            commentTextSizeSp = commentTextSizeSp,
+            commentDateTextSizeSp = commentDateTextSizeSp,
+            showCommentDate = showCommentDate,
             onLineLongClick = onLineLongClick,
             onCommentClick = onCommentClick
         )
@@ -446,6 +476,9 @@ class DiffRowViewHolder(
             sideLabel = "Modified",
             symbol = rightSymbol,
             longTabAction = longTabAction,
+            commentTextSizeSp = commentTextSizeSp,
+            commentDateTextSizeSp = commentDateTextSizeSp,
+            showCommentDate = showCommentDate,
             onLineLongClick = onLineLongClick,
             onCommentClick = onCommentClick
         )
@@ -474,6 +507,9 @@ class DiffRowViewHolder(
         sideLabel: String,
         symbol: String = "",
         longTabAction: DiffLongTabAction = DiffLongTabAction.NONE,
+        commentTextSizeSp: Float = 12f,
+        commentDateTextSizeSp: Float = 11f,
+        showCommentDate: Boolean = true,
         onLineLongClick: ((LineKey, CodeComment?) -> Unit)?,
         onCommentClick: ((LineKey, CodeComment) -> Unit)?
     ) {
@@ -521,6 +557,9 @@ class DiffRowViewHolder(
                     tvTime = tvCommentTime,
                     comment = comment,
                     colors = colors,
+                    contentSizeSp = commentTextSizeSp,
+                    dateSizeSp = commentDateTextSizeSp,
+                    showCommentDate = showCommentDate,
                     onCommentClick = {
                         if (comment != null) {
                             onCommentClick?.invoke(lineKey, comment) ?: onLineLongClick?.invoke(lineKey, comment)
@@ -763,6 +802,9 @@ class UnifiedRowViewHolder(
         gutterWidthDp: Int = 48,
         longTabAction: DiffLongTabAction = DiffLongTabAction.NONE,
         comments: Map<LineKey, CodeComment> = emptyMap(),
+        commentTextSizeSp: Float = 12f,
+        commentDateTextSizeSp: Float = 11f,
+        showCommentDate: Boolean = true,
         onLineLongClick: ((LineKey, CodeComment?) -> Unit)? = null,
         onCommentClick: ((LineKey, CodeComment) -> Unit)? = null
     ) {
@@ -878,6 +920,9 @@ class UnifiedRowViewHolder(
             tvTime = tvCommentTime,
             comment = comment,
             colors = colors,
+            contentSizeSp = commentTextSizeSp,
+            dateSizeSp = commentDateTextSizeSp,
+            showCommentDate = showCommentDate,
             onCommentClick = {
                 if (comment != null) {
                     onCommentClick?.invoke(lineKey, comment) ?: onLineLongClick?.invoke(lineKey, comment)

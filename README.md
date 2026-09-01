@@ -270,7 +270,7 @@ diffView.setSettingLabels(
     )
 )
 
-// 17. Customize Code Comment Dialog UI labels (or override strings.xml)
+// 17. Customize Code Comment Dialog UI labels and text sizes
 diffView.setCommentLabels(
     DiffCommentLabels(
         addTitle = "Add Code Comment",
@@ -278,6 +278,10 @@ diffView.setCommentLabels(
         actionSave = "Submit"
     )
 )
+diffView.setCommentTextSize(12f)       // Comment content text size (SP, default: 12sp)
+diffView.setCommentDateTextSize(11f)   // Comment timestamp text size (SP, default: 11sp)
+// diffView.setCommentTextSizes(14f, 10f) // Set both sizes at once
+diffView.setShowCommentDate(true)      // Toggle comment timestamp visibility (default: true)
 
 // 18. Persist & Restore Settings using SharedPreferences
 diffView.configurePreferences(prefsName = "my_diff_prefs", keyPrefix = "fileA_", autoSave = true)

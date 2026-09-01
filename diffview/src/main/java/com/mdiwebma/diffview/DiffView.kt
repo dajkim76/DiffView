@@ -156,7 +156,6 @@ class DiffView @JvmOverloads constructor(
         }
         leftHeaderTitle = TextView(context).apply {
             text = diffLabels.originalHeader
-            typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding(padHorizontalPx, 0, 0, 0)
             maxLines = 1
@@ -180,7 +179,6 @@ class DiffView @JvmOverloads constructor(
         }
         rightHeaderTitle = TextView(context).apply {
             text = diffLabels.modifiedHeader
-            typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding(padHorizontalPx, 0, 0, 0)
             maxLines = 1
@@ -205,21 +203,18 @@ class DiffView @JvmOverloads constructor(
         oldGutterHeaderTitle = TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(gutterPx, LayoutParams.WRAP_CONTENT)
             text = diffLabels.oldGutterHeader
-            typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         }
         newGutterHeaderTitle = TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(gutterPx, LayoutParams.WRAP_CONTENT)
             text = diffLabels.newGutterHeader
-            typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         }
         unifiedHeaderTitle = TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             text = diffLabels.unifiedHeader
-            typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding((20 * density).toInt(), 0, 0, 0)
             maxLines = 1
@@ -272,7 +267,6 @@ class DiffView @JvmOverloads constructor(
         btnMore = TextView(context).apply {
             text = "⋮"
             textSize = 15f
-            typeface = Typeface.DEFAULT_BOLD
             setTextColor(diffColors.headerTextColor)
             gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(settingsWidthPx, settingsWidthPx).apply {
@@ -797,6 +791,50 @@ class DiffView @JvmOverloads constructor(
     }
 
     fun getCommentLabels(): DiffCommentLabels = commentLabels
+
+    /**
+     * 코드 코멘트 본문(Content) 텍스트 크기를 설정합니다 (기본값: 12sp).
+     */
+    fun setCommentTextSize(sizeSp: Float) {
+        adapter.commentTextSizeSp = sizeSp
+    }
+
+    /**
+     * 코드 코멘트 본문(Content) 텍스트 크기를 반환합니다 (단위: SP).
+     */
+    fun getCommentTextSize(): Float = adapter.commentTextSizeSp
+
+    /**
+     * 코드 코멘트 날짜/시간(Date) 텍스트 크기를 설정합니다 (기본값: 11sp).
+     */
+    fun setCommentDateTextSize(sizeSp: Float) {
+        adapter.commentDateTextSizeSp = sizeSp
+    }
+
+    /**
+     * 코드 코멘트 날짜/시간(Date) 텍스트 크기를 반환합니다 (단위: SP).
+     */
+    fun getCommentDateTextSize(): Float = adapter.commentDateTextSizeSp
+
+    /**
+     * 코드 코멘트 본문 및 날짜 텍스트 크기를 한 번에 설정합니다 (단위: SP).
+     */
+    fun setCommentTextSizes(contentSizeSp: Float, dateSizeSp: Float) {
+        adapter.commentTextSizeSp = contentSizeSp
+        adapter.commentDateTextSizeSp = dateSizeSp
+    }
+
+    /**
+     * 코드 코멘트에 날짜/시간 표시 여부를 설정합니다 (기본값: true).
+     */
+    fun setShowCommentDate(show: Boolean) {
+        adapter.showCommentDate = show
+    }
+
+    /**
+     * 코드 코멘트에 날짜/시간 표시 여부를 반환합니다.
+     */
+    fun isShowCommentDate(): Boolean = adapter.showCommentDate
 
     /**
      * 설정 다이얼로그 라벨 설정 ([DiffSettingLabels]).
