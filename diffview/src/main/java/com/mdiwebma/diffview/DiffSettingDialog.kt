@@ -1,14 +1,10 @@
 package com.mdiwebma.diffview
 
-import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -34,10 +30,12 @@ object DiffSettingDialog {
         val labels = diffView.getSettingLabels()
         val density = context.resources.displayMetrics.density
 
-        val padHorizontalPx = (18 * density).toInt()
-        val padVerticalPx = (12 * density).toInt()
+        val pad16Px = (16 * density).toInt()
+        val pad12Px = (12 * density).toInt()
         val pad8Px = (8 * density).toInt()
+        val pad6Px = (6 * density).toInt()
         val pad4Px = (4 * density).toInt()
+        val pad2Px = (2 * density).toInt()
 
         val scrollView = ScrollView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -49,19 +47,20 @@ object DiffSettingDialog {
 
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
+            setPadding(pad16Px, pad12Px, pad16Px, pad12Px)
         }
         scrollView.addView(container)
 
-        val isAppDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val isAppDark =
+            (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
 
         fun createSectionTitle(title: String): TextView {
             return TextView(context).apply {
                 text = title
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 setTextColor(if (isAppDark) Color.parseColor("#E0E0E0") else Color.parseColor("#444444"))
                 paint.isFakeBoldText = true
-                setPadding(0, pad8Px, 0, pad4Px)
+                setPadding(0, pad6Px, 0, pad2Px)
             }
         }
 
@@ -79,9 +78,9 @@ object DiffSettingDialog {
             }
         }
 
-        fun styleOptionButton(btn: Button, isSelected: Boolean) {
+        fun styleOptionButton(btn: TextView, isSelected: Boolean) {
             val bg = GradientDrawable().apply {
-                cornerRadius = 6 * density
+                cornerRadius = 4 * density
                 if (isSelected) {
                     setColor(if (isAppDark) Color.parseColor("#3574F0") else Color.parseColor("#1976D2"))
                 } else {
@@ -92,36 +91,36 @@ object DiffSettingDialog {
             btn.setTextColor(if (isSelected) Color.WHITE else if (isAppDark) Color.parseColor("#CCCCCC") else Color.parseColor("#333333"))
         }
 
-        fun createOptionButton(text: String, isSelected: Boolean, onClick: () -> Unit): Button {
-            return Button(context).apply {
+        fun createOptionButton(text: String, isSelected: Boolean, onClick: () -> Unit): TextView {
+            return TextView(context).apply {
                 this.text = text
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
                 isAllCaps = false
                 gravity = Gravity.CENTER
-                minHeight = (36 * density).toInt()
+                minHeight = (30 * density).toInt()
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
                     marginEnd = (4 * density).toInt()
                 }
-                setPadding((4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
+                setPadding((4 * density).toInt(), (2 * density).toInt(), (4 * density).toInt(), (2 * density).toInt())
                 styleOptionButton(this, isSelected)
                 setOnClickListener { onClick() }
             }
         }
 
-        fun createActionButton(text: String, isEnabled: Boolean = true, onClick: () -> Unit): Button {
-            return Button(context).apply {
+        fun createActionButton(text: String, isEnabled: Boolean = true, onClick: () -> Unit): TextView {
+            return TextView(context).apply {
                 this.text = text
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
                 isAllCaps = false
                 gravity = Gravity.CENTER
-                minHeight = (36 * density).toInt()
+                minHeight = (30 * density).toInt()
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
                     marginEnd = (4 * density).toInt()
                 }
-                setPadding((4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
+                setPadding((4 * density).toInt(), (2 * density).toInt(), (4 * density).toInt(), (2 * density).toInt())
 
                 val bg = GradientDrawable().apply {
-                    cornerRadius = 6 * density
+                    cornerRadius = 4 * density
                     val strokeColor = if (isAppDark) Color.parseColor("#444C56") else Color.parseColor("#C0C8D0")
                     val bgColor = if (isAppDark) Color.parseColor("#1F242C") else Color.parseColor("#F3F6F9")
                     setColor(bgColor)

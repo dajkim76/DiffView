@@ -125,8 +125,8 @@ class DiffView @JvmOverloads constructor(
         val gutterPx = (gutterWidthDp * density).toInt()
         val dividerPx = (1 * density).toInt().coerceAtLeast(1)
         val padHorizontalPx = (8 * density).toInt()
-        val padVerticalPx = (8 * density).toInt()
-        val settingsWidthPx = (32 * density).toInt()
+        val padVerticalPx = (4 * density).toInt()
+        val settingsWidthPx = (26 * density).toInt()
 
         // 1. Root Container
         val contentContainer = LinearLayout(context).apply {
@@ -166,7 +166,7 @@ class DiffView @JvmOverloads constructor(
         leftHeaderBox.addView(leftHeaderTitle)
 
         centerHeaderDivider = View(context).apply {
-            layoutParams = LinearLayout.LayoutParams(dividerPx, (18 * density).toInt())
+            layoutParams = LinearLayout.LayoutParams(dividerPx, (14 * density).toInt())
         }
 
         // --- Side-by-Side Right Header ---
@@ -250,10 +250,10 @@ class DiffView @JvmOverloads constructor(
         // Settings Button (Top-right ⚙️)
         btnSettings = TextView(context).apply {
             text = "⚙️"
-            textSize = 14f
+            textSize = 13f
             gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(settingsWidthPx, settingsWidthPx).apply {
-                marginStart = (4 * density).toInt()
+                marginStart = (2 * density).toInt()
             }
             val outValue = TypedValue()
             context.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)
@@ -271,12 +271,12 @@ class DiffView @JvmOverloads constructor(
         // More Options Button (Top-right ⋮)
         btnMore = TextView(context).apply {
             text = "⋮"
-            textSize = 16f
+            textSize = 15f
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(diffColors.headerTextColor)
             gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(settingsWidthPx, settingsWidthPx).apply {
-                marginStart = (2 * density).toInt()
+                marginStart = (1 * density).toInt()
             }
             val outValue = TypedValue()
             context.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)
