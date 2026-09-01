@@ -495,20 +495,6 @@ class DiffView @JvmOverloads constructor(
 
     fun getLongTabAction(): DiffLongTabAction = longTabAction
 
-    /**
-     * @deprecated Use [setLongTabAction] with [DiffLongTabAction] instead.
-     */
-    @Deprecated(
-        "Use setLongTabAction(DiffLongTabAction) instead",
-        ReplaceWith("setLongTabAction(if (selectable) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.NONE)")
-    )
-    fun setTextIsSelectable(selectable: Boolean) {
-        setLongTabAction(if (selectable) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.NONE)
-    }
-
-    @Deprecated("Use getLongTabAction() instead")
-    fun isTextSelectable(): Boolean = longTabAction == DiffLongTabAction.TEXT_SELECTABLE
-
     private fun updateGutterWidths() {
         val density = context.resources.displayMetrics.density
         val gutterPx = (gutterWidthDp * density).toInt()

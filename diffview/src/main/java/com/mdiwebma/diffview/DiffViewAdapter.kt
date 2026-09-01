@@ -94,12 +94,6 @@ class DiffViewAdapter(
             }
         }
 
-    var isTextSelectable: Boolean
-        get() = longTabAction == DiffLongTabAction.TEXT_SELECTABLE
-        set(value) {
-            longTabAction = if (value) DiffLongTabAction.TEXT_SELECTABLE else DiffLongTabAction.NONE
-        }
-
     var diffLabels: DiffLabels = DiffLabels.Default
         set(value) {
             field = value
