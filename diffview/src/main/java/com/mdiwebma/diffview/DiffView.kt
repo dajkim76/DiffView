@@ -2,6 +2,7 @@ package com.mdiwebma.diffview
 
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -10,6 +11,7 @@ import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
@@ -18,6 +20,10 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mdiwebma.diffview.comment.CodeComment
@@ -87,6 +93,7 @@ class DiffView @JvmOverloads constructor(
     // UI Elements
     private val headerLayout: LinearLayout
     private val btnSettings: TextView
+    private val btnMore: TextView
     private val leftHeaderBox: LinearLayout
     private val leftSpacer: View
     private val leftHeaderTitle: TextView
@@ -148,6 +155,8 @@ class DiffView @JvmOverloads constructor(
             typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding(padHorizontalPx, 0, 0, 0)
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.MIDDLE
         }
         leftHeaderBox.addView(leftSpacer)
         leftHeaderBox.addView(leftHeaderTitle)
@@ -170,6 +179,8 @@ class DiffView @JvmOverloads constructor(
             typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding(padHorizontalPx, 0, 0, 0)
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.MIDDLE
         }
         val rightHeaderInner = LinearLayout(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
@@ -207,6 +218,8 @@ class DiffView @JvmOverloads constructor(
             typeface = Typeface.DEFAULT_BOLD
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setPadding((20 * density).toInt(), 0, 0, 0)
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.MIDDLE
         }
         unifiedHeaderBox.addView(oldGutterHeaderTitle)
         unifiedHeaderBox.addView(newGutterHeaderTitle)
@@ -251,12 +264,36 @@ class DiffView @JvmOverloads constructor(
             }
         }
 
+        // More Options Button (Top-right ⋮)
+        btnMore = TextView(context).apply {
+            text = "⋮"
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(diffColors.headerTextColor)
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(settingsWidthPx, settingsWidthPx).apply {
+                marginStart = (2 * density).toInt()
+            }
+            val outValue = TypedValue()
+            context.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)
+            if (outValue.resourceId != 0) {
+                setBackgroundResource(outValue.resourceId)
+            }
+            isClickable = true
+            isFocusable = true
+            contentDescription = "More Options"
+            setOnClickListener {
+                showMoreMenu(it)
+            }
+        }
+
         headerLayout.addView(leftHeaderBox)
         headerLayout.addView(centerHeaderDivider)
         headerLayout.addView(rightHeaderBox)
         headerLayout.addView(unifiedHeaderBox)
         headerLayout.addView(statsLayout)
         headerLayout.addView(btnSettings)
+        headerLayout.addView(btnMore)
 
         headerDivider = View(context).apply {
             layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dividerPx)
@@ -532,14 +569,119 @@ class DiffView @JvmOverloads constructor(
     }
 
     /**
-     * 상단 헤더 맨 왼쪽의 설정(⚙️) 버튼 노출 여부를 설정합니다.
+     * 상단 헤더의 설정(⚙️) 및 더보기(⋮) 버튼 노출 여부를 설정합니다.
      */
     fun setSettingsButtonVisible(visible: Boolean) {
-        btnSettings.visibility = if (visible) VISIBLE else GONE
+        btnSettings.isVisible = visible
+        btnMore.isVisible = visible
         updateGutterWidths()
     }
 
-    fun isSettingsButtonVisible(): Boolean = btnSettings.visibility == VISIBLE
+    fun isSettingsButtonVisible(): Boolean = btnSettings.isVisible
+
+    /**
+     * 상단 헤더의 더보기(⋮) 버튼 노출 여부를 설정합니다.
+     */
+    fun setMoreButtonVisible(visible: Boolean) {
+        btnMore.isVisible = visible
+    }
+
+    fun isMoreButtonVisible(): Boolean = btnMore.isVisible
+
+    /**
+     * 더보기(More) 팝업 메뉴를 화면에 표시합니다.
+     */
+    fun showMoreMenu(anchor: View = btnMore) {
+        val popup = PopupMenu(context, anchor)
+        popup.menu.add(0, 1, 0, settingLabels.menuSaveVisibleImage)
+        popup.menu.add(0, 2, 1, settingLabels.menuSaveFullImage)
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                1 -> {
+                    executeImageCapture(isFull = false)
+                    true
+                }
+
+                2 -> {
+                    executeImageCapture(isFull = true)
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
+    /**
+     * 이미지 캡처 및 갤러리 저장 실행 후 공유/보기 다이얼로그 표시.
+     */
+    fun executeImageCapture(isFull: Boolean, onSaved: ((Uri?) -> Unit)? = null) {
+        val bitmap = if (isFull) {
+            captureFullBitmap()
+        } else {
+            captureVisibleBitmap()
+        }
+
+        if (bitmap == null) {
+            Toast.makeText(context, settingLabels.imageSaveFailed, Toast.LENGTH_SHORT).show()
+            onSaved?.invoke(null)
+            return
+        }
+
+        progressBar.visibility = VISIBLE
+        val suffix = if (isFull) "full" else "visible"
+        val filename = "DiffView_${suffix}_${System.currentTimeMillis()}"
+
+        viewScope.launch {
+            val uri = try {
+                saveBitmapToGallery(context, bitmap, filename)
+            } finally {
+                progressBar.visibility = GONE
+            }
+
+            if (uri != null) {
+                showImageSavedDialog(uri)
+            } else {
+                Toast.makeText(context, settingLabels.imageSaveFailed, Toast.LENGTH_SHORT).show()
+            }
+            onSaved?.invoke(uri)
+        }
+    }
+
+    /**
+     * 이미지 저장 완료 알림 및 보기/공유 액션 다이얼로그를 표시합니다.
+     */
+    private fun showImageSavedDialog(uri: Uri) {
+        AlertDialog.Builder(context)
+            .setTitle(settingLabels.imageSavedTitle)
+            .setMessage(settingLabels.imageSavedMessage)
+            .setPositiveButton(settingLabels.actionView) { _, _ ->
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, "image/png")
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(Intent.createChooser(intent, settingLabels.actionView))
+                } catch (e: Exception) {
+                    Toast.makeText(context, e.message ?: "Failed to open image", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNeutralButton(settingLabels.actionShare) { _, _ ->
+                try {
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "image/png"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(Intent.createChooser(intent, settingLabels.actionShare))
+                } catch (e: Exception) {
+                    Toast.makeText(context, e.message ?: "Failed to share image", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(settingLabels.closeButton, null)
+            .show()
+    }
 
     /**
      * 코멘트 다이얼로그 라벨 설정 ([DiffCommentLabels]).
@@ -756,6 +898,9 @@ class DiffView @JvmOverloads constructor(
         leftHeaderTitle.setTextColor(diffColors.headerTextColor)
         rightHeaderTitle.setTextColor(diffColors.headerTextColor)
         unifiedHeaderTitle.setTextColor(diffColors.headerTextColor)
+        oldGutterHeaderTitle.setTextColor(diffColors.headerTextColor)
+        newGutterHeaderTitle.setTextColor(diffColors.headerTextColor)
+        btnMore.setTextColor(diffColors.headerTextColor)
         headerDivider.setBackgroundColor(diffColors.dividerColor)
         centerHeaderDivider.setBackgroundColor(diffColors.dividerColor)
 

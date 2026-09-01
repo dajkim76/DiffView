@@ -57,4 +57,13 @@
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">Plain Text</string>
     <string name="diffview_opt_close">Close</string>
+
+    <!-- More Menu & Image Save Strings -->
+    <string name="diffview_more_save_visible">Save Visible Viewport Image</string>
+    <string name="diffview_more_save_full">Save Full Diff Image</string>
+    <string name="diffview_image_saved_title">Image Saved</string>
+    <string name="diffview_image_saved_msg">Diff image has been saved to Pictures/DiffView.</string>
+    <string name="diffview_image_save_failed">Failed to save diff image.</string>
+    <string name="diffview_action_view">View</string>
+    <string name="diffview_action_share">Share</string>
 </resources>

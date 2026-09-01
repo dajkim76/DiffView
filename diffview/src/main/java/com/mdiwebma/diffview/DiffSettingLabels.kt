@@ -40,7 +40,14 @@ data class DiffSettingLabels(
     val syntaxTitle: String = "Syntax Highlighting",
     val syntaxKotlin: String = "Kotlin",
     val syntaxPlain: String = "Plain Text",
-    val closeButton: String = "Close"
+    val closeButton: String = "Close",
+    val menuSaveVisibleImage: String = "Save Visible Viewport Image",
+    val menuSaveFullImage: String = "Save Full Diff Image",
+    val imageSavedTitle: String = "Image Saved",
+    val imageSavedMessage: String = "Diff image has been saved to Pictures/DiffView.",
+    val imageSaveFailed: String = "Failed to save diff image.",
+    val actionView: String = "View",
+    val actionShare: String = "Share"
 ) {
     companion object {
         val Default = DiffSettingLabels()
@@ -84,7 +91,14 @@ data class DiffSettingLabels(
                 syntaxTitle = context.getString(R.string.diffview_opt_syntax),
                 syntaxKotlin = context.getString(R.string.diffview_opt_syntax_kotlin),
                 syntaxPlain = context.getString(R.string.diffview_opt_syntax_plain),
-                closeButton = context.getString(R.string.diffview_opt_close)
+                closeButton = context.getString(R.string.diffview_opt_close),
+                menuSaveVisibleImage = context.getString(R.string.diffview_more_save_visible),
+                menuSaveFullImage = context.getString(R.string.diffview_more_save_full),
+                imageSavedTitle = context.getString(R.string.diffview_image_saved_title),
+                imageSavedMessage = context.getString(R.string.diffview_image_saved_msg),
+                imageSaveFailed = context.getString(R.string.diffview_image_save_failed),
+                actionView = context.getString(R.string.diffview_action_view),
+                actionShare = context.getString(R.string.diffview_action_share)
             )
         }
     }

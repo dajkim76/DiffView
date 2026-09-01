@@ -57,4 +57,13 @@
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">일반 텍스트 (Plain Text)</string>
     <string name="diffview_opt_close">닫기</string>
+
+    <!-- More Menu & Image Save Strings -->
+    <string name="diffview_more_save_visible">현재 화면 이미지로 저장</string>
+    <string name="diffview_more_save_full">전체 Diff 이미지로 저장</string>
+    <string name="diffview_image_saved_title">이미지 저장 완료</string>
+    <string name="diffview_image_saved_msg">Diff 이미지가 갤러리(Pictures/DiffView)에 저장되었습니다.</string>
+    <string name="diffview_image_save_failed">이미지 저장에 실패했습니다.</string>
+    <string name="diffview_action_view">보기</string>
+    <string name="diffview_action_share">공유</string>
 </resources>

@@ -184,5 +184,10 @@ class CodeCommentTest {
         assertEquals("Dark", labels.themeDark)
         assertEquals("Code Folding", labels.foldingTitle)
         assertEquals("Close", labels.closeButton)
+        assertEquals("Save Visible Viewport Image", labels.menuSaveVisibleImage)
+        assertEquals("Save Full Diff Image", labels.menuSaveFullImage)
+        assertEquals("Image Saved", labels.imageSavedTitle)
+        assertEquals("View", labels.actionView)
+        assertEquals("Share", labels.actionShare)
     }
 }

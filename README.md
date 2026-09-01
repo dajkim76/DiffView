@@ -51,12 +51,13 @@ An Android Studio Diff Editor styled **Side-by-Side (Split) & Unified DiffView**
 12. **Line Long-Press Action (None, Text Selection & Code Comments)**:
     - Configure long-press interaction via `setLongTabAction(DiffLongTabAction.NONE)` (default: `NONE`).
     - Options: `NONE`, `TEXT_SELECTABLE` (drag selection/copying), `COMMENT` (line comment dialog).
-13. **Header Settings Button (⚙️) & Real-time Options Dialog**:
-    - Built-in settings button on the top-right header that opens an interactive modal dialog allowing users to adjust all DiffView configurations in real-time.
-    - Programmatically trigger the dialog with `showSettingsDialog()` or toggle the button with `setSettingsButtonVisible(boolean)`.
-    - Fully customizable dialog UI labels using `DiffSettingLabels` (`setSettingLabels(...)`).
-14. **Code Comment Dialog Localization (`DiffCommentLabels`)**:
-    - Customize all text labels, hints, and button strings in code comment dialogs via `DiffCommentLabels` (`setCommentLabels(...)`).
+13. **Header Settings (⚙️) & More (⋮) Action Menus**:
+    - **Settings (⚙️)**: Interactive modal dialog to adjust all DiffView configurations in real-time.
+    - **More (⋮)**: Popup menu for exporting diffs as images (**Visible Viewport** or **Full Diff**). Automatically provides **View** and **Share** dialog actions upon completion.
+    - Programmatically trigger via `showSettingsDialog()`, `showMoreMenu()`, or `executeImageCapture(isFull)`.
+    - Toggle header action buttons via `setSettingsButtonVisible(boolean)` or `setMoreButtonVisible(boolean)`.
+14. **Customizable Dialog Labels (`DiffSettingLabels`, `DiffCommentLabels`)**:
+    - Fully customize all UI strings for settings, image exporting, and code comment dialogs.
 15. **Screenshots**
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot2](screenshot2.jpg)
@@ -206,16 +207,20 @@ diffView.setGutterWidthDp(48)
 // 14. Configure line long-press action (NONE (default), TEXT_SELECTABLE, COMMENT)
 diffView.setLongTabAction(DiffLongTabAction.TEXT_SELECTABLE)
 
-// 15. Header Settings Button (⚙️) and Options Dialog
-diffView.setSettingsButtonVisible(true) // Toggle top-right settings button (default: true)
-diffView.showSettingsDialog()          // Programmatically display the settings modal
+// 15. Header Settings (⚙️) and More (⋮) Action Menus
+diffView.setSettingsButtonVisible(true) // Toggle top-right settings & more buttons (default: true)
+diffView.showSettingsDialog()          // Programmatically display settings modal
+diffView.showMoreMenu()                // Programmatically display export popup menu
+diffView.executeImageCapture(isFull = true) // Capture full diff, save to gallery, and show View/Share dialog
 
-// 16. Customize Settings Dialog UI labels (or override strings.xml)
+// 16. Customize Settings & Image Dialog UI labels (or override strings.xml)
 diffView.setSettingLabels(
     DiffSettingLabels(
         dialogTitle = "Diff Settings",
         modeSideBySide = "Split",
-        modeUnified = "Unified"
+        modeUnified = "Unified",
+        menuSaveFullImage = "Export Full Diff Image",
+        actionShare = "Share Diff"
     )
 )
 

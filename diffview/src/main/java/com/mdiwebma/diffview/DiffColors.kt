@@ -60,17 +60,17 @@ data class DiffColors(
             unchangedBackground = Color.parseColor("#1E1F22"),
             noneTextBackground = Color.parseColor("#26282E"),
             lineNumberBackground = Color.parseColor("#25262A"),
-            lineNumberTextColor = Color.parseColor("#6B6E77"),
+            lineNumberTextColor = Color.parseColor("#9DA0A8"),
             dividerColor = Color.parseColor("#393B40"),
             headerBackground = Color.parseColor("#2B2D30"),
             headerTextColor = Color.parseColor("#BCBEC4"),
             foldedBannerBackground = Color.parseColor("#2B2D30"),
             foldedBannerTextColor = Color.parseColor("#868A91"),
             codeTextColor = Color.parseColor("#BCBEC4"),
-            commentBackground = Color.parseColor("#161B22"),
-            commentStroke = Color.parseColor("#30363D"),
-            commentTextColor = Color.parseColor("#C9D1D9"),
-            commentTimeColor = Color.parseColor("#8B949E")
+            commentBackground = Color.parseColor("#262C36"),
+            commentStroke = Color.parseColor("#444C56"),
+            commentTextColor = Color.parseColor("#E6EDF3"),
+            commentTimeColor = Color.parseColor("#9DA0A8")
         )
 
         fun defaultFor(context: Context): DiffColors {

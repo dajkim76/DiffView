@@ -62,6 +62,8 @@ object DiffSettingDialog {
         fun createButtonRow(): LinearLayout {
             return LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
+                isBaselineAligned = false
+                gravity = Gravity.CENTER_VERTICAL
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
@@ -89,10 +91,12 @@ object DiffSettingDialog {
                 this.text = text
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
                 isAllCaps = false
-                layoutParams = LinearLayout.LayoutParams(0, (36 * density).toInt(), 1f).apply {
+                gravity = Gravity.CENTER
+                minHeight = (36 * density).toInt()
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
                     marginEnd = (4 * density).toInt()
                 }
-                setPadding(0, 0, 0, 0)
+                setPadding((4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt(), (4 * density).toInt())
                 styleOptionButton(this, isSelected)
                 setOnClickListener { onClick() }
             }
