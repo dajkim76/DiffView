@@ -74,7 +74,7 @@ object DiffSettingDialog {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    bottomMargin = pad4Px
+                    bottomMargin = pad6Px
                 }
             }
         }
@@ -100,7 +100,7 @@ object DiffSettingDialog {
                 gravity = Gravity.CENTER
                 minHeight = (30 * density).toInt()
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                    marginEnd = (4 * density).toInt()
+                    marginEnd = pad6Px
                 }
                 setPadding((4 * density).toInt(), (2 * density).toInt(), (4 * density).toInt(), (2 * density).toInt())
                 styleOptionButton(this, isSelected)
