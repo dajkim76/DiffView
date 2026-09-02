@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">सहेजने में विफल।</string>
     <string name="diffview_action_view">देखें</string>
     <string name="diffview_action_share">साझा करें</string>
-    <string name="diffview_expand_all_success">सभी ब्लॉक विस्तारित।</string>
-    <string name="diffview_collapse_all_success">सभी ब्लॉक समेटे गए।</string>
+    <string name="diffview_expand_all_success">सभी कोड ब्लॉक विस्तृत कर दिए गए हैं।</string>
+    <string name="diffview_collapse_all_success">सभी कोड ब्लॉक संक्षिप्त कर दिए गए हैं।</string>
+    <string name="diffview_more_copy_git_patch">Git Patch कॉपी करें</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch क्लिपबोर्ड पर कॉपी किया गया।</string>
 </resources>

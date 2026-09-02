@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">บันทึกรูปภาพไม่สำเร็จ</string>
     <string name="diffview_action_view">ดู</string>
     <string name="diffview_action_share">แชร์</string>
-    <string name="diffview_expand_all_success">ขยายบล็อกทั้งหมดแล้ว</string>
-    <string name="diffview_collapse_all_success">พับบล็อกทั้งหมดแล้ว</string>
+    <string name="diffview_expand_all_success">ขยายบล็อกโค้ดทั้งหมดแล้ว</string>
+    <string name="diffview_collapse_all_success">ยุบบล็อกโค้ดทั้งหมดแล้ว</string>
+    <string name="diffview_more_copy_git_patch">คัดลอก Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">คัดลอก Git Patch ไปยังคลิปบอร์ดแล้ว</string>
 </resources>

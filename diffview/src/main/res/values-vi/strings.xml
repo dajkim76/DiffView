@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">Lưu ảnh thất bại.</string>
     <string name="diffview_action_view">Xem</string>
     <string name="diffview_action_share">Chia sẻ</string>
-    <string name="diffview_expand_all_success">Đã mở rộng tất cả các khối.</string>
-    <string name="diffview_collapse_all_success">Đã thu gọn tất cả các khối.</string>
+    <string name="diffview_expand_all_success">Đã mở rộng tất cả các khối mã.</string>
+    <string name="diffview_collapse_all_success">Đã thu gọn tất cả các khối mã.</string>
+    <string name="diffview_more_copy_git_patch">Sao chép Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">Đã sao chép Git Patch vào khay nhớ tạm.</string>
 </resources>

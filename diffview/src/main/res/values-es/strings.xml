@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">Error al guardar la imagen.</string>
     <string name="diffview_action_view">Ver</string>
     <string name="diffview_action_share">Compartir</string>
-    <string name="diffview_expand_all_success">Todos los bloques expandidos.</string>
-    <string name="diffview_collapse_all_success">Todos los bloques plegados.</string>
+    <string name="diffview_expand_all_success">Se han expandido todos los bloques de código.</string>
+    <string name="diffview_collapse_all_success">Se han colapsado todos los bloques de código.</string>
+    <string name="diffview_more_copy_git_patch">Copiar Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch copiado al portapapeles.</string>
 </resources>

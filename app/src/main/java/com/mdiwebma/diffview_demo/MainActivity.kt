@@ -95,11 +95,12 @@ class MainActivity : AppCompatActivity() {
 
         // Show initial sample code
         //diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
-        diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
+        //diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
+        diffView.setContentGitPatch(GIT_PATCH)
         //diffView.setLongTabAction(DiffLongTabAction.COMMENT)
         diffView.setCommentTextSizes(11f, 9f)
         diffView.setCommentContext("sample_initial_commit", "MainActivity.kt")
-        diffView.setSettingsButtonVisible(false)
+        //diffView.setSettingsButtonVisible(false)
 //        diffView.expandAll()
 
         btnFetchCommit.setOnClickListener {
@@ -441,6 +442,38 @@ data class UserProfile(
     }
 }
 """.trimIndent()
+
+        private const val GIT_PATCH = """diff --git a/src/App.tsx b/src/App.tsx
+index b61a540..27c4240 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,8 +1,22 @@
++import { useEffect, useState } from 'react';
++
+ export default function App() {
++    const [messages, setMessages] = useState<string[]>([]);
++
++    useEffect(() => {
++        setMessages(['git', 'diff', 'patch']);
++    }, []);
++
+     return (
+-        <div>
+-            <h2>eslint + prettier로 포매팅 자동화하기</h2>
+-            <p>저장을 해야만 에러가 사라집니다...</p>
+-        </div>
++        <main>
++            <h2>git diff로 patch 파일 생성하기</h2>
++            <div>
++                <ul>
++                    {messages.map((message, index) => (
++                        <li key={index}>{message}</li>
++                    ))}
++                </ul>
++            </div>
++        </main>
+     );
+ }"""
 
         private val BINARY_EXTENSIONS = hashSetOf(
             // Images

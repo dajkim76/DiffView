@@ -50,7 +50,9 @@ data class DiffSettingLabels(
     val actionView: String = "View",
     val actionShare: String = "Share",
     val expandAllSuccess: String = "All code blocks expanded.",
-    val collapseAllSuccess: String = "All code blocks collapsed."
+    val collapseAllSuccess: String = "All code blocks collapsed.",
+    val menuCopyGitPatch: String = "Copy Git Patch",
+    val copyGitPatchSuccess: String = "Git Patch copied to clipboard."
 ) {
     companion object {
         val Default = DiffSettingLabels()
@@ -104,7 +106,9 @@ data class DiffSettingLabels(
                 actionView = context.getString(R.string.diffview_action_view),
                 actionShare = context.getString(R.string.diffview_action_share),
                 expandAllSuccess = context.getString(R.string.diffview_expand_all_success),
-                collapseAllSuccess = context.getString(R.string.diffview_collapse_all_success)
+                collapseAllSuccess = context.getString(R.string.diffview_collapse_all_success),
+                menuCopyGitPatch = context.getString(R.string.diffview_more_copy_git_patch),
+                copyGitPatchSuccess = context.getString(R.string.diffview_msg_copy_git_patch_success)
             )
         }
     }

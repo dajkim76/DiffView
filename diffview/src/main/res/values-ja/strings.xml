@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">画像の保存に失敗しました。</string>
     <string name="diffview_action_view">表示</string>
     <string name="diffview_action_share">共有</string>
-    <string name="diffview_expand_all_success">すべてのブロックを展開しました。</string>
-    <string name="diffview_collapse_all_success">すべてのブロックを折りたたみました。</string>
+    <string name="diffview_expand_all_success">すべてのコードブロックを展開しました。</string>
+    <string name="diffview_collapse_all_success">すべてのコードブロックを折りたたみました。</string>
+    <string name="diffview_more_copy_git_patch">Git Patchをコピー</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patchをクリップボードにコピーしました。</string>
 </resources>

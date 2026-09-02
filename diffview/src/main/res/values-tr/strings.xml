@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">Kayıt başarısız.</string>
     <string name="diffview_action_view">Görüntüle</string>
     <string name="diffview_action_share">Paylaş</string>
-    <string name="diffview_expand_all_success">Tüm bloklar genişletildi.</string>
-    <string name="diffview_collapse_all_success">Tüm bloklar katlandı.</string>
+    <string name="diffview_expand_all_success">Tüm kod blokları genişletildi.</string>
+    <string name="diffview_collapse_all_success">Tüm kod blokları daraltıldı.</string>
+    <string name="diffview_more_copy_git_patch">Git Patch\'i Kopyala</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch panoya kopyalandı.</string>
 </resources>

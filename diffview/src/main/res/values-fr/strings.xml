@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">Échec de l\'enregistrement.</string>
     <string name="diffview_action_view">Afficher</string>
     <string name="diffview_action_share">Partager</string>
-    <string name="diffview_expand_all_success">Tous les blocs développés.</string>
-    <string name="diffview_collapse_all_success">Tous les blocs repliés.</string>
+    <string name="diffview_expand_all_success">Tous les blocs de code ont été développés.</string>
+    <string name="diffview_collapse_all_success">Tous les blocs de code ont été réduits.</string>
+    <string name="diffview_more_copy_git_patch">Copier le Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch copié dans le presse-papiers.</string>
 </resources>

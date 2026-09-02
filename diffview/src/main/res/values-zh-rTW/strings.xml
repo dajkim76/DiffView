@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">儲存圖片失敗。</string>
     <string name="diffview_action_view">檢視</string>
     <string name="diffview_action_share">分享</string>
-    <string name="diffview_expand_all_success">已展開所有程式碼區塊。</string>
-    <string name="diffview_collapse_all_success">已摺疊所有程式碼區塊。</string>
+    <string name="diffview_expand_all_success">已展開所有代碼塊。</string>
+    <string name="diffview_collapse_all_success">已折疊所有代碼塊。</string>
+    <string name="diffview_more_copy_git_patch">複製Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch已複製到剪貼簿。</string>
 </resources>

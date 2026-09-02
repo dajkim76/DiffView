@@ -1367,4 +1367,79 @@ data class UserProfile(
         val startExpandedHeader = startExpandedItems.first { it is DiffDisplayItem.FoldedHeader } as DiffDisplayItem.FoldedHeader
         assertEquals(11, startExpandedHeader.lineCount)
     }
+
+    @Test
+    fun testGenerateGitPatch() {
+        val oldText = "Line 1\nLine 2\nLine 3"
+        val newText = "Line 1\nLine 2 Modified\nLine 3"
+
+        val gitPatch = engine.generateGitPatch(
+            originalFileName = "a/File.kt",
+            modifiedFileName = "b/File.kt",
+            oldText = oldText,
+            newText = newText,
+            contextSize = 1
+        )
+
+        assertTrue(gitPatch.startsWith("diff --git a/File.kt b/File.kt"))
+        assertTrue(gitPatch.contains("--- a/File.kt"))
+        assertTrue(gitPatch.contains("+++ b/File.kt"))
+        assertTrue(gitPatch.contains("-Line 2"))
+        assertTrue(gitPatch.contains("+Line 2 Modified"))
+    }
+
+    @Test
+    fun testGitPatchParser_SingleFile() {
+        val diffString = """
+            diff --git a/src/Utils.kt b/src/Utils.kt
+            --- a/src/Utils.kt
+            +++ b/src/Utils.kt
+            @@ -1,3 +1,3 @@
+             fun main() {
+            -    println("Old")
+            +    println("New")
+             }
+        """.trimIndent()
+
+        val patches = com.mdiwebma.diffview.engine.GitPatchParser.parse(diffString)
+        assertEquals(1, patches.size)
+
+        val parsed = patches[0]
+        assertEquals("src/Utils.kt", parsed.originalFileName)
+        assertEquals("src/Utils.kt", parsed.modifiedFileName)
+        assertEquals("fun main() {\n    println(\"Old\")\n}", parsed.originalText)
+        assertEquals("fun main() {\n    println(\"New\")\n}", parsed.modifiedText)
+
+        val firstParsed = com.mdiwebma.diffview.engine.GitPatchParser.parseFirst(diffString)
+        assertEquals(parsed, firstParsed)
+    }
+
+    @Test
+    fun testGitPatchParser_MultipleFiles() {
+        val multiDiffString = """
+            diff --git a/src/First.kt b/src/First.kt
+            --- a/src/First.kt
+            +++ b/src/First.kt
+            @@ -1,2 +1,2 @@
+            -class FirstOld
+            +class FirstNew
+            diff --git a/src/Second.kt b/src/Second.kt
+            --- a/src/Second.kt
+            +++ b/src/Second.kt
+            @@ -1,2 +1,2 @@
+            -val count = 1
+            +val count = 2
+        """.trimIndent()
+
+        val patches = com.mdiwebma.diffview.engine.GitPatchParser.parse(multiDiffString)
+        assertEquals(2, patches.size)
+
+        assertEquals("src/First.kt", patches[0].originalFileName)
+        assertEquals("class FirstOld", patches[0].originalText)
+        assertEquals("class FirstNew", patches[0].modifiedText)
+
+        assertEquals("src/Second.kt", patches[1].originalFileName)
+        assertEquals("val count = 1", patches[1].originalText)
+        assertEquals("val count = 2", patches[1].modifiedText)
+    }
 }

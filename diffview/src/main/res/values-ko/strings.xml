@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">이미지 저장에 실패했습니다.</string>
     <string name="diffview_action_view">보기</string>
     <string name="diffview_action_share">공유</string>
-    <string name="diffview_expand_all_success">모든 블록을 확장했습니다.</string>
-    <string name="diffview_collapse_all_success">모든 블록을 접었습니다.</string>
+    <string name="diffview_expand_all_success">모든 코드 블록을 펼쳤습니다.</string>
+    <string name="diffview_collapse_all_success">모든 코드 블록을 접었습니다.</string>
+    <string name="diffview_more_copy_git_patch">Git 패치 복사</string>
+    <string name="diffview_msg_copy_git_patch_success">Git 패치가 클립보드에 복사되었습니다.</string>
 </resources>

@@ -69,4 +69,6 @@
     <string name="diffview_action_share">Share</string>
     <string name="diffview_expand_all_success">All code blocks expanded.</string>
     <string name="diffview_collapse_all_success">All code blocks collapsed.</string>
+    <string name="diffview_more_copy_git_patch">Copy Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch copied to clipboard.</string>
 </resources>

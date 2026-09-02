@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">Gagal menyimpan gambar.</string>
     <string name="diffview_action_view">Lihat</string>
     <string name="diffview_action_share">Bagikan</string>
-    <string name="diffview_expand_all_success">Semua blok diperluas.</string>
-    <string name="diffview_collapse_all_success">Semua blok dilipat.</string>
+    <string name="diffview_expand_all_success">Semua blok kode telah diperluas.</string>
+    <string name="diffview_collapse_all_success">Semua blok kode telah diciutkan.</string>
+    <string name="diffview_more_copy_git_patch">Salin Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch disalin ke papan klip.</string>
 </resources>

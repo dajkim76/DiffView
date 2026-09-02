@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">Fehler beim Speichern.</string>
     <string name="diffview_action_view">Ansehen</string>
     <string name="diffview_action_share">Teilen</string>
-    <string name="diffview_expand_all_success">Alle Blöcke erweitert.</string>
-    <string name="diffview_collapse_all_success">Alle Blöcke gefaltet.</string>
+    <string name="diffview_expand_all_success">Alle Codeblöcke erweitert.</string>
+    <string name="diffview_collapse_all_success">Alle Codeblöcke eingeklappt.</string>
+    <string name="diffview_more_copy_git_patch">Git Patch kopieren</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch in die Zwischenablage kopiert.</string>
 </resources>

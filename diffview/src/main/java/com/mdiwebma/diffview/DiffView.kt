@@ -1,5 +1,7 @@
 package com.mdiwebma.diffview
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -34,7 +36,9 @@ import com.mdiwebma.diffview.comment.CodeCommentManager
 import com.mdiwebma.diffview.comment.DiffCommentLabels
 import com.mdiwebma.diffview.comment.LineKey
 import com.mdiwebma.diffview.engine.DiffEngine
+import com.mdiwebma.diffview.engine.GitPatchParser
 import com.mdiwebma.diffview.engine.KotlinDiffEngine
+import com.mdiwebma.diffview.engine.ParsedGitPatch
 import com.mdiwebma.diffview.model.DiffDisplayItem
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
@@ -331,8 +335,12 @@ class DiffView @JvmOverloads constructor(
                 if (onLineLongClickListener != null) {
                     onLineLongClickListener?.invoke(lineKey, currentComment)
                 } else if (isCommentsEnabled) {
-                    val commit = currentCommitHash ?: "HEAD"
-                    val path = currentFilePath ?: "default"
+                    val commit = checkNotNull(currentCommitHash) {
+                        "CommentContext is not initialized. Please call setCommentContext(commitHash, filePath) before adding comments."
+                    }
+                    val path = checkNotNull(currentFilePath) {
+                        "CommentContext is not initialized. Please call setCommentContext(commitHash, filePath) before adding comments."
+                    }
                     CodeCommentHelper.handleLineLongClick(
                         context = context,
                         lineKey = lineKey,
@@ -351,8 +359,12 @@ class DiffView @JvmOverloads constructor(
                 if (onCommentClickListener != null) {
                     onCommentClickListener?.invoke(lineKey, currentComment)
                 } else if (isCommentsEnabled) {
-                    val commit = currentCommitHash ?: "HEAD"
-                    val path = currentFilePath ?: "default"
+                    val commit = checkNotNull(currentCommitHash) {
+                        "CommentContext is not initialized. Please call setCommentContext(commitHash, filePath) before editing comments."
+                    }
+                    val path = checkNotNull(currentFilePath) {
+                        "CommentContext is not initialized. Please call setCommentContext(commitHash, filePath) before editing comments."
+                    }
                     CodeCommentHelper.showEditCommentDialog(
                         context = context,
                         currentText = currentComment.text,
@@ -434,6 +446,41 @@ class DiffView @JvmOverloads constructor(
             rightHeaderBox.visibility = GONE
             unifiedHeaderBox.visibility = VISIBLE
         }
+    }
+
+    /**
+     * [ParsedGitPatch] 객체를 전달받아 원본 및 수정본 소스코드를 설정하고 Diff를 계산합니다.
+     */
+    fun setContentGitPatch(patch: ParsedGitPatch, autoUpdateHeaderTitles: Boolean = true) {
+        if (autoUpdateHeaderTitles) {
+            val origName = patch.originalFileName
+            val modName = patch.modifiedFileName
+            if (origName != null && modName != null) {
+                setHeaderTitles(origName, modName)
+            } else if (origName != null) {
+                setHeaderTitles(origName, origName)
+            } else if (modName != null) {
+                setHeaderTitles(modName, modName)
+            }
+        }
+        setContent(patch.originalText, patch.modifiedText)
+    }
+
+    /**
+     * 표준 Git Patch 문자열을 파싱하여 지정된 인덱스([fileIndex])의 원본 및 수정본 소스코드를 설정하고 Diff를 계산합니다.
+     *
+     * @param gitPatch 표준 Git Patch 문자열 (e.g. `diff --git ...`, `@@ ... @@`)
+     * @param fileIndex 다중 파일 패치 중 표시할 파일의 인덱스 (기본값: 0)
+     * @param autoUpdateHeaderTitles true이면 diff 내에 포함된 파일명을 헤더 타이틀로 자동 설정합니다 (기본값: true).
+     */
+    fun setContentGitPatch(
+        gitPatch: String,
+        fileIndex: Int = 0,
+        autoUpdateHeaderTitles: Boolean = true
+    ) {
+        val patches = GitPatchParser.parse(gitPatch)
+        val targetPatch = patches.getOrNull(fileIndex) ?: return
+        setContentGitPatch(targetPatch, autoUpdateHeaderTitles)
     }
 
     /**
@@ -644,8 +691,9 @@ class DiffView @JvmOverloads constructor(
             isEnabled = isFolding
         }
         popup.menu.add(0, 12, 2, "🎨 ${settingLabels.syntaxTitle}")
-        popup.menu.add(0, 1, 3, settingLabels.menuSaveVisibleImage)
-        popup.menu.add(0, 2, 4, settingLabels.menuSaveFullImage)
+        popup.menu.add(0, 13, 3, "📋 ${settingLabels.menuCopyGitPatch}")
+        popup.menu.add(0, 1, 4, settingLabels.menuSaveVisibleImage)
+        popup.menu.add(0, 2, 5, settingLabels.menuSaveFullImage)
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -663,6 +711,12 @@ class DiffView @JvmOverloads constructor(
 
                 12 -> {
                     showSyntaxSelectionDialog()
+                    true
+                }
+
+                13 -> {
+                    copyGitPatch()
+                    Toast.makeText(context, settingLabels.copyGitPatchSuccess, Toast.LENGTH_SHORT).show()
                     true
                 }
 
@@ -835,6 +889,38 @@ class DiffView @JvmOverloads constructor(
      * 코드 코멘트에 날짜/시간 표시 여부를 반환합니다.
      */
     fun isShowCommentDate(): Boolean = adapter.showCommentDate
+
+    /**
+     * 현재 원본 및 수정본 텍스트를 기반으로 표준 Git Patch 문자열을 생성합니다.
+     */
+    fun generateGitPatch(
+        originalFileName: String = currentFilePath ?: diffLabels.originalHeader,
+        modifiedFileName: String = currentFilePath ?: diffLabels.modifiedHeader,
+        contextLines: Int = this.contextLines
+    ): String {
+        return diffEngine.generateGitPatch(
+            originalFileName = originalFileName,
+            modifiedFileName = modifiedFileName,
+            oldText = currentOriginalText,
+            newText = currentModifiedText,
+            contextSize = contextLines
+        )
+    }
+
+    /**
+     * 현재 비교 중인 내용의 Git Patch 텍스트를 생성하여 시스템 클립보드에 복사합니다.
+     */
+    fun copyGitPatch(
+        originalFileName: String = currentFilePath ?: diffLabels.originalHeader,
+        modifiedFileName: String = currentFilePath ?: diffLabels.modifiedHeader,
+        contextLines: Int = this.contextLines
+    ): Boolean {
+        val diffText = generateGitPatch(originalFileName, modifiedFileName, contextLines)
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        val clip = ClipData.newPlainText("Git Patch", diffText)
+        clipboard?.setPrimaryClip(clip)
+        return true
+    }
 
     /**
      * 설정 다이얼로그 라벨 설정 ([DiffSettingLabels]).
@@ -1200,6 +1286,19 @@ class DiffView @JvmOverloads constructor(
     }
 
     /**
+     * 현재 설정된 커밋과 파일([setCommentContext])에 특정 라인 코멘트를 저장하고 뷰를 갱신합니다.
+     */
+    fun saveComment(key: LineKey, text: String) {
+        val commit = checkNotNull(currentCommitHash) {
+            "CommentContext is not initialized. Please call setCommentContext(commitHash, filePath) before saving comments."
+        }
+        val path = checkNotNull(currentFilePath) {
+            "CommentContext is not initialized. Please call setCommentContext(commitHash, filePath) before saving comments."
+        }
+        saveComment(commit, path, key, text)
+    }
+
+    /**
      * 특정 라인의 코멘트를 삭제하고 뷰를 갱신합니다.
      */
     fun deleteComment(commitHash: String, filePath: String, key: LineKey) {
@@ -1208,6 +1307,19 @@ class DiffView @JvmOverloads constructor(
             val updated = commentManager.loadComments(commitHash, filePath)
             adapter.comments = updated
         }
+    }
+
+    /**
+     * 현재 설정된 커밋과 파일([setCommentContext])에서 특정 라인의 코멘트를 삭제하고 뷰를 갱신합니다.
+     */
+    fun deleteComment(key: LineKey) {
+        val commit = checkNotNull(currentCommitHash) {
+            "CommentContext is not initialized. Please call setCommentContext(commitHash, filePath) before deleting comments."
+        }
+        val path = checkNotNull(currentFilePath) {
+            "CommentContext is not initialized. Please call setCommentContext(commitHash, filePath) before deleting comments."
+        }
+        deleteComment(commit, path, key)
     }
 
     /**

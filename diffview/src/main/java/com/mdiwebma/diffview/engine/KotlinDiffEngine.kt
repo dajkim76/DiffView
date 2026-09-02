@@ -253,6 +253,98 @@ class KotlinDiffEngine(
         )
     }
 
+    override fun generateGitPatch(
+        originalFileName: String,
+        modifiedFileName: String,
+        oldText: String,
+        newText: String,
+        contextSize: Int
+    ): String {
+        val originalLines = splitLines(oldText)
+        val modifiedLines = splitLines(newText)
+        val patch = diff(originalLines, modifiedLines)
+        val deltas = patch.deltas.sortedBy { it.source.position }
+
+        if (deltas.isEmpty()) {
+            return ""
+        }
+
+        val cleanOrig = if (originalFileName.startsWith("a/")) originalFileName else "a/$originalFileName"
+        val cleanMod = if (modifiedFileName.startsWith("b/")) modifiedFileName else "b/$modifiedFileName"
+
+        val sb = StringBuilder()
+        sb.append("diff --git ").append(cleanOrig).append(" ").append(cleanMod).append("\n")
+        sb.append("--- ").append(cleanOrig).append("\n")
+        sb.append("+++ ").append(cleanMod).append("\n")
+
+        data class Hunk(
+            val startDeltaIdx: Int,
+            val endDeltaIdx: Int,
+            val origStart: Int,
+            val origEnd: Int,
+            val modStart: Int
+        )
+
+        val hunks = mutableListOf<Hunk>()
+        var currentStartDelta = 0
+        var currentOrigStart = (deltas[0].source.position - contextSize).coerceAtLeast(0)
+        var currentOrigEnd = (deltas[0].source.position + deltas[0].source.lines.size + contextSize).coerceAtMost(originalLines.size)
+        var currentModStart = (deltas[0].target.position - contextSize).coerceAtLeast(0)
+
+        for (i in 1 until deltas.size) {
+            val delta = deltas[i]
+            val deltaOrigStart = (delta.source.position - contextSize).coerceAtLeast(0)
+            if (deltaOrigStart <= currentOrigEnd) {
+                currentOrigEnd = (delta.source.position + delta.source.lines.size + contextSize).coerceAtMost(originalLines.size)
+            } else {
+                hunks.add(Hunk(currentStartDelta, i - 1, currentOrigStart, currentOrigEnd, currentModStart))
+                currentStartDelta = i
+                currentOrigStart = deltaOrigStart
+                currentOrigEnd = (delta.source.position + delta.source.lines.size + contextSize).coerceAtMost(originalLines.size)
+                currentModStart = (delta.target.position - contextSize).coerceAtLeast(0)
+            }
+        }
+        hunks.add(Hunk(currentStartDelta, deltas.size - 1, currentOrigStart, currentOrigEnd, currentModStart))
+
+        for (hunk in hunks) {
+            val hunkDeltas = deltas.subList(hunk.startDeltaIdx, hunk.endDeltaIdx + 1)
+            val hunkOrigCount = hunk.origEnd - hunk.origStart
+            var modCount = 0
+            var origIdx = hunk.origStart
+            val hunkLines = mutableListOf<String>()
+
+            for (delta in hunkDeltas) {
+                while (origIdx < delta.source.position) {
+                    hunkLines.add(" " + originalLines[origIdx])
+                    origIdx++
+                    modCount++
+                }
+                for (line in delta.source.lines) {
+                    hunkLines.add("-$line")
+                    origIdx++
+                }
+                for (line in delta.target.lines) {
+                    hunkLines.add("+$line")
+                    modCount++
+                }
+            }
+            while (origIdx < hunk.origEnd) {
+                hunkLines.add(" " + originalLines[origIdx])
+                origIdx++
+                modCount++
+            }
+
+            val origLineNumber = if (hunkOrigCount == 0) 0 else hunk.origStart + 1
+            val modLineNumber = if (modCount == 0) 0 else hunk.modStart + 1
+            sb.append("@@ -$origLineNumber,$hunkOrigCount +$modLineNumber,$modCount @@\n")
+            for (line in hunkLines) {
+                sb.append(line).append("\n")
+            }
+        }
+
+        return sb.toString().trimEnd('\n')
+    }
+
     private fun splitLines(text: String): List<String> {
         if (text.isEmpty()) return emptyList()
         val normalized = text.replace("\r\n", "\n").replace("\r", "\n")

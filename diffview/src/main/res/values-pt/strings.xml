@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">Falha ao salvar imagem.</string>
     <string name="diffview_action_view">Ver</string>
     <string name="diffview_action_share">Compartilhar</string>
-    <string name="diffview_expand_all_success">Todos os blocos expandidos.</string>
-    <string name="diffview_collapse_all_success">Todos os blocos recolhidos.</string>
+    <string name="diffview_expand_all_success">Todos os blocos de código foram expandidos.</string>
+    <string name="diffview_collapse_all_success">Todos os blocos de código foram recolhidos.</string>
+    <string name="diffview_more_copy_git_patch">Copiar Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">Git Patch copiado para a área de transferência.</string>
 </resources>

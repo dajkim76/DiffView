@@ -67,6 +67,8 @@
     <string name="diffview_image_save_failed">فشل حفظ الصورة.</string>
     <string name="diffview_action_view">عرض</string>
     <string name="diffview_action_share">مشاركة</string>
-    <string name="diffview_expand_all_success">تم توسيع كافة الكتل.</string>
-    <string name="diffview_collapse_all_success">تم طي كافة الكتل.</string>
+    <string name="diffview_expand_all_success">تم توسيع كافة كتل التعليمات البرمجية.</string>
+    <string name="diffview_collapse_all_success">تم طي كافة كتل التعليمات البرمجية.</string>
+    <string name="diffview_more_copy_git_patch">نسخ Git Patch</string>
+    <string name="diffview_msg_copy_git_patch_success">تم نسخ Git Patch إلى الحافظة.</string>
 </resources>

@@ -199,6 +199,9 @@ val modifiedCode = """
 """.trimIndent()
 
 diffView.setContent(original = originalCode, modified = modifiedCode)
+// Alternatively, parse & display directly from a single or multi-file Git Patch string:
+// diffView.setContentGitPatch(gitPatchString, fileIndex = 0, autoUpdateHeaderTitles = true)
+// val patches = GitPatchParser.parse(gitPatchString) // Returns List<ParsedGitPatch>
 
 // 2. Set Diff mode (default: SIDE_BY_SIDE)
 diffView.setDiffMode(DiffMode.SIDE_BY_SIDE) // 2-column split mode
@@ -259,7 +262,9 @@ diffView.setLongTabAction(DiffLongTabAction.TEXT_SELECTABLE)
 // 15. Header Settings (⚙️) and More (⋮) Action Menus
 diffView.setSettingsButtonVisible(true) // Toggle top-right settings & more buttons (default: true)
 diffView.showSettingsDialog()          // Programmatically display settings modal
-diffView.showMoreMenu()                // Programmatically display export popup menu
+diffView.showMoreMenu()                // Programmatically display export popup menu (Expand All, Collapse All, Syntax, Copy Git Patch, Save Images)
+diffView.copyGitPatch()                // Generate and copy standard Git Patch string to clipboard
+val gitPatchText = diffView.generateGitPatch() // Get standard Git Patch string programmatically
 diffView.executeImageCapture(isFull = true) // Capture full diff, save to gallery, and show View/Share dialog
 
 // 16. Customize Settings & Image Dialog UI labels (or override strings.xml)
@@ -273,7 +278,8 @@ diffView.setSettingLabels(
     )
 )
 
-// 17. Customize Code Comment Dialog UI labels and text sizes
+// 17. Code Comments (Context required before adding/saving comments)
+diffView.setCommentContext(commitHash = "commit_1234", filePath = "src/MainActivity.kt") // Required for comment persistence
 diffView.setCommentLabels(
     DiffCommentLabels(
         addTitle = "Add Code Comment",
