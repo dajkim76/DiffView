@@ -407,6 +407,7 @@ class DiffRowViewHolder(
             lineKey = leftKey,
             comment = leftComment,
             showCommentView = row.type != DiffRowType.UNCHANGED,
+            column = leftColumn,
             container = leftContainer,
             gutterText = leftGutterText,
             prefixText = leftPrefixText,
@@ -436,6 +437,7 @@ class DiffRowViewHolder(
             lineKey = rightKey,
             comment = rightComment,
             showCommentView = true,
+            column = rightColumn,
             container = rightContainer,
             gutterText = rightGutterText,
             prefixText = rightPrefixText,
@@ -466,6 +468,7 @@ class DiffRowViewHolder(
         lineKey: LineKey?,
         comment: CodeComment?,
         showCommentView: Boolean = true,
+        column: LinearLayout,
         container: LinearLayout,
         gutterText: TextView,
         prefixText: TextView,
@@ -511,6 +514,7 @@ class DiffRowViewHolder(
         }
 
         if (line != null && lineKey != null) {
+            column.setBackgroundColor(bgColor)
             container.setBackgroundColor(bgColor)
             gutterText.setBackgroundColor(gutterBgColor)
             prefixText.setBackgroundColor(bgColor)
@@ -561,6 +565,7 @@ class DiffRowViewHolder(
                 codeText.setOnLongClickListener(null)
             }
         } else {
+            column.setBackgroundColor(colors.noneTextBackground)
             container.setBackgroundColor(colors.noneTextBackground)
             gutterText.setBackgroundColor(colors.noneTextBackground)
             prefixText.setBackgroundColor(colors.noneTextBackground)
@@ -601,11 +606,11 @@ class DiffRowViewHolder(
 
             // Left Column
             val leftColumn = LinearLayout(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 orientation = LinearLayout.VERTICAL
             }
             val leftContainer = LinearLayout(context).apply {
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.TOP
             }
@@ -637,7 +642,7 @@ class DiffRowViewHolder(
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val leftScrollView = SyncHorizontalScrollView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 addView(leftCodeText)
@@ -661,11 +666,11 @@ class DiffRowViewHolder(
 
             // Right Column
             val rightColumn = LinearLayout(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 orientation = LinearLayout.VERTICAL
             }
             val rightContainer = LinearLayout(context).apply {
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.TOP
             }
@@ -697,7 +702,7 @@ class DiffRowViewHolder(
                 setPadding(padHorizontalPx, padVerticalPx, padHorizontalPx, padVerticalPx)
             }
             val rightScrollView = SyncHorizontalScrollView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
                 isFillViewport = true
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 addView(rightCodeText)
