@@ -197,14 +197,26 @@ class CodeCommentTest {
     }
 
     @Test
-    fun testDiffThemeMode_EnumValues() {
-        val auto = com.mdiwebma.diffview.model.DiffThemeMode.AUTO
-        val light = com.mdiwebma.diffview.model.DiffThemeMode.LIGHT
-        val dark = com.mdiwebma.diffview.model.DiffThemeMode.DARK
+    fun testDiffColors_Presets() {
+        val auto = com.mdiwebma.diffview.DiffColors.Auto
+        val light = com.mdiwebma.diffview.DiffColors.Light
+        val dark = com.mdiwebma.diffview.DiffColors.Dark
 
-        assertEquals("AUTO", auto.name)
-        assertEquals("LIGHT", light.name)
-        assertEquals("DARK", dark.name)
-        assertEquals(3, com.mdiwebma.diffview.model.DiffThemeMode.entries.size)
+        org.junit.Assert.assertNotEquals(auto, light)
+        org.junit.Assert.assertNotEquals(auto, dark)
+        org.junit.Assert.assertNotEquals(light, dark)
+    }
+
+    @Test
+    fun testDiffColors_ReplaceGlobalInstance() {
+        val originalLight = com.mdiwebma.diffview.DiffColors.Light
+        try {
+            val customLight = originalLight.copy(addedBackground = 0xFF123456.toInt())
+            com.mdiwebma.diffview.DiffColors.Light = customLight
+            org.junit.Assert.assertEquals(customLight, com.mdiwebma.diffview.DiffColors.Light)
+            org.junit.Assert.assertEquals(0xFF123456.toInt(), com.mdiwebma.diffview.DiffColors.Light.addedBackground)
+        } finally {
+            com.mdiwebma.diffview.DiffColors.Light = com.mdiwebma.diffview.DiffColors.DefaultLight
+        }
     }
 }

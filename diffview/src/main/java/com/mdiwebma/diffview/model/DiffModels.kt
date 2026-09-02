@@ -48,25 +48,7 @@ enum class WhitespaceIgnoreMode {
     }
 }
 
-/**
- * 테마 모드 옵션 (시스템 설정 자동 vs 라이트 vs 다크)
- */
-enum class DiffThemeMode {
-    /**
-     * 시스템 다크 모드 설정에 자동으로 맞춤 (기본값)
-     */
-    AUTO,
 
-    /**
-     * 항상 라이트 모드 사용
-     */
-    LIGHT,
-
-    /**
-     * 항상 다크 모드 사용
-     */
-    DARK
-}
 
 /**
  * Diff 표시 모드 (Side-by-Side 분할 뷰 vs Unified 단일 통합 뷰)

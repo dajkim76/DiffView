@@ -44,7 +44,6 @@ import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffResult
-import com.mdiwebma.diffview.model.DiffThemeMode
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -76,7 +75,7 @@ class DiffView @JvmOverloads constructor(
     private val viewScope = CoroutineScope(Dispatchers.Main + Job())
 
     private var diffMode: DiffMode = DiffMode.SIDE_BY_SIDE
-    private var themeMode: DiffThemeMode = DiffThemeMode.AUTO
+    private var configuredDiffColors: DiffColors = DiffColors.Auto
     private var diffColors: DiffColors = DiffColors.defaultFor(context)
     private var diffLabels: DiffLabels = DiffLabels.fromContext(context)
     private var commentLabels: DiffCommentLabels = DiffCommentLabels.fromContext(context)
@@ -932,30 +931,19 @@ class DiffView @JvmOverloads constructor(
     fun getSettingLabels(): DiffSettingLabels = settingLabels
 
     /**
-     * 테마 모드 설정 ([DiffThemeMode.AUTO], [DiffThemeMode.LIGHT], [DiffThemeMode.DARK]).
-     * [DiffThemeMode.AUTO] 설정 시 시스템 설정에 따라 라이트/다크 모드가 자동 결정됩니다.
+     * Diff 테마/색상 팔레트 설정 ([DiffColors.Auto], [DiffColors.Light], [DiffColors.Dark], 또는 커스텀 [DiffColors]).
+     * [DiffColors.Auto] 설정 시 시스템 설정에 따라 라이트/다크 테마가 자동 적용됩니다.
      */
-    fun setThemeMode(mode: DiffThemeMode) {
-        this.themeMode = mode
-        when (mode) {
-            DiffThemeMode.AUTO -> {
-                this.diffColors = DiffColors.defaultFor(context)
-                applyColors()
-            }
-
-            DiffThemeMode.LIGHT -> {
-                this.diffColors = DiffColors.Light
-                applyColors()
-            }
-
-            DiffThemeMode.DARK -> {
-                this.diffColors = DiffColors.Dark
-                applyColors()
-            }
-        }
+    fun setDiffColors(colors: DiffColors) {
+        this.configuredDiffColors = colors
+        this.diffColors = if (colors == DiffColors.Auto) DiffColors.defaultFor(context) else colors
+        applyColors()
     }
 
-    fun getThemeMode(): DiffThemeMode = themeMode
+    /**
+     * 현재 설정된 Diff 색상 팔레트를 반환합니다.
+     */
+    fun getDiffColors(): DiffColors = configuredDiffColors
 
     /**
      * 현재 DiffView가 다크 모드 테마로 렌더링 중인지 여부를 반환합니다.
@@ -974,7 +962,7 @@ class DiffView @JvmOverloads constructor(
 
     override fun onConfigurationChanged(newConfig: Configuration?) {
         super.onConfigurationChanged(newConfig)
-        if (themeMode == DiffThemeMode.AUTO) {
+        if (configuredDiffColors == DiffColors.Auto) {
             this.diffColors = DiffColors.defaultFor(context)
             applyColors()
         }
@@ -986,7 +974,7 @@ class DiffView @JvmOverloads constructor(
     fun exportPreferences(): DiffViewPreferences {
         return DiffViewPreferences(
             diffMode = diffMode,
-            themeMode = themeMode,
+            theme = DiffViewPreferences.themeFromDiffColors(configuredDiffColors),
             textSizeSp = adapter.textSizeSp,
             isFoldingEnabled = isFoldingEnabled,
             contextLines = contextLines,
@@ -1004,7 +992,7 @@ class DiffView @JvmOverloads constructor(
      */
     fun applyPreferences(preferences: DiffViewPreferences) {
         setDiffMode(preferences.diffMode)
-        setThemeMode(preferences.themeMode)
+        setDiffColors(preferences.getDiffColors())
         setTextSize(preferences.textSizeSp)
         setFoldingEnabled(preferences.isFoldingEnabled, preferences.contextLines, preferences.foldingThreshold)
         setWhitespaceIgnoreMode(preferences.whitespaceIgnoreMode)
@@ -1123,14 +1111,7 @@ class DiffView @JvmOverloads constructor(
         updateDisplayItems()
     }
 
-    /**
-     * 커스텀 테마/색상 팔레트 설정 ([DiffColors]).
-     */
-    fun setDiffColors(colors: DiffColors) {
-        this.diffColors = colors
-        this.themeMode = if (colors == DiffColors.Dark) DiffThemeMode.DARK else DiffThemeMode.LIGHT
-        applyColors()
-    }
+
 
     /**
      * 전체 UI 텍스트 및 포맷터 설정 ([DiffLabels]).

@@ -1,11 +1,11 @@
 package com.mdiwebma.diff
 
 import android.content.SharedPreferences
+import com.mdiwebma.diffview.DiffColors
 import com.mdiwebma.diffview.DiffViewPreferences
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
-import com.mdiwebma.diffview.model.DiffThemeMode
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -102,7 +102,7 @@ class DiffViewPreferencesTest {
         val sp = FakeSharedPreferences()
         val original = DiffViewPreferences(
             diffMode = DiffMode.UNIFIED,
-            themeMode = DiffThemeMode.DARK,
+            theme = DiffViewPreferences.THEME_DARK,
             textSizeSp = 16f,
             isFoldingEnabled = false,
             contextLines = 5,
@@ -119,7 +119,8 @@ class DiffViewPreferencesTest {
         val loaded = DiffViewPreferences.loadFrom(sp, keyPrefix = "test_")
 
         assertEquals(DiffMode.UNIFIED, loaded.diffMode)
-        assertEquals(DiffThemeMode.DARK, loaded.themeMode)
+        assertEquals(DiffViewPreferences.THEME_DARK, loaded.theme)
+        assertEquals(DiffColors.Dark, loaded.getDiffColors())
         assertEquals(16f, loaded.textSizeSp, 0.01f)
         assertEquals(false, loaded.isFoldingEnabled)
         assertEquals(5, loaded.contextLines)
@@ -134,6 +135,7 @@ class DiffViewPreferencesTest {
     @Test
     fun testThemeModeDefault_isAuto() {
         val defaultPrefs = DiffViewPreferences()
-        assertEquals(DiffThemeMode.AUTO, defaultPrefs.themeMode)
+        assertEquals(DiffViewPreferences.THEME_AUTO, defaultPrefs.theme)
+        assertEquals(DiffColors.Auto, defaultPrefs.getDiffColors())
     }
 }

@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
-import com.mdiwebma.diffview.model.DiffThemeMode
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 
 /**
@@ -13,7 +12,7 @@ import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
  */
 data class DiffViewPreferences(
     val diffMode: DiffMode = DiffMode.SIDE_BY_SIDE,
-    val themeMode: DiffThemeMode = DiffThemeMode.AUTO,
+    val theme: String = THEME_AUTO,
     val textSizeSp: Float = 12f,
     val isFoldingEnabled: Boolean = true,
     val contextLines: Int = 3,
@@ -25,6 +24,15 @@ data class DiffViewPreferences(
     val longTabAction: DiffLongTabAction = DiffLongTabAction.NONE
 ) {
     /**
+     * 테마 설정값에 대응하는 [DiffColors]를 반환합니다.
+     */
+    fun getDiffColors(): DiffColors = when (theme.uppercase()) {
+        THEME_LIGHT -> DiffColors.Light
+        THEME_DARK -> DiffColors.Dark
+        else -> DiffColors.Auto
+    }
+
+    /**
      * [SharedPreferences]에 설정값들을 저장합니다.
      * @param sharedPreferences 저장 대상 SharedPreferences 인스턴스
      * @param keyPrefix SharedPreferences 키 접두사 (다중 DiffView 인스턴스 구분용)
@@ -32,7 +40,7 @@ data class DiffViewPreferences(
     fun saveTo(sharedPreferences: SharedPreferences, keyPrefix: String = "") {
         sharedPreferences.edit()
             .putString("${keyPrefix}diff_mode", diffMode.name)
-            .putString("${keyPrefix}theme_mode", themeMode.name)
+            .putString("${keyPrefix}theme", theme)
             .putFloat("${keyPrefix}text_size_sp", textSizeSp)
             .putBoolean("${keyPrefix}is_folding_enabled", isFoldingEnabled)
             .putInt("${keyPrefix}context_lines", contextLines)
@@ -47,6 +55,15 @@ data class DiffViewPreferences(
 
     companion object {
         const val DEFAULT_PREFS_NAME = "diffview_preferences"
+        const val THEME_AUTO = "AUTO"
+        const val THEME_LIGHT = "LIGHT"
+        const val THEME_DARK = "DARK"
+
+        fun themeFromDiffColors(colors: DiffColors): String = when (colors) {
+            DiffColors.Light -> THEME_LIGHT
+            DiffColors.Dark -> THEME_DARK
+            else -> THEME_AUTO
+        }
 
         /**
          * [SharedPreferences]에서 설정값들을 로드합니다.
@@ -62,8 +79,9 @@ data class DiffViewPreferences(
             val modeStr = sharedPreferences.getString("${keyPrefix}diff_mode", default.diffMode.name)
             val mode = runCatching { DiffMode.valueOf(modeStr ?: "") }.getOrDefault(default.diffMode)
 
-            val themeModeStr = sharedPreferences.getString("${keyPrefix}theme_mode", default.themeMode.name)
-            val themeMode = runCatching { DiffThemeMode.valueOf(themeModeStr ?: "") }.getOrDefault(default.themeMode)
+            val themeStr = sharedPreferences.getString("${keyPrefix}theme", default.theme)
+                ?: sharedPreferences.getString("${keyPrefix}theme_mode", default.theme)
+                ?: default.theme
 
             val textSize = sharedPreferences.getFloat("${keyPrefix}text_size_sp", default.textSizeSp)
             val isFolding = sharedPreferences.getBoolean("${keyPrefix}is_folding_enabled", default.isFoldingEnabled)
@@ -84,7 +102,7 @@ data class DiffViewPreferences(
 
             return DiffViewPreferences(
                 diffMode = mode,
-                themeMode = themeMode,
+                theme = themeStr,
                 textSizeSp = textSize,
                 isFoldingEnabled = isFolding,
                 contextLines = contextLines,

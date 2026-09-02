@@ -25,52 +25,94 @@ data class DiffColors(
     @get:ColorInt val foldedBannerBackground: Int,
     @get:ColorInt val foldedBannerTextColor: Int,
     @get:ColorInt val codeTextColor: Int,
-    @get:ColorInt val commentBackground: Int = Color.parseColor("#F6F8FA"),
-    @get:ColorInt val commentStroke: Int = Color.parseColor("#D0D7DE"),
-    @get:ColorInt val commentTextColor: Int = Color.parseColor("#24292F"),
-    @get:ColorInt val commentTimeColor: Int = Color.parseColor("#57606A")
+    @get:ColorInt val commentBackground: Int = 0xFFF6F8FA.toInt(),
+    @get:ColorInt val commentStroke: Int = 0xFFD0D7DE.toInt(),
+    @get:ColorInt val commentTextColor: Int = 0xFF24292F.toInt(),
+    @get:ColorInt val commentTimeColor: Int = 0xFF57606A.toInt()
 ) {
     companion object {
-        val Light = DiffColors(
-            addedBackground = Color.parseColor("#E6F5E6"),
-            addedHighlight = Color.parseColor("#BCE6BC"),
-            deletedBackground = Color.parseColor("#FFECEC"),
-            deletedHighlight = Color.parseColor("#F7BFBE"),
-            modifiedBackground = Color.parseColor("#E9F2FD"),
-            modifiedHighlight = Color.parseColor("#C7DEF9"),
-            unchangedBackground = Color.parseColor("#FFFFFF"),
-            noneTextBackground = Color.parseColor("#EAEAEA"),
-            lineNumberBackground = Color.parseColor("#F5F5F7"),
-            lineNumberTextColor = Color.parseColor("#9E9E9E"),
-            dividerColor = Color.parseColor("#D4D4D8"),
-            headerBackground = Color.parseColor("#F1F3F5"),
-            headerTextColor = Color.parseColor("#333333"),
-            foldedBannerBackground = Color.parseColor("#EEF2F6"),
-            foldedBannerTextColor = Color.parseColor("#5C6B73"),
-            codeTextColor = Color.parseColor("#1F2328")
+        /**
+         * 기본 제공 Light 테마의 원본 불변 팔레트.
+         */
+        val DefaultLight = DiffColors(
+            addedBackground = 0xFFE6F5E6.toInt(),
+            addedHighlight = 0xFFBCE6BC.toInt(),
+            deletedBackground = 0xFFFFECEC.toInt(),
+            deletedHighlight = 0xFFF7BFBE.toInt(),
+            modifiedBackground = 0xFFE9F2FD.toInt(),
+            modifiedHighlight = 0xFFC7DEF9.toInt(),
+            unchangedBackground = 0xFFFFFFFF.toInt(),
+            noneTextBackground = 0xFFEAEAEA.toInt(),
+            lineNumberBackground = 0xFFF5F5F7.toInt(),
+            lineNumberTextColor = 0xFF9E9E9E.toInt(),
+            dividerColor = 0xFFD4D4D8.toInt(),
+            headerBackground = 0xFFF1F3F5.toInt(),
+            headerTextColor = 0xFF333333.toInt(),
+            foldedBannerBackground = 0xFFEEF2F6.toInt(),
+            foldedBannerTextColor = 0xFF5C6B73.toInt(),
+            codeTextColor = 0xFF1F2328.toInt()
         )
 
-        val Dark = DiffColors(
-            addedBackground = Color.parseColor("#233827"),
-            addedHighlight = Color.parseColor("#2E5434"),
-            deletedBackground = Color.parseColor("#3E2728"),
-            deletedHighlight = Color.parseColor("#5E3334"),
-            modifiedBackground = Color.parseColor("#253549"),
-            modifiedHighlight = Color.parseColor("#324D6F"),
-            unchangedBackground = Color.parseColor("#1E1F22"),
-            noneTextBackground = Color.parseColor("#26282E"),
-            lineNumberBackground = Color.parseColor("#25262A"),
-            lineNumberTextColor = Color.parseColor("#9DA0A8"),
-            dividerColor = Color.parseColor("#393B40"),
-            headerBackground = Color.parseColor("#2B2D30"),
-            headerTextColor = Color.parseColor("#BCBEC4"),
-            foldedBannerBackground = Color.parseColor("#2B2D30"),
-            foldedBannerTextColor = Color.parseColor("#868A91"),
-            codeTextColor = Color.parseColor("#BCBEC4"),
-            commentBackground = Color.parseColor("#262C36"),
-            commentStroke = Color.parseColor("#444C56"),
-            commentTextColor = Color.parseColor("#E6EDF3"),
-            commentTimeColor = Color.parseColor("#9DA0A8")
+        /**
+         * 기본 제공 Dark 테마의 원본 불변 팔레트.
+         */
+        val DefaultDark = DiffColors(
+            addedBackground = 0xFF233827.toInt(),
+            addedHighlight = 0xFF2E5434.toInt(),
+            deletedBackground = 0xFF3E2728.toInt(),
+            deletedHighlight = 0xFF5E3334.toInt(),
+            modifiedBackground = 0xFF253549.toInt(),
+            modifiedHighlight = 0xFF324D6F.toInt(),
+            unchangedBackground = 0xFF1E1F22.toInt(),
+            noneTextBackground = 0xFF26282E.toInt(),
+            lineNumberBackground = 0xFF25262A.toInt(),
+            lineNumberTextColor = 0xFF9DA0A8.toInt(),
+            dividerColor = 0xFF393B40.toInt(),
+            headerBackground = 0xFF2B2D30.toInt(),
+            headerTextColor = 0xFFBCBEC4.toInt(),
+            foldedBannerBackground = 0xFF2B2D30.toInt(),
+            foldedBannerTextColor = 0xFF868A91.toInt(),
+            codeTextColor = 0xFFBCBEC4.toInt(),
+            commentBackground = 0xFF262C36.toInt(),
+            commentStroke = 0xFF444C56.toInt(),
+            commentTextColor = 0xFFE6EDF3.toInt(),
+            commentTimeColor = 0xFF9DA0A8.toInt()
+        )
+
+        /**
+         * 앱 전역에서 기본으로 사용되는 Light 테마 인스턴스 (인스턴스 교체 가능).
+         */
+        var Light: DiffColors = DefaultLight
+
+        /**
+         * 앱 전역에서 기본으로 사용되는 Dark 테마 인스턴스 (인스턴스 교체 가능).
+         */
+        var Dark: DiffColors = DefaultDark
+
+        /**
+         * 시스템 다크 모드 설정에 따라 라이트/다크 테마를 자동 적용하는 센티널 테마 객체.
+         */
+        val Auto = DiffColors(
+            addedBackground = 0,
+            addedHighlight = 0,
+            deletedBackground = 0,
+            deletedHighlight = 0,
+            modifiedBackground = 0,
+            modifiedHighlight = 0,
+            unchangedBackground = 0,
+            noneTextBackground = 0,
+            lineNumberBackground = 0,
+            lineNumberTextColor = 0,
+            dividerColor = 0,
+            headerBackground = 0,
+            headerTextColor = 0,
+            foldedBannerBackground = 0,
+            foldedBannerTextColor = 0,
+            codeTextColor = 0,
+            commentBackground = 0,
+            commentStroke = 0,
+            commentTextColor = 0,
+            commentTimeColor = 0
         )
 
         fun defaultFor(context: Context): DiffColors {
