@@ -27,6 +27,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import android.content.res.Configuration
 import com.mdiwebma.diffview.comment.CodeComment
 import com.mdiwebma.diffview.comment.CodeCommentHelper
 import com.mdiwebma.diffview.comment.CodeCommentManager
@@ -39,6 +40,7 @@ import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview.model.DiffResult
+import com.mdiwebma.diffview.model.DiffThemeMode
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,11 +72,11 @@ class DiffView @JvmOverloads constructor(
     private val viewScope = CoroutineScope(Dispatchers.Main + Job())
 
     private var diffMode: DiffMode = DiffMode.SIDE_BY_SIDE
+    private var themeMode: DiffThemeMode = DiffThemeMode.AUTO
     private var diffColors: DiffColors = DiffColors.defaultFor(context)
     private var diffLabels: DiffLabels = DiffLabels.fromContext(context)
     private var commentLabels: DiffCommentLabels = DiffCommentLabels.fromContext(context)
     private var settingLabels: DiffSettingLabels = DiffSettingLabels.fromContext(context)
-    private var isDark: Boolean = (diffColors == DiffColors.Dark)
     private var whitespaceIgnoreMode: WhitespaceIgnoreMode = WhitespaceIgnoreMode.NONE
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
     private var isLineWrap: Boolean = false
@@ -845,7 +847,34 @@ class DiffView @JvmOverloads constructor(
 
     fun getSettingLabels(): DiffSettingLabels = settingLabels
 
-    fun isDark(): Boolean = isDark
+    /**
+     * 테마 모드 설정 ([DiffThemeMode.AUTO], [DiffThemeMode.LIGHT], [DiffThemeMode.DARK]).
+     * [DiffThemeMode.AUTO] 설정 시 시스템 설정에 따라 라이트/다크 모드가 자동 결정됩니다.
+     */
+    fun setThemeMode(mode: DiffThemeMode) {
+        this.themeMode = mode
+        when (mode) {
+            DiffThemeMode.AUTO -> {
+                this.diffColors = DiffColors.defaultFor(context)
+                applyColors()
+            }
+            DiffThemeMode.LIGHT -> {
+                this.diffColors = DiffColors.Light
+                applyColors()
+            }
+            DiffThemeMode.DARK -> {
+                this.diffColors = DiffColors.Dark
+                applyColors()
+            }
+        }
+    }
+
+    fun getThemeMode(): DiffThemeMode = themeMode
+
+    /**
+     * 현재 DiffView가 다크 모드 테마로 렌더링 중인지 여부를 반환합니다.
+     */
+    fun isDark(): Boolean = (diffColors == DiffColors.Dark)
 
     fun getTextSize(): Float = adapter.textSizeSp
 
@@ -857,13 +886,21 @@ class DiffView @JvmOverloads constructor(
 
     fun getSyntaxHighlighter(): SyntaxHighlighter = adapter.syntaxHighlighter
 
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        if (themeMode == DiffThemeMode.AUTO) {
+            this.diffColors = DiffColors.defaultFor(context)
+            applyColors()
+        }
+    }
+
     /**
      * 현재 DiffView의 모든 설정값을 [DiffViewPreferences] 객체로 내보냅니다.
      */
     fun exportPreferences(): DiffViewPreferences {
         return DiffViewPreferences(
             diffMode = diffMode,
-            isDark = isDark,
+            themeMode = themeMode,
             textSizeSp = adapter.textSizeSp,
             isFoldingEnabled = isFoldingEnabled,
             contextLines = contextLines,
@@ -881,7 +918,7 @@ class DiffView @JvmOverloads constructor(
      */
     fun applyPreferences(preferences: DiffViewPreferences) {
         setDiffMode(preferences.diffMode)
-        setDiffColors(if (preferences.isDark) DiffColors.Dark else DiffColors.Light, isDark = preferences.isDark)
+        setThemeMode(preferences.themeMode)
         setTextSize(preferences.textSizeSp)
         setFoldingEnabled(preferences.isFoldingEnabled, preferences.contextLines, preferences.foldingThreshold)
         setWhitespaceIgnoreMode(preferences.whitespaceIgnoreMode)
@@ -1001,13 +1038,11 @@ class DiffView @JvmOverloads constructor(
     }
 
     /**
-     * 테마/색상 팔레트 설정.
-     * @param isDark true이면 Syntax Highlighter가 다크 모드 색상을 사용합니다.
-     *               생략하면 [colors]가 [DiffColors.Dark]인지 구조적으로 비교합니다.
+     * 커스텀 테마/색상 팔레트 설정 ([DiffColors]).
      */
-    fun setDiffColors(colors: DiffColors, isDark: Boolean = (colors == DiffColors.Dark)) {
+    fun setDiffColors(colors: DiffColors) {
         this.diffColors = colors
-        this.isDark = isDark
+        this.themeMode = if (colors == DiffColors.Dark) DiffThemeMode.DARK else DiffThemeMode.LIGHT
         applyColors()
     }
 
@@ -1129,9 +1164,7 @@ class DiffView @JvmOverloads constructor(
         headerDivider.setBackgroundColor(diffColors.dividerColor)
         centerHeaderDivider.setBackgroundColor(diffColors.dividerColor)
 
-        // Batch adapter field updates to avoid triggering notifyDataSetChanged() twice.
-        // Set isDark first (no-op if unchanged) then diffColors which triggers the notify.
-        adapter.applyTheme(diffColors = diffColors, isDark = isDark)
+        adapter.diffColors = diffColors
     }
 
     /**

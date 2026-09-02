@@ -28,8 +28,9 @@
     <string name="diffview_opt_mode_side_by_side">Рядом</string>
     <string name="diffview_opt_mode_unified">Объединенный</string>
     <string name="diffview_opt_theme">Тема</string>
+    <string name="diffview_opt_theme_auto">Авто</string>
     <string name="diffview_opt_theme_light">Светлая</string>
-    <string name="diffview_opt_theme_dark">Темная</string>
+    <string name="diffview_opt_theme_dark">Тёмная</string>
     <string name="diffview_opt_text_size">Размер шрифта</string>
     <string name="diffview_opt_folding">Сворачивание</string>
     <string name="diffview_opt_folding_on">ВКЛ</string>

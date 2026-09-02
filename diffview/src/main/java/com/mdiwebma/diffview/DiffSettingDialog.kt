@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview.model.DiffThemeMode
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 
 /**
@@ -126,16 +127,20 @@ object DiffSettingDialog {
             })
             container.addView(modeRow)
 
-            // 2. Theme (Light / Dark)
+            // 2. Theme (Auto / Light / Dark)
             container.addView(createSectionTitle(labels.themeTitle))
             val themeRow = createButtonRow()
-            val isDark = diffView.isDark()
-            themeRow.addView(createOptionButton(labels.themeLight, !isDark) {
-                diffView.setDiffColors(DiffColors.Light, isDark = false)
+            val currentThemeMode = diffView.getThemeMode()
+            themeRow.addView(createOptionButton(labels.themeAuto, currentThemeMode == DiffThemeMode.AUTO) {
+                diffView.setThemeMode(DiffThemeMode.AUTO)
                 refreshUI?.invoke()
             })
-            themeRow.addView(createOptionButton(labels.themeDark, isDark) {
-                diffView.setDiffColors(DiffColors.Dark, isDark = true)
+            themeRow.addView(createOptionButton(labels.themeLight, currentThemeMode == DiffThemeMode.LIGHT) {
+                diffView.setThemeMode(DiffThemeMode.LIGHT)
+                refreshUI?.invoke()
+            })
+            themeRow.addView(createOptionButton(labels.themeDark, currentThemeMode == DiffThemeMode.DARK) {
+                diffView.setThemeMode(DiffThemeMode.DARK)
                 refreshUI?.invoke()
             })
             container.addView(themeRow)

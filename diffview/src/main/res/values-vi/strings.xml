@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">Song song</string>
     <string name="diffview_opt_mode_unified">Hợp nhất</string>
     <string name="diffview_opt_theme">Giao diện</string>
+    <string name="diffview_opt_theme_auto">Tự động</string>
     <string name="diffview_opt_theme_light">Sáng</string>
     <string name="diffview_opt_theme_dark">Tối</string>
     <string name="diffview_opt_text_size">Cỡ chữ</string>

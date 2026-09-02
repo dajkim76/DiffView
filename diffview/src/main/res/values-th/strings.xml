@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">ซ้ายขวา</string>
     <string name="diffview_opt_mode_unified">รวม</string>
     <string name="diffview_opt_theme">ธีม</string>
+    <string name="diffview_opt_theme_auto">อัตโนมัติ</string>
     <string name="diffview_opt_theme_light">สว่าง</string>
     <string name="diffview_opt_theme_dark">มืด</string>
     <string name="diffview_opt_text_size">ขนาดตัวอักษร</string>

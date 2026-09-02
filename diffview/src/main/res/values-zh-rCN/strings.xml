@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">分栏对比</string>
     <string name="diffview_opt_mode_unified">统一合并</string>
     <string name="diffview_opt_theme">主题</string>
+    <string name="diffview_opt_theme_auto">自动</string>
     <string name="diffview_opt_theme_light">浅色</string>
     <string name="diffview_opt_theme_dark">深色</string>
     <string name="diffview_opt_text_size">字号大小</string>

@@ -180,6 +180,7 @@ class CodeCommentTest {
         assertEquals("Side-by-Side", labels.modeSideBySide)
         assertEquals("Unified", labels.modeUnified)
         assertEquals("Theme", labels.themeTitle)
+        assertEquals("Auto", labels.themeAuto)
         assertEquals("Light", labels.themeLight)
         assertEquals("Dark", labels.themeDark)
         assertEquals("Code Folding", labels.foldingTitle)
@@ -191,5 +192,17 @@ class CodeCommentTest {
         assertEquals("Share", labels.actionShare)
         assertEquals("All code blocks expanded.", labels.expandAllSuccess)
         assertEquals("All code blocks collapsed.", labels.collapseAllSuccess)
+    }
+
+    @Test
+    fun testDiffThemeMode_EnumValues() {
+        val auto = com.mdiwebma.diffview.model.DiffThemeMode.AUTO
+        val light = com.mdiwebma.diffview.model.DiffThemeMode.LIGHT
+        val dark = com.mdiwebma.diffview.model.DiffThemeMode.DARK
+
+        assertEquals("AUTO", auto.name)
+        assertEquals("LIGHT", light.name)
+        assertEquals("DARK", dark.name)
+        assertEquals(3, com.mdiwebma.diffview.model.DiffThemeMode.entries.size)
     }
 }

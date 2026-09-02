@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">나란히 보기</string>
     <string name="diffview_opt_mode_unified">통합 보기</string>
     <string name="diffview_opt_theme">테마</string>
+    <string name="diffview_opt_theme_auto">자동</string>
     <string name="diffview_opt_theme_light">라이트</string>
     <string name="diffview_opt_theme_dark">다크</string>
     <string name="diffview_opt_text_size">글자 크기</string>

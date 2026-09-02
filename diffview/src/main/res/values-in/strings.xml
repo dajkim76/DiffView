@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">Berdampingan</string>
     <string name="diffview_opt_mode_unified">Terpadu</string>
     <string name="diffview_opt_theme">Tema</string>
+    <string name="diffview_opt_theme_auto">Otomatis</string>
     <string name="diffview_opt_theme_light">Terang</string>
     <string name="diffview_opt_theme_dark">Gelap</string>
     <string name="diffview_opt_text_size">Ukuran Teks</string>

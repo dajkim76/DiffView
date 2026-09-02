@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">Côte à côte</string>
     <string name="diffview_opt_mode_unified">Unifié</string>
     <string name="diffview_opt_theme">Thème</string>
+    <string name="diffview_opt_theme_auto">Auto</string>
     <string name="diffview_opt_theme_light">Clair</string>
     <string name="diffview_opt_theme_dark">Sombre</string>
     <string name="diffview_opt_text_size">Taille police</string>

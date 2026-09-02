@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
+import com.mdiwebma.diffview.model.DiffThemeMode
 import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
 
 /**
@@ -12,7 +13,7 @@ import com.mdiwebma.diffview.model.WhitespaceIgnoreMode
  */
 data class DiffViewPreferences(
     val diffMode: DiffMode = DiffMode.SIDE_BY_SIDE,
-    val isDark: Boolean = false,
+    val themeMode: DiffThemeMode = DiffThemeMode.AUTO,
     val textSizeSp: Float = 12f,
     val isFoldingEnabled: Boolean = true,
     val contextLines: Int = 3,
@@ -31,7 +32,7 @@ data class DiffViewPreferences(
     fun saveTo(sharedPreferences: SharedPreferences, keyPrefix: String = "") {
         sharedPreferences.edit()
             .putString("${keyPrefix}diff_mode", diffMode.name)
-            .putBoolean("${keyPrefix}is_dark", isDark)
+            .putString("${keyPrefix}theme_mode", themeMode.name)
             .putFloat("${keyPrefix}text_size_sp", textSizeSp)
             .putBoolean("${keyPrefix}is_folding_enabled", isFoldingEnabled)
             .putInt("${keyPrefix}context_lines", contextLines)
@@ -61,7 +62,9 @@ data class DiffViewPreferences(
             val modeStr = sharedPreferences.getString("${keyPrefix}diff_mode", default.diffMode.name)
             val mode = runCatching { DiffMode.valueOf(modeStr ?: "") }.getOrDefault(default.diffMode)
 
-            val isDark = sharedPreferences.getBoolean("${keyPrefix}is_dark", default.isDark)
+            val themeModeStr = sharedPreferences.getString("${keyPrefix}theme_mode", default.themeMode.name)
+            val themeMode = runCatching { DiffThemeMode.valueOf(themeModeStr ?: "") }.getOrDefault(default.themeMode)
+
             val textSize = sharedPreferences.getFloat("${keyPrefix}text_size_sp", default.textSizeSp)
             val isFolding = sharedPreferences.getBoolean("${keyPrefix}is_folding_enabled", default.isFoldingEnabled)
             val contextLines = sharedPreferences.getInt("${keyPrefix}context_lines", default.contextLines)
@@ -81,7 +84,7 @@ data class DiffViewPreferences(
 
             return DiffViewPreferences(
                 diffMode = mode,
-                isDark = isDark,
+                themeMode = themeMode,
                 textSizeSp = textSize,
                 isFoldingEnabled = isFolding,
                 contextLines = contextLines,

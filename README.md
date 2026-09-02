@@ -204,8 +204,11 @@ diffView.setContent(original = originalCode, modified = modifiedCode)
 diffView.setDiffMode(DiffMode.SIDE_BY_SIDE) // 2-column split mode
 // diffView.setDiffMode(DiffMode.UNIFIED)    // 1-column unified inline mode
 
-// 3. Set Color Theme (Light / Dark), Default is Auto
-diffView.setDiffColors(DiffColors.Dark)
+// 3. Set Color Theme Mode (AUTO (default), LIGHT, DARK) or custom colors
+diffView.setThemeMode(DiffThemeMode.AUTO) // Follows system dark mode automatically
+// diffView.setThemeMode(DiffThemeMode.LIGHT)
+// diffView.setThemeMode(DiffThemeMode.DARK)
+// diffView.setDiffColors(DiffColors.Dark) // Custom DiffColors palette
 
 // 4. Set font size (SP unit)
 diffView.setTextSize(13f)

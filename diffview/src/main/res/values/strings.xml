@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">Side-by-Side</string>
     <string name="diffview_opt_mode_unified">Unified</string>
     <string name="diffview_opt_theme">Theme</string>
+    <string name="diffview_opt_theme_auto">Auto</string>
     <string name="diffview_opt_theme_light">Light</string>
     <string name="diffview_opt_theme_dark">Dark</string>
     <string name="diffview_opt_text_size">Text Size</string>

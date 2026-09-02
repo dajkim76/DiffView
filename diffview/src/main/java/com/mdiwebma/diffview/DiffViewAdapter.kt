@@ -118,13 +118,8 @@ class DiffViewAdapter(
             notifyDataSetChanged()
         }
 
-    private var _isDark: Boolean = false
-    var isDark: Boolean
-        get() = _isDark
-        set(value) {
-            _isDark = value
-            notifyDataSetChanged()
-        }
+    val isDark: Boolean
+        get() = (_diffColors == DiffColors.Dark)
 
     var gutterWidthDp: Int = 42
         set(value) {
@@ -141,19 +136,6 @@ class DiffViewAdapter(
                 notifyDataSetChanged()
             }
         }
-
-    /**
-     * [diffColors]와 [isDark]를 한 번에 업데이트하여 [notifyDataSetChanged]를 한 번만 호출합니다.
-     * [DiffView.applyColors]에서 두 값이 동시에 변경될 때 중복 리렌더링을 방지합니다.
-     */
-    fun applyTheme(diffColors: DiffColors, isDark: Boolean) {
-        val colorsChanged = _diffColors != diffColors
-        val darkChanged = _isDark != isDark
-        if (!colorsChanged && !darkChanged) return
-        _diffColors = diffColors
-        _isDark = isDark
-        notifyDataSetChanged()
-    }
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
@@ -180,7 +162,6 @@ class DiffViewAdapter(
                     colors = diffColors,
                     highlighter = syntaxHighlighter,
                     textSizeSp = textSizeSp,
-                    isDark = isDark,
                     isLineWrap = isLineWrap,
                     showDiffSymbols = showDiffSymbols,
                     gutterWidthDp = gutterWidthDp,
@@ -200,7 +181,6 @@ class DiffViewAdapter(
                     colors = diffColors,
                     highlighter = syntaxHighlighter,
                     textSizeSp = textSizeSp,
-                    isDark = isDark,
                     isLineWrap = isLineWrap,
                     gutterWidthDp = gutterWidthDp,
                     longTabAction = longTabAction,
@@ -284,7 +264,6 @@ class DiffRowViewHolder(
         colors: DiffColors,
         highlighter: SyntaxHighlighter,
         textSizeSp: Float,
-        isDark: Boolean,
         isLineWrap: Boolean = false,
         showDiffSymbols: Boolean = true,
         gutterWidthDp: Int = 48,
@@ -440,7 +419,6 @@ class DiffRowViewHolder(
             highlightColor = leftHighlightBg,
             colors = colors,
             highlighter = highlighter,
-            isDark = isDark,
             isLineWrap = isLineWrap,
             showDiffSymbols = showDiffSymbols,
             sideLabel = "Original",
@@ -470,7 +448,6 @@ class DiffRowViewHolder(
             highlightColor = rightHighlightBg,
             colors = colors,
             highlighter = highlighter,
-            isDark = isDark,
             isLineWrap = isLineWrap,
             showDiffSymbols = showDiffSymbols,
             sideLabel = "Modified",
@@ -501,7 +478,6 @@ class DiffRowViewHolder(
         highlightColor: Int,
         colors: DiffColors,
         highlighter: SyntaxHighlighter,
-        isDark: Boolean,
         isLineWrap: Boolean,
         showDiffSymbols: Boolean,
         sideLabel: String,
@@ -545,7 +521,7 @@ class DiffRowViewHolder(
                 spans = line.spans,
                 defaultTextColor = colors.codeTextColor,
                 highlightBgColor = highlightColor,
-                isDark = isDark
+                isDark = (colors == DiffColors.Dark)
             )
             codeText.text = if (isLineWrap) formatWrappedText(highlighted) else highlighted
             container.contentDescription = "$sideLabel line ${line.lineNumber}: ${line.content}"
@@ -797,7 +773,6 @@ class UnifiedRowViewHolder(
         colors: DiffColors,
         highlighter: SyntaxHighlighter,
         textSizeSp: Float,
-        isDark: Boolean,
         isLineWrap: Boolean = false,
         gutterWidthDp: Int = 48,
         longTabAction: DiffLongTabAction = DiffLongTabAction.NONE,
@@ -900,7 +875,7 @@ class UnifiedRowViewHolder(
             spans = item.spans,
             defaultTextColor = colors.codeTextColor,
             highlightBgColor = highlightBg,
-            isDark = isDark
+            isDark = (colors == DiffColors.Dark)
         )
         codeText.text = if (isLineWrap) formatWrappedText(highlighted) else highlighted
 

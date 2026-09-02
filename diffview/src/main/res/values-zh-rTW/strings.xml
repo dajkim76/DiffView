@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">分欄比對</string>
     <string name="diffview_opt_mode_unified">統一合併</string>
     <string name="diffview_opt_theme">主題</string>
+    <string name="diffview_opt_theme_auto">自動</string>
     <string name="diffview_opt_theme_light">淺色</string>
     <string name="diffview_opt_theme_dark">深色</string>
     <string name="diffview_opt_text_size">字型大小</string>

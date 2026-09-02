@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">جنباً إلى جنب</string>
     <string name="diffview_opt_mode_unified">موحد</string>
     <string name="diffview_opt_theme">السمة</string>
+    <string name="diffview_opt_theme_auto">تلقائي</string>
     <string name="diffview_opt_theme_light">فاتح</string>
     <string name="diffview_opt_theme_dark">داكن</string>
     <string name="diffview_opt_text_size">حجم الخط</string>

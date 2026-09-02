@@ -28,6 +28,7 @@
     <string name="diffview_opt_mode_side_by_side">आमने-सामने</string>
     <string name="diffview_opt_mode_unified">एकीकृत</string>
     <string name="diffview_opt_theme">थीम</string>
+    <string name="diffview_opt_theme_auto">स्वचालित</string>
     <string name="diffview_opt_theme_light">लाइट</string>
     <string name="diffview_opt_theme_dark">डार्क</string>
     <string name="diffview_opt_text_size">फ़ॉन्ट आकार</string>
