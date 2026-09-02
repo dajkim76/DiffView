@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -27,7 +28,6 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.content.res.Configuration
 import com.mdiwebma.diffview.comment.CodeComment
 import com.mdiwebma.diffview.comment.CodeCommentHelper
 import com.mdiwebma.diffview.comment.CodeCommentManager
@@ -617,8 +617,6 @@ class DiffView @JvmOverloads constructor(
      */
     fun setSettingsButtonVisible(visible: Boolean) {
         btnSettings.isVisible = visible
-        btnMore.isVisible = visible
-        updateGutterWidths()
     }
 
     fun isSettingsButtonVisible(): Boolean = btnSettings.isVisible
@@ -858,10 +856,12 @@ class DiffView @JvmOverloads constructor(
                 this.diffColors = DiffColors.defaultFor(context)
                 applyColors()
             }
+
             DiffThemeMode.LIGHT -> {
                 this.diffColors = DiffColors.Light
                 applyColors()
             }
+
             DiffThemeMode.DARK -> {
                 this.diffColors = DiffColors.Dark
                 applyColors()

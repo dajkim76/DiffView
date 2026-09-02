@@ -99,6 +99,7 @@ class MainActivity : AppCompatActivity() {
         //diffView.setLongTabAction(DiffLongTabAction.COMMENT)
         diffView.setCommentTextSizes(11f, 9f)
         diffView.setCommentContext("sample_initial_commit", "MainActivity.kt")
+        diffView.setSettingsButtonVisible(false)
 //        diffView.expandAll()
 
         btnFetchCommit.setOnClickListener {
