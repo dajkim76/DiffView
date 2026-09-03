@@ -9,11 +9,17 @@ import io.objectbox.android.Admin
 
 /**
  * Singleton manager for ObjectBox BoxStore in the demo app.
+ * 백업은
+ * boxStore.runInTx {
+ *   // 이 블록 안에서 data.mdb 파일을 backup 위치로 복사
+ *   // adb shell run-as com.mdiwebma.diffviewer ls -la files/objectbox/app-db/
+ *   File(dbDir, "data.mdb").copyTo(File(backupDir, "data.mdb"), overwrite = true)
+ * }
  */
 class AppBoxStore private constructor(applicationContext: Context) {
     val boxStore: BoxStore = MyObjectBox.builder()
         .androidContext(applicationContext)
-        .name("main-db")
+        .name("app-db")
         .build().also {
             if (BuildConfig.DEBUG) {
                 /**

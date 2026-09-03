@@ -23,6 +23,7 @@ import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.SyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffviewer.box.AppBoxStore
+import com.mdiwebma.diffviewer.box.AppSettings
 import com.mdiwebma.diffviewer.box.CompareEntity
 import io.objectbox.Box
 import kotlinx.coroutines.Dispatchers
@@ -125,6 +126,9 @@ class MainActivity : AppCompatActivity() {
         compareBox.all.forEach {
             Log.e("__T", "id=${it.id} title2=${it.title2}, title3=${it.title3}, count=${it.count}")
         }
+
+        Log.e("__T", "runcount=${AppSettings.runCount.value}")
+        AppSettings.runCount.value++
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
