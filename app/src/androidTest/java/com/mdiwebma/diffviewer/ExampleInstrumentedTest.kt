@@ -1,4 +1,4 @@
-package com.mdiwebma.diffview_demo
+package com.mdiwebma.diffviewer
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -11,6 +11,6 @@ class ExampleInstrumentedTest {
     @Test
     fun useAppContext() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.mdiwebma.diff_demo", appContext.packageName)
+        assertEquals("com.mdiwebma.diffviewer", appContext.packageName)
     }
 }

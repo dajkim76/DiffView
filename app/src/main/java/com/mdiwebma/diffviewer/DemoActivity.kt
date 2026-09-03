@@ -1,4 +1,4 @@
-package com.mdiwebma.diffview_demo
+package com.mdiwebma.diffviewer
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable

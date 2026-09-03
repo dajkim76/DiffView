@@ -1,4 +1,4 @@
-package com.mdiwebma.diffview_demo
+package com.mdiwebma.diffviewer
 
 import android.content.Intent
 import android.content.res.Configuration
@@ -22,8 +22,8 @@ import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.SyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffMode
-import com.mdiwebma.diffview_demo.box.AppBoxStore
-import com.mdiwebma.diffview_demo.box.CompareEntity
+import com.mdiwebma.diffviewer.box.AppBoxStore
+import com.mdiwebma.diffviewer.box.CompareEntity
 import io.objectbox.Box
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
         // AppBoxStore
         val compareBox: Box<CompareEntity> = AppBoxStore.getInstance(this).getBox()
-        compareBox.put(CompareEntity(beforeText = SAMPLE_ORIGINAL, afterText = SAMPLE_MODIFIED, count = 123))
+        //compareBox.put(CompareEntity(beforeText = SAMPLE_ORIGINAL, afterText = SAMPLE_MODIFIED, count = 123))
         //compareBox.removeAll()
         compareBox.all.forEach {
             Log.e("__T", "id=${it.id} title2=${it.title2}, title3=${it.title3}, count=${it.count}")

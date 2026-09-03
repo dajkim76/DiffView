@@ -1,4 +1,4 @@
-package com.mdiwebma.diffview_demo.ui.theme
+package com.mdiwebma.diffviewer.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,4 +1,4 @@
-package com.mdiwebma.diffview_demo.box
+package com.mdiwebma.diffviewer.box
 
 import org.junit.After
 import org.junit.Assert.assertEquals

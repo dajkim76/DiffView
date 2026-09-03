@@ -1,4 +1,4 @@
-package com.mdiwebma.diffview_demo.box
+package com.mdiwebma.diffviewer.box
 
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity

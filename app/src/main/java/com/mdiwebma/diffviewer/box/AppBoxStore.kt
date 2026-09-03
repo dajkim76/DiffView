@@ -1,8 +1,8 @@
-package com.mdiwebma.diffview_demo.box
+package com.mdiwebma.diffviewer.box
 
 import android.content.Context
 import android.util.Log
-import com.mdiwebma.diffview_demo.BuildConfig
+import com.mdiwebma.diffviewer.BuildConfig
 import io.objectbox.Box
 import io.objectbox.BoxStore
 import io.objectbox.android.Admin

@@ -1,4 +1,4 @@
-package com.mdiwebma.diffview_demo
+package com.mdiwebma.diffviewer
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -39,7 +39,7 @@ import com.mdiwebma.diffview.PlainTextSyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
-import com.mdiwebma.diffview_demo.ui.theme.SplitDiffTheme
+import com.mdiwebma.diffviewer.ui.theme.SplitDiffTheme
 
 class ComposeDemoActivity : ComponentActivity() {
 

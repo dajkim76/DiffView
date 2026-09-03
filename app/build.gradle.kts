@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.mdiwebma.diffview_demo"
+    namespace = "com.mdiwebma.diffviewer"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.mdiwebma.diffview_demo"
+        applicationId = "com.mdiwebma.diffviewer"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

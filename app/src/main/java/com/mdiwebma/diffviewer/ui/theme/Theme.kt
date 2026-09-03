@@ -1,4 +1,4 @@
-package com.mdiwebma.diffview_demo.ui.theme
+package com.mdiwebma.diffviewer.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
