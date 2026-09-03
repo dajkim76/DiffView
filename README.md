@@ -234,12 +234,12 @@ diffView.setDiffGranularity(DiffGranularity.WORD)
 diffView.setLineWrap(false)
 
 // 10. Configure syntax highlighter (language-specific or auto-detected by filename)
-diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter())
+diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter)
 // diffView.setSyntaxHighlighter(SyntaxHighlighter.forFileName("App.js"))
-// diffView.setSyntaxHighlighter(PythonSyntaxHighlighter())
-// diffView.setSyntaxHighlighter(JavaSyntaxHighlighter())
-// diffView.setSyntaxHighlighter(CppSyntaxHighlighter())
-// diffView.setSyntaxHighlighter(CSharpSyntaxHighlighter())
+// diffView.setSyntaxHighlighter(PythonSyntaxHighlighter)
+// diffView.setSyntaxHighlighter(JavaSyntaxHighlighter)
+// diffView.setSyntaxHighlighter(CppSyntaxHighlighter)
+// diffView.setSyntaxHighlighter(CSharpSyntaxHighlighter)
 
 // 11. Customize UI labels and formatters (or override strings.xml)
 diffView.setDiffLabels(

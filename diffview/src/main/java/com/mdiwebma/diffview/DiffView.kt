@@ -98,6 +98,7 @@ class DiffView @JvmOverloads constructor(
     private var rawModifiedText: String = ""
     private var textNormalizer: TextNormalizer? = null
     private var normalizerChangedListener: ((newNormalizer: TextNormalizer?) -> Unit)? = null
+    private var syntaxHighlighterChangedListener: ((syntaxHighlighter: SyntaxHighlighter?) -> Unit)? = null
     private var currentOriginalText: String = ""
     private var currentModifiedText: String = ""
     private var currentDiffResult: DiffResult? = null
@@ -776,27 +777,15 @@ class DiffView @JvmOverloads constructor(
      * 지원되는 문법 하이라이트 언어를 AlertDialog 싱글 초이스로 선택하는 다이얼로그를 표시합니다.
      */
     fun showSyntaxSelectionDialog() {
-        val languages = listOf(
-            settingLabels.syntaxPlain to PlainTextSyntaxHighlighter,
-            "Kotlin" to KotlinSyntaxHighlighter(),
-            "Java" to JavaSyntaxHighlighter(),
-            "JavaScript / TypeScript" to JavaScriptSyntaxHighlighter(),
-            "Python" to PythonSyntaxHighlighter(),
-            "C / C++" to CppSyntaxHighlighter(),
-            "C#" to CSharpSyntaxHighlighter()
-        )
         val currentHighlighter = getSyntaxHighlighter()
-        val currentIndex = languages.indexOfFirst { (_, highlighter) ->
-            highlighter::class == currentHighlighter::class
-        }.let { if (it == -1) 0 else it }
-
-        val items = languages.map { it.first }.toTypedArray()
+        val syntaxHighlighterList = SyntaxHighlighter.syntaxHighlighterList
+        val currentIndex = syntaxHighlighterList.indexOfFirst { it.key == currentHighlighter.key }.let { if (it == -1) 0 else it }
+        val items = syntaxHighlighterList.map { it.name }.toTypedArray()
 
         AlertDialog.Builder(context)
             .setTitle(settingLabels.syntaxTitle)
             .setSingleChoiceItems(items, currentIndex) { dialog, which ->
-                val (_, selectedHighlighter) = languages[which]
-                setSyntaxHighlighter(selectedHighlighter)
+                setSyntaxHighlighter(syntaxHighlighterList[which])
                 dialog.dismiss()
             }
             .setNegativeButton(settingLabels.closeButton, null)
@@ -1147,6 +1136,10 @@ class DiffView @JvmOverloads constructor(
         adapter.unifiedSyncGroup.reportContentWidth(unifiedWidthPx)
     }
 
+    fun setSyntaxHighlighterChangedListener(syntaxHighlighterChangedListener: ((syntaxHighlighter: SyntaxHighlighter?) -> Unit)?) {
+        this.syntaxHighlighterChangedListener = syntaxHighlighterChangedListener
+    }
+
     /**
      * 커스텀 문법 하이라이터 설정.
      */
@@ -1155,6 +1148,7 @@ class DiffView @JvmOverloads constructor(
             return
         }
         adapter.syntaxHighlighter = highlighter ?: PlainTextSyntaxHighlighter
+        syntaxHighlighterChangedListener?.invoke(adapter.syntaxHighlighter)
     }
 
     /**

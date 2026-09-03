@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mdiwebma.diffview.DiffColors
 import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.KotlinSyntaxHighlighter
+import com.mdiwebma.diffview.PlainTextSyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
 import com.mdiwebma.diffview.model.DiffMode
@@ -251,7 +253,7 @@ fun DiffDemoScreen(
                         onClick = {
                             isSyntaxKotlin = !isSyntaxKotlin
                             val highlighter =
-                                if (isSyntaxKotlin) com.mdiwebma.diffview.KotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
+                                if (isSyntaxKotlin) KotlinSyntaxHighlighter else PlainTextSyntaxHighlighter
                             diffViewInstance?.setSyntaxHighlighter(highlighter)
                         },
                         contentPadding = ButtonDefaults.TextButtonContentPadding

@@ -16,6 +16,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.mdiwebma.diffview.DiffColors
 import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.KotlinSyntaxHighlighter
+import com.mdiwebma.diffview.PlainTextSyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffMode
 
@@ -205,7 +207,7 @@ class DemoActivity : ComponentActivity() {
             isSyntaxKotlin = !isSyntaxKotlin
             syntaxButton.text = if (isSyntaxKotlin) "Syntax: Kotlin" else "Syntax: None"
             val highlighter =
-                if (isSyntaxKotlin) com.mdiwebma.diffview.KotlinSyntaxHighlighter() else com.mdiwebma.diffview.PlainTextSyntaxHighlighter
+                if (isSyntaxKotlin) KotlinSyntaxHighlighter else PlainTextSyntaxHighlighter
             diffView.setSyntaxHighlighter(highlighter)
         }
 

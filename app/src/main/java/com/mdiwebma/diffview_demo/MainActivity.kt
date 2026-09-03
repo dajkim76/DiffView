@@ -20,6 +20,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.DiffView
+import com.mdiwebma.diffview.SyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffview_demo.box.AppBoxStore
 import com.mdiwebma.diffview_demo.box.CompareEntity
@@ -346,7 +347,7 @@ class MainActivity : AppCompatActivity() {
                 //    original = fileInfo.previousFilename ?: fileInfo.filename,
                 //    modified = fileInfo.filename
                 //)
-                diffView.setSyntaxHighlighter(com.mdiwebma.diffview.SyntaxHighlighter.forFileName(fileInfo.filename))
+                diffView.setSyntaxHighlighter(SyntaxHighlighter.forFileName(fileInfo.filename))
                 diffView.setContent(rawOriginal = origText, rawModified = modText)
                 diffView.setTextNormalizer(null)
                 diffView.setCommentContext(commitInfo.commitSha, fileInfo.filename)

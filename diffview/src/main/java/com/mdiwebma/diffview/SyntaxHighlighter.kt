@@ -14,12 +14,12 @@ import java.util.regex.Pattern
 /**
  * 소스 코드 문법 하이라이팅 인터페이스 (Android View CharSequence 반환).
  */
-interface SyntaxHighlighter {
+abstract class SyntaxHighlighter(val name: String, val key: String, val extensionList: Array<String>) {
     /**
      * [spans] (인라인 diff span 목록)과 기본 [defaultTextColor], [highlightBgColor], [isDark] 테마 정보를 바탕으로
      * 하이라이팅된 [CharSequence]를 반환합니다.
      */
-    fun highlight(
+    abstract fun highlight(
         spans: List<TextSpan>,
         @ColorInt defaultTextColor: Int,
         @ColorInt highlightBgColor: Int,
@@ -27,30 +27,41 @@ interface SyntaxHighlighter {
     ): CharSequence
 
     companion object {
-        /**
-         * 파일 확장자(예: "kt", "java", "js", "py", "cpp", "cs")를 바탕으로 적절한 [SyntaxHighlighter]를 반환합니다.
-         */
-        fun forExtension(extension: String): SyntaxHighlighter {
-            return when (extension.lowercase().removePrefix(".")) {
-                "kt", "kts" -> KotlinSyntaxHighlighter()
-                "java" -> JavaSyntaxHighlighter()
-                "js", "jsx", "ts", "tsx", "mjs", "cjs" -> JavaScriptSyntaxHighlighter()
-                "py", "pyw" -> PythonSyntaxHighlighter()
-                "cpp", "cxx", "cc", "c", "h", "hpp", "hxx" -> CppSyntaxHighlighter()
-                "cs" -> CSharpSyntaxHighlighter()
-                else -> PlainTextSyntaxHighlighter
+        val syntaxHighlighterList: MutableList<SyntaxHighlighter> by lazy {
+            mutableListOf(
+                PlainTextSyntaxHighlighter,
+                KotlinSyntaxHighlighter,
+                JavaSyntaxHighlighter,
+                JavaScriptSyntaxHighlighter,
+                PythonSyntaxHighlighter,
+                CppSyntaxHighlighter,
+                CSharpSyntaxHighlighter
+            )
+        }
+
+        fun replaceOrAddSyntaxHighlighter(syntaxHighlighter: RegexSyntaxHighlighter) {
+            val index = syntaxHighlighterList.indexOfFirst { it.key == syntaxHighlighter.key }
+            if (index >= 0) {
+                syntaxHighlighterList[index] = syntaxHighlighter
+            } else {
+                syntaxHighlighterList.add(syntaxHighlighter)
             }
         }
 
         /**
-         * 파일 이름(예: "MainActivity.kt", "script.py")을 바탕으로 적절한 [SyntaxHighlighter]를 반환합니다.
+         * 파일 확장자(예: "kt", "java", "js", "py", "cpp", "cs")를 바탕으로 적절한 [SyntaxHighlighter]를 반환합니다.
          */
         fun forFileName(fileName: String): SyntaxHighlighter {
             val dotIndex = fileName.lastIndexOf('.')
             if (dotIndex == -1 || dotIndex == fileName.length - 1) {
                 return PlainTextSyntaxHighlighter
             }
-            return forExtension(fileName.substring(dotIndex + 1))
+            val extension = fileName.substring(dotIndex + 1).lowercase()
+            return syntaxHighlighterList.firstOrNull { it.extensionList.contains(extension) } ?: PlainTextSyntaxHighlighter
+        }
+
+        fun forKey(key: String): SyntaxHighlighter {
+            return syntaxHighlighterList.firstOrNull { it.key == key } ?: PlainTextSyntaxHighlighter
         }
     }
 }
@@ -58,7 +69,7 @@ interface SyntaxHighlighter {
 /**
  * 문법 하이라이팅을 적용하지 않는 기본 텍스트 하이라이터.
  */
-object PlainTextSyntaxHighlighter : SyntaxHighlighter {
+object PlainTextSyntaxHighlighter : SyntaxHighlighter("Plain Text", "PLAIN", emptyArray()) {
     override fun highlight(
         spans: List<TextSpan>,
         @ColorInt defaultTextColor: Int,
@@ -95,13 +106,14 @@ object PlainTextSyntaxHighlighter : SyntaxHighlighter {
  * 정규식 기반 공통 소스 코드 문법 하이라이터 베이스 클래스.
  */
 open class RegexSyntaxHighlighter(
+    name: String, key: String, extensionList: Array<String>,
     val keywordPattern: Pattern? = null,
     val stringPattern: Pattern? = null,
     val commentPattern: Pattern? = null,
     val numberPattern: Pattern? = null,
     val preprocessorPattern: Pattern? = null,
     val annotationPattern: Pattern? = null
-) : SyntaxHighlighter {
+) : SyntaxHighlighter(name, key, extensionList) {
 
     override fun highlight(
         spans: List<TextSpan>,
@@ -194,7 +206,8 @@ open class RegexSyntaxHighlighter(
 /**
  * Kotlin 소스 코드 문법 하이라이터.
  */
-class KotlinSyntaxHighlighter : RegexSyntaxHighlighter(
+object KotlinSyntaxHighlighter : RegexSyntaxHighlighter(
+    "Kotlin", "KOTLIN", arrayOf("kt", "kts"),
     keywordPattern = Pattern.compile(
         "\\b(val|var|fun|class|interface|object|enum|data|sealed|package|import|" +
                 "if|else|when|for|while|do|return|break|continue|throw|try|catch|finally|" +
@@ -209,7 +222,8 @@ class KotlinSyntaxHighlighter : RegexSyntaxHighlighter(
 /**
  * Java 소스 코드 문법 하이라이터.
  */
-class JavaSyntaxHighlighter : RegexSyntaxHighlighter(
+object JavaSyntaxHighlighter : RegexSyntaxHighlighter(
+    "Java", "JAVA", arrayOf("java"),
     keywordPattern = Pattern.compile(
         "\\b(public|protected|private|static|final|abstract|class|interface|enum|extends|implements|" +
                 "package|import|new|this|super|return|if|else|for|while|do|switch|case|default|break|continue|" +
@@ -225,7 +239,8 @@ class JavaSyntaxHighlighter : RegexSyntaxHighlighter(
 /**
  * JavaScript / TypeScript 소스 코드 문법 하이라이터.
  */
-class JavaScriptSyntaxHighlighter : RegexSyntaxHighlighter(
+object JavaScriptSyntaxHighlighter : RegexSyntaxHighlighter(
+    "JavaScript / TypeScript", "JS", arrayOf("js", "jsx", "ts", "tsx", "mjs", "cjs"),
     keywordPattern = Pattern.compile(
         "\\b(function|const|let|var|if|else|for|while|do|switch|case|default|break|continue|return|" +
                 "try|catch|finally|throw|class|extends|super|this|new|typeof|instanceof|void|delete|in|of|" +
@@ -239,7 +254,8 @@ class JavaScriptSyntaxHighlighter : RegexSyntaxHighlighter(
 /**
  * Python 소스 코드 문법 하이라이터.
  */
-class PythonSyntaxHighlighter : RegexSyntaxHighlighter(
+object PythonSyntaxHighlighter : RegexSyntaxHighlighter(
+    "Python", "PYTHON", arrayOf("py", "pyw"),
     keywordPattern = Pattern.compile(
         "\\b(def|class|if|elif|else|for|while|try|except|finally|with|as|import|from|return|yield|" +
                 "break|continue|pass|raise|lambda|assert|global|nonlocal|and|or|not|is|in|True|False|None|self|async|await)\\b"
@@ -253,7 +269,8 @@ class PythonSyntaxHighlighter : RegexSyntaxHighlighter(
 /**
  * C / C++ 소스 코드 문법 하이라이터.
  */
-class CppSyntaxHighlighter : RegexSyntaxHighlighter(
+object CppSyntaxHighlighter : RegexSyntaxHighlighter(
+    "C / C++", "CPP", arrayOf("cpp", "cxx", "cc", "c", "h", "hpp", "hxx"),
     keywordPattern = Pattern.compile(
         "\\b(auto|bool|break|case|catch|char|class|const|constexpr|continue|default|delete|do|double|" +
                 "else|enum|explicit|export|extern|false|float|for|friend|goto|if|inline|int|long|mutable|" +
@@ -270,7 +287,8 @@ class CppSyntaxHighlighter : RegexSyntaxHighlighter(
 /**
  * C# 소스 코드 문법 하이라이터.
  */
-class CSharpSyntaxHighlighter : RegexSyntaxHighlighter(
+object CSharpSyntaxHighlighter : RegexSyntaxHighlighter(
+    "C#", "CSHARP", arrayOf("cs"),
     keywordPattern = Pattern.compile(
         "\\b(abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|" +
                 "delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|goto|" +

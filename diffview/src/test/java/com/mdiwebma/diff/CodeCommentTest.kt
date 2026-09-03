@@ -310,4 +310,26 @@ class CodeCommentTest {
 
         org.junit.Assert.assertEquals(expected, normalized)
     }
+
+    @Test
+    fun testSyntaxHighlighterList_NoNullElements() {
+        val list = com.mdiwebma.diffview.SyntaxHighlighter.syntaxHighlighterList
+        org.junit.Assert.assertTrue(list.isNotEmpty())
+        for (item in list) {
+            org.junit.Assert.assertNotNull(item)
+            org.junit.Assert.assertNotNull(item.key)
+            org.junit.Assert.assertNotNull(item.name)
+        }
+    }
+
+    @Test
+    fun testTextNormalizerList_NoNullElements() {
+        val list = com.mdiwebma.diffview.TextNormalizer.normalizerList
+        org.junit.Assert.assertTrue(list.isNotEmpty())
+        for (item in list) {
+            org.junit.Assert.assertNotNull(item)
+            org.junit.Assert.assertNotNull(item.key)
+            org.junit.Assert.assertNotNull(item.name)
+        }
+    }
 }
