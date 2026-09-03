@@ -57,6 +57,7 @@
     <string name="diffview_opt_syntax">Syntax Highlighting</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">Plain Text</string>
+    <string name="diffview_opt_normalizer">File Format Normalization</string>
     <string name="diffview_opt_close">Close</string>
 
     <!-- More Menu & Image Save Strings -->

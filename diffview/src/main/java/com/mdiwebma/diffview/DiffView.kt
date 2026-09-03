@@ -94,6 +94,10 @@ class DiffView @JvmOverloads constructor(
     private var isAutoSavePreferences: Boolean = false
     private val expandedFoldMap = mutableMapOf<Long, FoldExpansionState>()
 
+    private var rawOriginalText: String = ""
+    private var rawModifiedText: String = ""
+    private var textNormalizer: TextNormalizer? = null
+    private var normalizerChangedListener: ((newNormalizer: TextNormalizer?) -> Unit)? = null
     private var currentOriginalText: String = ""
     private var currentModifiedText: String = ""
     private var currentDiffResult: DiffResult? = null
@@ -482,10 +486,37 @@ class DiffView @JvmOverloads constructor(
         setContentGitPatch(targetPatch, autoUpdateHeaderTitles)
     }
 
+    fun setOnTextNormalizerChanged(normalizerChangedListener: (newNormalizer: TextNormalizer?) -> Unit) {
+        this.normalizerChangedListener = normalizerChangedListener
+    }
+
+    fun setTextNormalizer(textNormalizer: TextNormalizer?) {
+        if (this.textNormalizer === textNormalizer) {
+            return
+        }
+        this.textNormalizer = textNormalizer
+        val original = textNormalizer?.normalize(rawOriginalText) ?: rawOriginalText
+        val modified = textNormalizer?.normalize(rawModifiedText) ?: rawModifiedText
+        setInnerContent(original, modified)
+        normalizerChangedListener?.invoke(textNormalizer)
+    }
+
+    fun getTextNormalizer(): TextNormalizer? {
+        return textNormalizer
+    }
+
+    fun setContent(rawOriginal: String, rawModified: String) {
+        this.rawOriginalText = rawOriginal
+        this.rawModifiedText = rawModified
+        val original = textNormalizer?.normalize(rawOriginalText) ?: rawOriginalText
+        val modified = textNormalizer?.normalize(rawModifiedText) ?: rawModifiedText
+        setInnerContent(original, modified)
+    }
+
     /**
      * 원본과 수정본 소스코드를 설정하고 비동기로 Diff를 계산합니다.
      */
-    fun setContent(original: String, modified: String) {
+    private fun setInnerContent(original: String, modified: String) {
         currentOriginalText = original
         currentModifiedText = modified
         diffJob?.cancel()
@@ -524,7 +555,7 @@ class DiffView @JvmOverloads constructor(
         if (this.whitespaceIgnoreMode != mode) {
             this.whitespaceIgnoreMode = mode
             if (currentOriginalText.isNotEmpty() || currentModifiedText.isNotEmpty()) {
-                setContent(currentOriginalText, currentModifiedText)
+                setInnerContent(currentOriginalText, currentModifiedText)
             }
         }
     }
@@ -538,7 +569,7 @@ class DiffView @JvmOverloads constructor(
         if (this.diffGranularity != granularity) {
             this.diffGranularity = granularity
             if (currentOriginalText.isNotEmpty() || currentModifiedText.isNotEmpty()) {
-                setContent(currentOriginalText, currentModifiedText)
+                setInnerContent(currentOriginalText, currentModifiedText)
             }
         }
     }
@@ -690,9 +721,10 @@ class DiffView @JvmOverloads constructor(
             isEnabled = isFolding
         }
         popup.menu.add(0, 12, 2, "🎨 ${settingLabels.syntaxTitle}")
-        popup.menu.add(0, 13, 3, "📋 ${settingLabels.menuCopyGitPatch}")
-        popup.menu.add(0, 1, 4, settingLabels.menuSaveVisibleImage)
-        popup.menu.add(0, 2, 5, settingLabels.menuSaveFullImage)
+        popup.menu.add(0, 14, 3, "📄 ${settingLabels.normalizerTitle}")
+        popup.menu.add(0, 13, 4, "📋 ${settingLabels.menuCopyGitPatch}")
+        popup.menu.add(0, 1, 5, settingLabels.menuSaveVisibleImage)
+        popup.menu.add(0, 2, 6, settingLabels.menuSaveFullImage)
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -710,6 +742,11 @@ class DiffView @JvmOverloads constructor(
 
                 12 -> {
                     showSyntaxSelectionDialog()
+                    true
+                }
+
+                14 -> {
+                    showTextNormalizerSelectionDialog()
                     true
                 }
 
@@ -760,6 +797,32 @@ class DiffView @JvmOverloads constructor(
             .setSingleChoiceItems(items, currentIndex) { dialog, which ->
                 val (_, selectedHighlighter) = languages[which]
                 setSyntaxHighlighter(selectedHighlighter)
+                dialog.dismiss()
+            }
+            .setNegativeButton(settingLabels.closeButton, null)
+            .show()
+    }
+
+    /**
+     * 파일 포맷 정규화(TextNormalizer) 포맷터를 AlertDialog 싱글 초이스로 선택하는 다이얼로그를 표시합니다.
+     */
+    fun showTextNormalizerSelectionDialog() {
+        val normalizers = TextNormalizer.normalizerList
+        val currentNormalizer = getTextNormalizer()
+        val currentIndex = if (currentNormalizer == null) {
+            normalizers.indexOfFirst { it.key == "PLAIN" }.let { if (it == -1) 0 else it }
+        } else {
+            normalizers.indexOfFirst { it.key == currentNormalizer.key }.let { if (it == -1) 0 else it }
+        }
+
+        val items = normalizers.map { it.name }.toTypedArray()
+
+        AlertDialog.Builder(context)
+            .setTitle(settingLabels.normalizerTitle)
+            .setSingleChoiceItems(items, currentIndex) { dialog, which ->
+                val selectedNormalizer = normalizers[which]
+                val newNormalizer = if (selectedNormalizer.key == PlainTextNormalize.key) null else selectedNormalizer
+                setTextNormalizer(newNormalizer)
                 dialog.dismiss()
             }
             .setNegativeButton(settingLabels.closeButton, null)
@@ -1088,6 +1151,9 @@ class DiffView @JvmOverloads constructor(
      * 커스텀 문법 하이라이터 설정.
      */
     fun setSyntaxHighlighter(highlighter: SyntaxHighlighter?) {
+        if (adapter.syntaxHighlighter === highlighter) {
+            return
+        }
         adapter.syntaxHighlighter = highlighter ?: PlainTextSyntaxHighlighter
     }
 
@@ -1110,7 +1176,6 @@ class DiffView @JvmOverloads constructor(
         this.foldingThreshold = threshold
         updateDisplayItems()
     }
-
 
 
     /**

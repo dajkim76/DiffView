@@ -54,9 +54,10 @@
     <string name="diffview_opt_long_tab_none">لا شيء</string>
     <string name="diffview_opt_long_tab_selectable">تحديد النص</string>
     <string name="diffview_opt_long_tab_comment">تعليق</string>
-    <string name="diffview_opt_syntax">بناء الجملة</string>
+    <string name="diffview_opt_syntax">تمييز بناء الجملة</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">نص عادي</string>
+    <string name="diffview_opt_normalizer">تطبيع تنسيق الملف</string>
     <string name="diffview_opt_close">إغلاق</string>
 
     <!-- More Menu & Image Save Strings -->

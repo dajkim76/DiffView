@@ -96,7 +96,12 @@ class MainActivity : AppCompatActivity() {
         // Show initial sample code
         //diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
         //diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
-        diffView.setContentGitPatch(GIT_PATCH)
+        //diffView.setTextNormalizer(TSVTextNormalizer)
+        //diffView.setContent(TSV_BEFORE, TSV_AFTER)
+        //diffView.setContent(JSON_BEFORE, JSON_AFTER)
+        //diffView.setContent(XML_BEFORE, XML_AFTER)
+        //diffView.setContent(SQL_BEFORE, SQL_AFTER)
+        diffView.setContent(YAML_BEFORE, YAML_AFTER)
         //diffView.setLongTabAction(DiffLongTabAction.COMMENT)
         diffView.setCommentTextSizes(11f, 9f)
         diffView.setCommentContext("sample_initial_commit", "MainActivity.kt")
@@ -342,7 +347,8 @@ class MainActivity : AppCompatActivity() {
                 //    modified = fileInfo.filename
                 //)
                 diffView.setSyntaxHighlighter(com.mdiwebma.diffview.SyntaxHighlighter.forFileName(fileInfo.filename))
-                diffView.setContent(original = origText, modified = modText)
+                diffView.setContent(rawOriginal = origText, rawModified = modText)
+                diffView.setTextNormalizer(null)
                 diffView.setCommentContext(commitInfo.commitSha, fileInfo.filename)
                 //diffView.expandAll()
                 setLoading(false, "Selected: ${fileInfo.filename}")
@@ -495,4 +501,103 @@ index b61a540..27c4240 100644
             return BINARY_EXTENSIONS.contains(ext)
         }
     }
+
+    val JSON_BEFORE = """{
+  "user": {
+    "id": 1001,
+    "name": "홍길동",
+    "email": "hong@example.com",
+    "is_active": true,
+    "roles": ["User", "Admin"]
+  },
+  "orders": [
+    {
+      "order_id": "ORD-2026-001",
+      "item": "무선 키보드",
+      "price": 45000,
+      "quantity": 1
+    },
+    {
+      "order_id": "ORD-2026-002",
+      "item": "인체공학 마우스",
+      "price": 32000,
+      "quantity": 2
+    }
+  ]
+}"""
+
+    val JSON_AFTER =
+        """{"user":{"id":1001,"name":"홍길동","email":"hong@example.com","is_active":false,"roles":["User","Admin"]},"shipping_address":{"city":"서울","zipcode":"04524","address":"세종대로 110"},"orders":[{"order_id":"ORD-2026-001","item":"무선","price":45000,"quantity":1},{"order_id":"ORD-2026-002","item":"마우스","price":312000,"quantity":2}]}"""
+
+    val TSV_BEFORE = """id	name	address	score
+1	김철수	서울시 강남구, 테헤란로	95
+2	이영희	부산시 해운대구, 우동	88"""
+
+    val TSV_AFTER = """id	name	address	score
+1	김철수	서울시 강남구, 강남	95
+2	영희	부산시 해운대구	88"""
+
+    val XML_BEFORE = """<root>
+  <message>Hello </message>
+  <message>World!</message>
+  <message></message>
+</root>"""
+
+    val XML_AFTER = "<root><message>Hello </message><message>World!</message><message></message></root>"
+
+    val SQL_BEFORE = """
+        SELECT  id, name 
+        FROM users 
+        WHERE id = 1  ; -- 유저 조회
+    """.trimIndent()
+
+    val SQL_AFTER = "/* comment */ select id,name from users where id=1"
+
+    val YAML_BEFORE = """users:
+- name: 'John Doe'
+  active: yes
+  age: 30
+- name: "Jane Smith "
+  active: no
+  age: 25
+    
+server :
+    ssl: yes
+    port :   8080 # server port
+    env: "production"
+    title: 'my-app'
+    enabled: On
+    endpoints :
+      -   /api/v1
+      -  name : "test:endpoint"
+version:   1.0.0
+auth:
+    require_auth: off
+    admin: YES
+    password: "yes" # quote maintained    
+"""
+
+    val YAML_AFTER = """users:
+- active: true
+  age: 30
+  name: John Doe
+- active: false
+  age: 25
+  name: Jane Smith
+  
+auth:
+  admin: true
+  password: "yes" # quote maintained
+  require_auth: false
+server:
+  enabled: true
+  endpoints:
+    - /api/v1
+    - name: "test:endpoint"
+  env: production
+  port: 8080 # server port
+  ssl: true
+  title: my-app
+version: 1.0.0  
+"""
 }

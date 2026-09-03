@@ -57,6 +57,7 @@
     <string name="diffview_opt_syntax">语法高亮</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">纯文本</string>
+    <string name="diffview_opt_normalizer">文件格式规范化</string>
     <string name="diffview_opt_close">关闭</string>
 
     <!-- More Menu & Image Save Strings -->

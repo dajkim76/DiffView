@@ -54,9 +54,10 @@
     <string name="diffview_opt_long_tab_none">ไม่มี</string>
     <string name="diffview_opt_long_tab_selectable">เลือกข้อความ</string>
     <string name="diffview_opt_long_tab_comment">ความคิดเห็น</string>
-    <string name="diffview_opt_syntax">ไวยากรณ์</string>
+    <string name="diffview_opt_syntax">การเน้นไวยากรณ์</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">ข้อความธรรมดา</string>
+    <string name="diffview_opt_normalizer">การแปลงรูปแบบไฟล์ให้เป็นมาตรฐาน</string>
     <string name="diffview_opt_close">ปิด</string>
 
     <!-- More Menu & Image Save Strings -->

@@ -54,9 +54,10 @@
     <string name="diffview_opt_long_tab_none">Không</string>
     <string name="diffview_opt_long_tab_selectable">Chọn văn bản</string>
     <string name="diffview_opt_long_tab_comment">Bình luận</string>
-    <string name="diffview_opt_syntax">Cú pháp</string>
+    <string name="diffview_opt_syntax">Tô sáng cú pháp</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">Văn bản thuần</string>
+    <string name="diffview_opt_normalizer">Chuẩn hóa định dạng tệp</string>
     <string name="diffview_opt_close">Đóng</string>
 
     <!-- More Menu & Image Save Strings -->

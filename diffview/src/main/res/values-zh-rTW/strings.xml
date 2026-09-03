@@ -57,6 +57,7 @@
     <string name="diffview_opt_syntax">語法標色</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">純文字</string>
+    <string name="diffview_opt_normalizer">檔案格式規範化</string>
     <string name="diffview_opt_close">關閉</string>
 
     <!-- More Menu & Image Save Strings -->

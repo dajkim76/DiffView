@@ -54,9 +54,10 @@
     <string name="diffview_opt_long_tab_none">Nenhuma</string>
     <string name="diffview_opt_long_tab_selectable">Selecionar texto</string>
     <string name="diffview_opt_long_tab_comment">Comentário</string>
-    <string name="diffview_opt_syntax">Sintaxe</string>
+    <string name="diffview_opt_syntax">Destaque de sintaxe</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">Texto simples</string>
+    <string name="diffview_opt_normalizer">Normalização de formato de arquivo</string>
     <string name="diffview_opt_close">Fechar</string>
 
     <!-- More Menu & Image Save Strings -->

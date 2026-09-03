@@ -54,9 +54,10 @@
     <string name="diffview_opt_long_tab_none">なし</string>
     <string name="diffview_opt_long_tab_selectable">テキスト選択</string>
     <string name="diffview_opt_long_tab_comment">コメント</string>
-    <string name="diffview_opt_syntax">構文強調</string>
+    <string name="diffview_opt_syntax">シンタックス強調</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">プレーンテキスト</string>
+    <string name="diffview_opt_normalizer">ファイルフォーマット正規化</string>
     <string name="diffview_opt_close">閉じる</string>
 
     <!-- More Menu & Image Save Strings -->

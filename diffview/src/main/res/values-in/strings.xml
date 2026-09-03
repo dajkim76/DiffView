@@ -54,9 +54,10 @@
     <string name="diffview_opt_long_tab_none">Tidak Ada</string>
     <string name="diffview_opt_long_tab_selectable">Pilih Teks</string>
     <string name="diffview_opt_long_tab_comment">Komentar</string>
-    <string name="diffview_opt_syntax">Sintaks</string>
+    <string name="diffview_opt_syntax">Sorotan Sintaks</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">Teks Biasa</string>
+    <string name="diffview_opt_normalizer">Normalisasi Format File</string>
     <string name="diffview_opt_close">Tutup</string>
 
     <!-- More Menu & Image Save Strings -->

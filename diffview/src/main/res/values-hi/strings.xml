@@ -54,9 +54,10 @@
     <string name="diffview_opt_long_tab_none">कोई नहीं</string>
     <string name="diffview_opt_long_tab_selectable">टेक्स्ट चयन</string>
     <string name="diffview_opt_long_tab_comment">टिप्पणी</string>
-    <string name="diffview_opt_syntax">सिंटैक्स</string>
+    <string name="diffview_opt_syntax">सिंटैक्स हाइलाइटिंग</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
-    <string name="diffview_opt_syntax_plain">सादा टेक्स्ट</string>
+    <string name="diffview_opt_syntax_plain">सादा पाठ</string>
+    <string name="diffview_opt_normalizer">फ़ाइल प्रारूप सामान्यीकरण</string>
     <string name="diffview_opt_close">बंद करें</string>
 
     <!-- More Menu & Image Save Strings -->

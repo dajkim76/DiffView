@@ -194,6 +194,7 @@ class CodeCommentTest {
         assertEquals("All code blocks collapsed.", labels.collapseAllSuccess)
         assertEquals("Copy Git Patch", labels.menuCopyGitPatch)
         assertEquals("Git Patch copied to clipboard.", labels.copyGitPatchSuccess)
+        assertEquals("File Format Normalization", labels.normalizerTitle)
     }
 
     @Test
@@ -218,5 +219,95 @@ class CodeCommentTest {
         } finally {
             com.mdiwebma.diffview.DiffColors.Light = com.mdiwebma.diffview.DiffColors.DefaultLight
         }
+    }
+
+    @Test
+    fun testSqlTextNormalizer_OperatorsAndSemicolon() {
+        val rawSql = "SELECT id,name FROM users WHERE a=1 AND b!=2 AND c>=3 AND d<=4 AND str='x=1' ; SELECT * FROM orders ;"
+        val normalized = com.mdiwebma.diffview.SQLTextNormalizer.normalize(rawSql)
+
+        // 연산자 앞뒤 공백 정규화 확인 및 문자열 리터럴 내부('x=1') 보존 확인
+        org.junit.Assert.assertTrue(normalized.contains("a = 1"))
+        org.junit.Assert.assertTrue(normalized.contains("b != 2"))
+        org.junit.Assert.assertTrue(normalized.contains("c >= 3"))
+        org.junit.Assert.assertTrue(normalized.contains("d <= 4"))
+        org.junit.Assert.assertTrue(normalized.contains("'x=1'"))
+
+        // 세미콜론 앞 공백 제거 및 다중 쿼리 줄바꿈 확인
+        org.junit.Assert.assertTrue(normalized.contains("str = 'x=1';\n\nSELECT"))
+        org.junit.Assert.assertTrue(normalized.endsWith(";"))
+
+        // 세미콜론이 없는 쿼리 정규화 시 세미콜론 자동 추가 확인
+        val noSemicolonSql = "SELECT a, b FROM table WHERE a=1"
+        val normalizedNoSemicolon = com.mdiwebma.diffview.SQLTextNormalizer.normalize(noSemicolonSql)
+        org.junit.Assert.assertTrue(normalizedNoSemicolon.endsWith(";"))
+    }
+
+    @Test
+    fun testYamlTextNormalizer() {
+        val rawYaml = """
+            server :
+                ssl: yes
+                port :   8080 # server port
+                env: "production"
+                title: 'my-app'
+                enabled: On
+                endpoints :
+                  -   /api/v1
+                  -  name : "test:endpoint"
+            version:   1.0.0
+            auth:
+                require_auth: off
+                admin: YES
+                password: "yes" # quote maintained
+        """.trimIndent()
+
+        val normalized = com.mdiwebma.diffview.YamlTextNormalizer.normalize(rawYaml)
+
+        val expected = """
+            auth:
+              admin: true
+              password: "yes" # quote maintained
+              require_auth: false
+            server:
+              enabled: true
+              endpoints:
+                - /api/v1
+                - name: "test:endpoint"
+              env: production
+              port: 8080 # server port
+              ssl: true
+              title: my-app
+            version: 1.0.0
+        """.trimIndent()
+
+        org.junit.Assert.assertEquals(expected, normalized)
+    }
+
+    @Test
+    fun testYamlTextNormalizer_ListMapItems() {
+        val rawYaml = """
+            users:
+              - name: 'John Doe'
+                active: yes
+                age: 30
+              - name: "Jane Smith"
+                active: no
+                age: 25
+        """.trimIndent()
+
+        val normalized = com.mdiwebma.diffview.YamlTextNormalizer.normalize(rawYaml)
+
+        val expected = """
+            users:
+              - active: true
+                age: 30
+                name: John Doe
+              - active: false
+                age: 25
+                name: Jane Smith
+        """.trimIndent()
+
+        org.junit.Assert.assertEquals(expected, normalized)
     }
 }

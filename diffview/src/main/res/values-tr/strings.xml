@@ -54,9 +54,10 @@
     <string name="diffview_opt_long_tab_none">Yok</string>
     <string name="diffview_opt_long_tab_selectable">Metin Seç</string>
     <string name="diffview_opt_long_tab_comment">Yorum</string>
-    <string name="diffview_opt_syntax">Sözdizimi</string>
+    <string name="diffview_opt_syntax">Sözdizimi Vurgulama</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">Düz Metin</string>
+    <string name="diffview_opt_normalizer">Dosya Formatı Normalizasyonu</string>
     <string name="diffview_opt_close">Kapat</string>
 
     <!-- More Menu & Image Save Strings -->

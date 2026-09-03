@@ -57,6 +57,7 @@
     <string name="diffview_opt_syntax">구문 강조</string>
     <string name="diffview_opt_syntax_kotlin">Kotlin</string>
     <string name="diffview_opt_syntax_plain">일반 텍스트</string>
+    <string name="diffview_opt_normalizer">파일 포맷 정규화</string>
     <string name="diffview_opt_close">닫기</string>
 
     <!-- More Menu & Image Save Strings -->
