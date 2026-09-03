@@ -14,11 +14,6 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_compose_demo"
-        android:title="Compose Demo"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_view_demo"
         android:title="View Demo"
         app:showAsAction="never" />

@@ -30,13 +30,6 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.SplitDiff" />
-
-        <activity
-            android:name="com.mdiwebma.diffviewer.ComposeDemoActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.SplitDiff" />
     </application>
 
 </manifest>
