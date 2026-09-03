@@ -1,5 +1,6 @@
 package com.mdiwebma.diffviewer.utils
 
+import com.mdiwebma.diffviewer.AppSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -68,11 +69,15 @@ object GithubUtils {
 
     fun fetchStringFromUrl(urlString: String): String {
         val url = URL(urlString)
+        val apiKey = AppSettings.githubApiKey.value
         val connection = (url.openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
             setRequestProperty("User-Agent", "Android-DiffView-App")
+            if (apiKey.isNotBlank()) {
+                setRequestProperty("Authorization", "Bearer $apiKey")
+            }
         }
         val responseCode = connection.responseCode
         if (responseCode !in 200..299) {

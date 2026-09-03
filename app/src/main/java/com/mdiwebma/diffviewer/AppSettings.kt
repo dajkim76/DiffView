@@ -8,6 +8,7 @@ import java.util.concurrent.Executors
 object AppSettings {
     // Declare App settings
     val runCount = SettingLong("runCount", 0)
+    val githubApiKey = SettingString("githubApiKey", "")
 
     //
     // Database operation
