@@ -3,44 +3,26 @@ package com.mdiwebma.diffviewer
 import com.mdiwebma.diffviewer.box.AppBoxStore
 import com.mdiwebma.diffviewer.box.SettingEntry
 import com.mdiwebma.diffviewer.box.SettingEntry_
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
 object AppSettings {
     // Declare App settings
     val runCount = SettingLong("runCount", 0)
 
-
-    //
-    // Memory cache
-    private val stringMap = ConcurrentHashMap<String, String>()
-    private val longMap = ConcurrentHashMap<String, Long>()
-    private val intMap = ConcurrentHashMap<String, Int>()
-    private val booleanMap = ConcurrentHashMap<String, Boolean>()
-    private val doubleMap = ConcurrentHashMap<String, Double>()
-
-    private val dbExecutor = Executors.newSingleThreadExecutor()
-
-    fun clearCache() {
-        stringMap.clear()
-        longMap.clear()
-        intMap.clear()
-        booleanMap.clear()
-        doubleMap.clear()
-    }
-
     //
     // Database operation
-    private fun readStringFromDatabase(key: String): String? {
-        val box = AppBoxStore.Companion.getInstance(MyApp.appContext).getBox<SettingEntry>()
+    private val dbExecutor = Executors.newSingleThreadExecutor()
+
+    private fun readString(key: String): String? {
+        val box = AppBoxStore.getInstance(MyApp.appContext).getBox<SettingEntry>()
         return box.query(SettingEntry_.key.equal(key)).build().use { query ->
             query.findFirst()?.value
         }
     }
 
-    private fun writeStringToDatabase(key: String, value: String) {
+    private fun writeString(key: String, value: String) {
         dbExecutor.execute {
-            val appBoxStore = AppBoxStore.Companion.getInstance(MyApp.appContext)
+            val appBoxStore = AppBoxStore.getInstance(MyApp.appContext)
             appBoxStore.boxStore.runInTx {
                 val settingBox = appBoxStore.getBox<SettingEntry>()
                 val entity = settingBox.query(SettingEntry_.key.equal(key)).build().use { query ->
@@ -55,107 +37,55 @@ object AppSettings {
         }
     }
 
-    fun removeDatabaseKey(key: String) {
-        stringMap.remove(key)
-        longMap.remove(key)
-        intMap.remove(key)
-        booleanMap.remove(key)
-        doubleMap.remove(key)
+    //
+    // Helper class
+    abstract class SettingValue<T>(val key: String, val defaultValue: T) {
+        @Volatile
+        private var cachedValue: T? = null
 
-        dbExecutor.execute {
-            val appBoxStore = AppBoxStore.Companion.getInstance(MyApp.appContext)
-            appBoxStore.getBox<SettingEntry>().query(SettingEntry_.key.equal(key)).build().use { query ->
-                query.remove()
+        protected abstract fun parse(str: String): T?
+
+        var value: T
+            get() = cachedValue ?: (readString(key)?.let { parse(it) } ?: defaultValue).also {
+                cachedValue = it
+            }
+            set(newValue) {
+                if (cachedValue != newValue) {
+                    cachedValue = newValue
+                    writeString(key, newValue.toString())
+                }
+            }
+
+        // 💡 위임 프로퍼티 지원 연산자
+        // operator fun getValue(thisRef: Any?, property: KProperty<*>): T = value
+        // operator fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T) { value = newValue }
+
+        init {
+            if (BuildConfig.DEBUG) {
+                if (!settingInstanceChecker.add(key)) error("SettingValue key is duplicate: $key")
             }
         }
     }
 
-    //
-    // Helper method
-    private fun getString(key: String, defaultValue: String): String {
-        return stringMap.getOrPut(key) { readStringFromDatabase(key) ?: defaultValue }
+    class SettingInt(key: String, defaultValue: Int) : SettingValue<Int>(key, defaultValue) {
+        override fun parse(str: String) = str.toIntOrNull()
     }
 
-    private fun setString(key: String, value: String) {
-        if (stringMap[key] != value) {
-            stringMap[key] = value
-            writeStringToDatabase(key, value)
-        }
+    class SettingLong(key: String, defaultValue: Long) : SettingValue<Long>(key, defaultValue) {
+        override fun parse(str: String) = str.toLongOrNull()
     }
 
-    private fun getLong(key: String, defaultValue: Long): Long {
-        return longMap.getOrPut(key) { readStringFromDatabase(key)?.toLongOrNull() ?: defaultValue }
+    class SettingBoolean(key: String, defaultValue: Boolean) : SettingValue<Boolean>(key, defaultValue) {
+        override fun parse(str: String) = str.toBooleanStrictOrNull()
     }
 
-    private fun setLong(key: String, value: Long) {
-        if (longMap[key] != value) {
-            longMap[key] = value
-            writeStringToDatabase(key, value.toString())
-        }
+    class SettingDouble(key: String, defaultValue: Double) : SettingValue<Double>(key, defaultValue) {
+        override fun parse(str: String) = str.toDoubleOrNull()
     }
 
-    private fun getInt(key: String, defaultValue: Int): Int {
-        return intMap.getOrPut(key) { readStringFromDatabase(key)?.toIntOrNull() ?: defaultValue }
-    }
-
-    private fun setInt(key: String, value: Int) {
-        if (intMap[key] != value) {
-            intMap[key] = value
-            writeStringToDatabase(key, value.toString())
-        }
-    }
-
-    private fun getBoolean(key: String, defaultValue: Boolean): Boolean {
-        return booleanMap.getOrPut(key) { readStringFromDatabase(key)?.toBooleanStrictOrNull() ?: defaultValue }
-    }
-
-    private fun setBoolean(key: String, value: Boolean) {
-        if (booleanMap[key] != value) {
-            booleanMap[key] = value
-            writeStringToDatabase(key, value.toString())
-        }
-    }
-
-    private fun getDouble(key: String, defaultValue: Double): Double {
-        return doubleMap.getOrPut(key) { readStringFromDatabase(key)?.toDoubleOrNull() ?: defaultValue }
-    }
-
-    private fun setDouble(key: String, value: Double) {
-        if (doubleMap[key] != value) {
-            doubleMap[key] = value
-            writeStringToDatabase(key, value.toString())
-        }
-    }
-
-    //
-    // Helper class
-    class SettingInt(val key: String, val defaultValue: Int) {
-        var value
-            get() = getInt(key, defaultValue)
-            set(newValue) = setInt(key, newValue)
-    }
-
-    class SettingString(val key: String, val defaultValue: String) {
-        var value
-            get() = getString(key, defaultValue)
-            set(newValue) = setString(key, newValue)
-    }
-
-    class SettingLong(val key: String, val defaultValue: Long) {
-        var value
-            get() = getLong(key, defaultValue)
-            set(newValue) = setLong(key, newValue)
-    }
-
-    class SettingBoolean(val key: String, val defaultValue: Boolean) {
-        var value
-            get() = getBoolean(key, defaultValue)
-            set(newValue) = setBoolean(key, newValue)
-    }
-
-    class SettingDouble(val key: String, val defaultValue: Double) {
-        var value
-            get() = getDouble(key, defaultValue)
-            set(newValue) = setDouble(key, newValue)
+    class SettingString(key: String, defaultValue: String) : SettingValue<String>(key, defaultValue) {
+        override fun parse(str: String) = str
     }
 }
+
+private val settingInstanceChecker = mutableSetOf<String>()
