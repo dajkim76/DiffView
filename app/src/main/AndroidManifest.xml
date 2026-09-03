@@ -14,8 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SplitDiff">
         <activity
-            android:name="com.mdiwebma.diffviewer.MainActivity"
+            android:name="com.mdiwebma.diffviewer.DiffViewerActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.SplitDiff">
@@ -25,9 +26,15 @@
             </intent-filter>
         </activity>
         <activity
+            android:name="com.mdiwebma.diffviewer.MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.SplitDiff" />
+        <activity
             android:name="com.mdiwebma.diffviewer.DemoActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize"
-            android:exported="true"
+            android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.SplitDiff" />
     </application>

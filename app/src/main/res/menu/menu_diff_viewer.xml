@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_new_group"
+        android:title="@string/action_new_group"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_tabs_list"
+        android:title="@string/action_tabs_list"
+        android:icon="@drawable/ic_format_list_bulleted"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:icon="@drawable/ic_settings"
+        app:showAsAction="always" />
+
+</menu>

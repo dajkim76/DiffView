@@ -11,4 +11,17 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="selected_item_bg">#E8EAF6</color>
+
+    <!-- Semantic UI Colors -->
+    <color name="tab_bar_bg">#F5F5F5</color>
+    <color name="tab_unselected_color">#757575</color>
+    <color name="tab_selected_color">#3F51B5</color>
+    <color name="tab_indicator_color">#3F51B5</color>
+    <color name="button_text_color">#3F51B5</color>
+    <color name="file_path_header_bg">#EFEFEF</color>
+    <color name="edit_box_bg">#FFFFFF</color>
+    <color name="edit_box_stroke">#CCCCCC</color>
+    <color name="icon_tint_primary">#FF333333</color>
+    <color name="icon_tint_secondary">#FF757575</color>
 </resources>

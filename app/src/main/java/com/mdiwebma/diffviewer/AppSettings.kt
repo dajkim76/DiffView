@@ -6,9 +6,15 @@ import com.mdiwebma.diffviewer.box.SettingEntry_
 import java.util.concurrent.Executors
 
 object AppSettings {
+    const val THEME_AUTO = "auto"
+    const val THEME_LIGHT = "light"
+    const val THEME_DARK = "dark"
+
     // Declare App settings
     val runCount = SettingLong("runCount", 0)
     val githubApiKey = SettingString("githubApiKey", "")
+    val diffGroupId = SettingLong("diffGroupId", 0L)
+    val appTheme = SettingString("appTheme", THEME_AUTO)
 
     //
     // Database operation

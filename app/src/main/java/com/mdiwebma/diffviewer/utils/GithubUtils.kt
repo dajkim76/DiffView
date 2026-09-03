@@ -25,7 +25,8 @@ object GithubUtils {
 
     data class CommitDetail(
         val parentSha: String?,
-        val files: List<CommitFileInfo>
+        val files: List<CommitFileInfo>,
+        val commitMessage: String? = null
     )
 
     data class FileContent(
@@ -67,21 +68,28 @@ object GithubUtils {
         return md.digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
     }
 
-    fun fetchStringFromUrl(urlString: String): String {
+    fun fetchStringFromUrl(urlString: String, useAuth: Boolean = true): String {
         val url = URL(urlString)
         val apiKey = AppSettings.githubApiKey.value
+        val isRawUrl = urlString.contains("raw.githubusercontent.com")
         val connection = (url.openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
             setRequestProperty("User-Agent", "Android-DiffView-App")
-            if (apiKey.isNotBlank()) {
+            if (useAuth && apiKey.isNotBlank() && !isRawUrl) {
                 setRequestProperty("Authorization", "Bearer $apiKey")
             }
         }
         val responseCode = connection.responseCode
         if (responseCode !in 200..299) {
-            throw Exception("HTTP $responseCode: ${connection.responseMessage}")
+            val errorBody = try {
+                connection.errorStream?.bufferedReader()?.use { it.readText() }
+            } catch (_: Exception) {
+                null
+            }
+            val errorMsg = errorBody ?: connection.responseMessage
+            throw Exception("HTTP $responseCode: $errorMsg")
         }
         return connection.inputStream.bufferedReader().use { it.readText() }
     }
@@ -100,6 +108,9 @@ object GithubUtils {
         }
 
         val json = JSONObject(jsonString)
+        val commitObj = json.optJSONObject("commit")
+        val commitMessage = commitObj?.optString("message")
+
         val parentsArray = json.optJSONArray("parents")
         val parentSha = if (parentsArray != null && parentsArray.length() > 0) {
             parentsArray.getJSONObject(0).getString("sha")
@@ -121,7 +132,7 @@ object GithubUtils {
                 )
             )
         }
-        CommitDetail(parentSha, parsedFiles)
+        CommitDetail(parentSha, parsedFiles, commitMessage)
     }
 
     suspend fun fetchFileContent(

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:colorBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:title="@string/title_enter_diff_group"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/hint_group_title"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etGroupTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="@string/hint_group_title"
+                android:singleLine="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="유형 선택"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <RadioGroup
+                android:id="@+id/rgType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rbSimple"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tab_simple"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/rbCommitUrl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/tab_commit_url" />
+
+                <RadioButton
+                    android:id="@+id/rbGitPatch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/tab_git_patch" />
+            </RadioGroup>
+
+            <!-- 1. Simple Layout (Before / After Text) -->
+            <LinearLayout
+                android:id="@+id/llSimpleLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/btnPickTwoFilesSimple"
+                    style="@style/App.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/btn_pick_two_files"
+                    android:textSize="13sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_before"
+                        android:textStyle="bold"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btnPickBeforeFile"
+                        style="@style/App.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/btn_pick_before_file"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/etSimpleBefore"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:layout_marginTop="2dp"
+                    android:hint="@string/hint_before_text"
+                    android:gravity="top|start"
+                    android:textSize="13sp"
+                    android:fontFamily="monospace"
+                    android:background="@drawable/bg_edit_box"
+                    android:padding="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_after"
+                        android:textStyle="bold"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btnPickAfterFile"
+                        style="@style/App.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/btn_pick_after_file"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/etSimpleAfter"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:layout_marginTop="2dp"
+                    android:hint="@string/hint_after_text"
+                    android:gravity="top|start"
+                    android:textSize="13sp"
+                    android:fontFamily="monospace"
+                    android:background="@drawable/bg_edit_box"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <!-- 2. GitHub Commit URL Layout -->
+            <LinearLayout
+                android:id="@+id/llCommitUrlLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hint_commit_url"
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/etCommitUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="https://github.com/dajkim76/Simple-Music-Player/commit/891dd9032fb7b6264563c67722b91f9d77beaba5"
+                    android:hint="https://github.com/owner/repo/commit/sha"
+                    android:singleLine="true"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- 3. Git Patch Layout -->
+            <LinearLayout
+                android:id="@+id/llGitPatchLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="@string/hint_git_patch"
+                        android:textStyle="bold"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btnPickPatchFile"
+                        style="@style/App.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/btn_pick_file"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/etGitPatch"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:layout_marginTop="4dp"
+                    android:hint="diff --git a/file b/file\n..."
+                    android:gravity="top|start"
+                    android:textSize="12sp"
+                    android:fontFamily="monospace"
+                    android:background="@drawable/bg_edit_box"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnCompare"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="20dp"
+                android:text="@string/btn_compare"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
