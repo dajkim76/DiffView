@@ -19,12 +19,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.mdiwebma.base.helper.Lx
 import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.SyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffviewer.box.AppBoxStore
-import com.mdiwebma.diffviewer.box.AppSettings
-import com.mdiwebma.diffviewer.box.CompareEntity
+import com.mdiwebma.diffviewer.box.DiffEntity
+import com.mdiwebma.diffviewer.box.DiffGroupEntity
+import com.mdiwebma.diffviewer.box.DiffGroupEntity_
 import io.objectbox.Box
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.main)
-
+        Log.e("__T", "runcount=${AppSettings.runCount.value}")
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
             val systemBars = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or
@@ -120,14 +122,36 @@ class MainActivity : AppCompatActivity() {
         }
 
         // AppBoxStore
-        val compareBox: Box<CompareEntity> = AppBoxStore.getInstance(this).getBox()
-        //compareBox.put(CompareEntity(beforeText = SAMPLE_ORIGINAL, afterText = SAMPLE_MODIFIED, count = 123))
-        //compareBox.removeAll()
-        compareBox.all.forEach {
-            Log.e("__T", "id=${it.id} title2=${it.title2}, title3=${it.title3}, count=${it.count}")
+        val diffGroupBox: Box<DiffGroupEntity> = AppBoxStore.getInstance(this).getBox()
+        val diffBox: Box<DiffEntity> = AppBoxStore.getInstance(this).getBox()
+
+        val diffGroupEntity = DiffGroupEntity(title = "title 1", type = 0)
+        diffGroupBox.put(diffGroupEntity)
+//        Lx("history id = " + history.id)
+
+        diffGroupBox.query().equal(DiffGroupEntity_.id, 1).build().use {
+            it.findFirst()?.let { diffGroup ->
+                val diff1 = DiffEntity(title = "diff 3")
+                val diff2 = DiffEntity(title = "diff 4")
+                diffGroup.diffs.add(diff1)
+                diffGroup.diffs.add(diff2)
+                diffGroupBox.put(diffGroup)
+                Lx("new  Id1 = " + diff1.id)
+                Lx("new  Id2 = " + diff2.id)
+                Lx("history .. diff size=" + diffGroup.diffs.size)
+            }
         }
 
-        Log.e("__T", "runcount=${AppSettings.runCount.value}")
+//        val diff1 = DiffEntity(historyId = history.id, title = "diff 1")
+//        diffBox.put(diff1)
+//        val diff2 = DiffEntity(historyId = history.id, title = "diff 2")
+//        diffBox.put(diff2)
+//
+//        Lx("diff1.historyId=" + diff1.history.targetId)
+//        Lx("diff2.historyId=" + diff2.history.targetId)
+
+//
+
         AppSettings.runCount.value++
     }
 

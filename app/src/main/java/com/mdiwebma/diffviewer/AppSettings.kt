@@ -1,6 +1,8 @@
-package com.mdiwebma.diffviewer.box
+package com.mdiwebma.diffviewer
 
-import com.mdiwebma.diffviewer.MyApp
+import com.mdiwebma.diffviewer.box.AppBoxStore
+import com.mdiwebma.diffviewer.box.SettingEntry
+import com.mdiwebma.diffviewer.box.SettingEntry_
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
@@ -30,7 +32,7 @@ object AppSettings {
     //
     // Database operation
     private fun readStringFromDatabase(key: String): String? {
-        val box = AppBoxStore.getInstance(MyApp.appContext).getBox<SettingEntry>()
+        val box = AppBoxStore.Companion.getInstance(MyApp.appContext).getBox<SettingEntry>()
         return box.query(SettingEntry_.key.equal(key)).build().use { query ->
             query.findFirst()?.value
         }
@@ -38,7 +40,7 @@ object AppSettings {
 
     private fun writeStringToDatabase(key: String, value: String) {
         dbExecutor.execute {
-            val appBoxStore = AppBoxStore.getInstance(MyApp.appContext)
+            val appBoxStore = AppBoxStore.Companion.getInstance(MyApp.appContext)
             appBoxStore.boxStore.runInTx {
                 val settingBox = appBoxStore.getBox<SettingEntry>()
                 val entity = settingBox.query(SettingEntry_.key.equal(key)).build().use { query ->
@@ -61,7 +63,7 @@ object AppSettings {
         doubleMap.remove(key)
 
         dbExecutor.execute {
-            val appBoxStore = AppBoxStore.getInstance(MyApp.appContext)
+            val appBoxStore = AppBoxStore.Companion.getInstance(MyApp.appContext)
             appBoxStore.getBox<SettingEntry>().query(SettingEntry_.key.equal(key)).build().use { query ->
                 query.remove()
             }

@@ -6,6 +6,7 @@ import com.mdiwebma.diffviewer.BuildConfig
 import io.objectbox.Box
 import io.objectbox.BoxStore
 import io.objectbox.android.Admin
+import io.objectbox.converter.PropertyConverter
 
 /**
  * Singleton manager for ObjectBox BoxStore in the demo app.
@@ -68,5 +69,28 @@ class AppBoxStore private constructor(applicationContext: Context) {
             instance?.close()
             instance = null
         }
+    }
+}
+
+open class DefaultStringConverter(
+    private val fallback: String = ""
+) : PropertyConverter<String, String?> {
+
+    override fun convertToEntityProperty(databaseValue: String?): String {
+        return databaseValue?.ifEmpty { fallback } ?: fallback
+    }
+
+    override fun convertToDatabaseValue(entityProperty: String): String {
+        return entityProperty.ifEmpty { fallback }
+    }
+}
+
+class EmptyStringMigration : PropertyConverter<String, String?> {
+    override fun convertToEntityProperty(databaseValue: String?): String {
+        return databaseValue.orEmpty()
+    }
+
+    override fun convertToDatabaseValue(entityProperty: String): String {
+        return entityProperty
     }
 }
