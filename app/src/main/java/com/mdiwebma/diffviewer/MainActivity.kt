@@ -8,10 +8,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
@@ -20,53 +16,32 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.base.helper.Lx
-import com.mdiwebma.diffview.DiffView
 import com.mdiwebma.diffview.SyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffviewer.box.AppBoxStore
 import com.mdiwebma.diffviewer.box.DiffEntity
 import com.mdiwebma.diffviewer.box.DiffGroupEntity
 import com.mdiwebma.diffviewer.box.DiffGroupEntity_
+import com.mdiwebma.diffviewer.databinding.MainBinding
+import com.mdiwebma.diffviewer.utils.GithubUtils
 import io.objectbox.Box
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
-import java.security.MessageDigest
 
 class MainActivity : AppCompatActivity() {
 
-    private data class CommitUrlInfo(
-        val owner: String,
-        val repo: String,
-        val commitSha: String
-    )
+    private lateinit var binding: MainBinding
 
-    private data class CommitFileInfo(
-        val filename: String,
-        val status: String,
-        val previousFilename: String?
-    )
-
-    private var currentCommitInfo: CommitUrlInfo? = null
+    private var currentCommitInfo: GithubUtils.CommitUrlInfo? = null
     private var currentParentSha: String? = null
-    private var commitFiles: List<CommitFileInfo> = emptyList()
+    private var commitFiles: List<GithubUtils.CommitFileInfo> = emptyList()
     private var selectedFileIndex: Int = 0
-
-    private lateinit var etCommitUrl: EditText
-    private lateinit var btnFetchCommit: Button
-    private lateinit var btnSelectFile: Button
-    private lateinit var tvStatus: TextView
-    private lateinit var progressBar: ProgressBar
-    private lateinit var diffView: DiffView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.main)
+        binding = MainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         Log.e("__T", "runcount=${AppSettings.runCount.value}")
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
             val systemBars = insets.getInsets(
@@ -82,42 +57,24 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        toolbar.overflowIcon?.setTint(Color.WHITE)
-
-        etCommitUrl = findViewById(R.id.etCommitUrl)
-        btnFetchCommit = findViewById(R.id.btnFetchCommit)
-        btnSelectFile = findViewById(R.id.btnSelectFile)
-        tvStatus = findViewById(R.id.tvStatus)
-        progressBar = findViewById(R.id.progressBar)
-        diffView = findViewById(R.id.diffview)
+        setSupportActionBar(binding.toolbar)
+        binding.toolbar.overflowIcon?.setTint(Color.WHITE)
 
         // Load persisted DiffView preferences (diffMode, theme, textSize, folding, syntax, etc.)
-        diffView.loadPreferences()
-        diffView.setAutoSavePreferences(true)
+        binding.diffview.loadPreferences()
+        binding.diffview.setAutoSavePreferences(true)
 
         // Show initial sample code
-        //diffView.setHeaderTitles("MainActivity.kt (Old)", "MainActivity.kt (New)")
-        //diffView.setContent(original = SAMPLE_ORIGINAL, modified = SAMPLE_MODIFIED)
-        //diffView.setTextNormalizer(TSVTextNormalizer)
-        //diffView.setContent(TSV_BEFORE, TSV_AFTER)
-        //diffView.setContent(JSON_BEFORE, JSON_AFTER)
-        //diffView.setContent(XML_BEFORE, XML_AFTER)
-        //diffView.setContent(SQL_BEFORE, SQL_AFTER)
-        diffView.setContent(YAML_BEFORE, YAML_AFTER)
-        //diffView.setLongTabAction(DiffLongTabAction.COMMENT)
-        diffView.setCommentTextSizes(11f, 9f)
-        diffView.setCommentContext("sample_initial_commit", "MainActivity.kt")
-        //diffView.setSettingsButtonVisible(false)
-//        diffView.expandAll()
+        binding.diffview.setContent(YAML_BEFORE, YAML_AFTER)
+        binding.diffview.setCommentTextSizes(11f, 9f)
+        binding.diffview.setCommentContext("sample_initial_commit", "MainActivity.kt")
 
-        btnFetchCommit.setOnClickListener {
-            val url = etCommitUrl.text.toString().trim()
+        binding.btnFetchCommit.setOnClickListener {
+            val url = binding.etCommitUrl.text.toString().trim()
             fetchCommit(url)
         }
 
-        btnSelectFile.setOnClickListener {
+        binding.btnSelectFile.setOnClickListener {
             showFileSelectionDialog()
         }
 
@@ -127,7 +84,6 @@ class MainActivity : AppCompatActivity() {
 
         val diffGroupEntity = DiffGroupEntity(title = "title 1", type = 0)
         diffGroupBox.put(diffGroupEntity)
-//        Lx("history id = " + history.id)
 
         diffGroupBox.query().equal(DiffGroupEntity_.id, 1).build().use {
             it.findFirst()?.let { diffGroup ->
@@ -141,16 +97,6 @@ class MainActivity : AppCompatActivity() {
                 Lx("history .. diff size=" + diffGroup.diffs.size)
             }
         }
-
-//        val diff1 = DiffEntity(historyId = history.id, title = "diff 1")
-//        diffBox.put(diff1)
-//        val diff2 = DiffEntity(historyId = history.id, title = "diff 2")
-//        diffBox.put(diff2)
-//
-//        Lx("diff1.historyId=" + diff1.history.targetId)
-//        Lx("diff2.historyId=" + diff2.history.targetId)
-
-//
 
         AppSettings.runCount.value++
     }
@@ -168,13 +114,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.action_toggle_mode -> {
-                val newMode = if (diffView.getDiffMode() == DiffMode.SIDE_BY_SIDE) {
+                val newMode = if (binding.diffview.getDiffMode() == DiffMode.SIDE_BY_SIDE) {
                     DiffMode.UNIFIED
                 } else {
                     DiffMode.SIDE_BY_SIDE
                 }
-                diffView.setDiffMode(newMode)
-                Toast.makeText(this, "모드: ${newMode.name}", Toast.LENGTH_SHORT).show()
+                binding.diffview.setDiffMode(newMode)
+                Toast.makeText(this, getString(R.string.msg_diff_mode, newMode.name), Toast.LENGTH_SHORT).show()
                 true
             }
 
@@ -188,111 +134,47 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveDiffImage() {
-        diffView.showMoreMenu()
-    }
-
-    private fun parseCommitUrl(rawUrl: String): CommitUrlInfo? {
-        val regex = Regex("""github\.com/([^/]+)/([^/]+)/commit/([0-9a-fA-F]+)""")
-        val matchResult = regex.find(rawUrl) ?: return null
-        val (owner, repo, commitSha) = matchResult.destructured
-        return CommitUrlInfo(owner, repo, commitSha)
-    }
-
-    private fun hashKey(commitSha: String, filename: String): String {
-        val input = "${commitSha}_$filename"
-        val md = MessageDigest.getInstance("SHA-256")
-        return md.digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
-    }
-
-    private fun fetchStringFromUrl(urlString: String): String {
-        val url = URL(urlString)
-        val connection = (url.openConnection() as HttpURLConnection).apply {
-            requestMethod = "GET"
-            connectTimeout = 10000
-            readTimeout = 10000
-            setRequestProperty("User-Agent", "Android-DiffView-App")
-        }
-        val responseCode = connection.responseCode
-        if (responseCode !in 200..299) {
-            throw Exception("HTTP $responseCode: ${connection.responseMessage}")
-        }
-        return connection.inputStream.bufferedReader().use { it.readText() }
+        binding.diffview.showMoreMenu()
     }
 
     private fun fetchCommit(rawUrl: String) {
-        val parsed = parseCommitUrl(rawUrl)
+        val parsed = GithubUtils.parseCommitUrl(rawUrl)
         if (parsed == null) {
-            Toast.makeText(this, "Please enter a valid GitHub commit URL.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.msg_invalid_commit_url, Toast.LENGTH_SHORT).show()
             return
         }
 
-        setLoading(true, "Fetching commit info...")
+        setLoading(true, getString(R.string.msg_fetching_commit))
 
         lifecycleScope.launch {
             try {
-                val (parentSha, files) = withContext(Dispatchers.IO) {
-                    val commitsCacheDir = File(cacheDir, "diff_cache/commits").apply { mkdirs() }
-                    val commitCacheFile = File(commitsCacheDir, "${parsed.commitSha}.json")
-
-                    val jsonString = if (commitCacheFile.exists() && commitCacheFile.length() > 0) {
-                        commitCacheFile.readText()
-                    } else {
-                        val apiUrl = "https://api.github.com/repos/${parsed.owner}/${parsed.repo}/commits/${parsed.commitSha}"
-                        val fetched = fetchStringFromUrl(apiUrl)
-                        commitCacheFile.writeText(fetched)
-                        fetched
-                    }
-
-                    val json = JSONObject(jsonString)
-
-                    val parentsArray = json.optJSONArray("parents")
-                    val pSha = if (parentsArray != null && parentsArray.length() > 0) {
-                        parentsArray.getJSONObject(0).getString("sha")
-                    } else null
-
-                    val filesArray = json.getJSONArray("files")
-                    val parsedFiles = mutableListOf<CommitFileInfo>()
-                    for (i in 0 until filesArray.length()) {
-                        val fileObj = filesArray.getJSONObject(i)
-                        val filename = fileObj.getString("filename")
-                        if (isBinaryFile(filename)) {
-                            continue
-                        }
-                        parsedFiles.add(
-                            CommitFileInfo(
-                                filename = filename,
-                                status = fileObj.optString("status", "modified"),
-                                previousFilename = if (fileObj.has("previous_filename")) fileObj.getString("previous_filename") else null
-                            )
-                        )
-                    }
-                    Pair(pSha, parsedFiles)
-                }
+                val detail = GithubUtils.fetchCommit(cacheDir, parsed)
 
                 currentCommitInfo = parsed
-                currentParentSha = parentSha
-                commitFiles = files
+                currentParentSha = detail.parentSha
+                commitFiles = detail.files
                 selectedFileIndex = 0
 
-                btnSelectFile.isEnabled = files.isNotEmpty()
-                setLoading(false, "Commit loaded (${files.size} files). Click 'Select File'.")
+                binding.btnSelectFile.isEnabled = detail.files.isNotEmpty()
+                setLoading(false, getString(R.string.msg_commit_loaded, detail.files.size))
 
-                if (files.isNotEmpty()) {
+                if (detail.files.isNotEmpty()) {
                     showFileSelectionDialog()
                 } else {
-                    Toast.makeText(this@MainActivity, "No changed files in this commit.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, R.string.msg_no_changed_files, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                setLoading(false, "Error: ${e.message}")
-                Toast.makeText(this@MainActivity, "Failed to fetch commit: ${e.message}", Toast.LENGTH_LONG).show()
+                val errorMsg = e.message ?: ""
+                setLoading(false, getString(R.string.msg_file_load_error, errorMsg))
+                Toast.makeText(this@MainActivity, getString(R.string.msg_failed_fetch_commit, errorMsg), Toast.LENGTH_LONG).show()
             }
         }
     }
 
     private fun showFileSelectionDialog() {
         if (commitFiles.isEmpty()) {
-            Toast.makeText(this, "No files available to select.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.msg_no_files_to_select, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -309,85 +191,50 @@ class MainActivity : AppCompatActivity() {
         }.toTypedArray()
 
         AlertDialog.Builder(this)
-            .setTitle("Select File (${commitFiles.size})")
+            .setTitle(getString(R.string.dialog_title_select_file, commitFiles.size))
             .setSingleChoiceItems(fileNames, tempSelectedIndex) { _, which ->
                 tempSelectedIndex = which
             }
-            .setPositiveButton("DiffView") { dialog, _ ->
+            .setPositiveButton(R.string.btn_diff_view) { dialog, _ ->
                 selectedFileIndex = tempSelectedIndex
                 val selectedFile = commitFiles[selectedFileIndex]
                 loadDiffForFile(selectedFile)
                 dialog.dismiss()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.btn_cancel, null)
             .show()
     }
 
-    private fun loadDiffForFile(fileInfo: CommitFileInfo) {
+    private fun loadDiffForFile(fileInfo: GithubUtils.CommitFileInfo) {
         val commitInfo = currentCommitInfo ?: return
         val parentSha = currentParentSha
 
-        setLoading(true, "Loading '${fileInfo.filename}'...")
+        setLoading(true, getString(R.string.msg_loading_file, fileInfo.filename))
 
         lifecycleScope.launch {
             try {
-                val (origText, modText) = withContext(Dispatchers.IO) {
-                    val contentsDir = File(cacheDir, "diff_cache/contents").apply { mkdirs() }
-                    val key = hashKey(commitInfo.commitSha, fileInfo.filename)
-                    val oldCacheFile = File(contentsDir, "${key}_old.txt")
-                    val newCacheFile = File(contentsDir, "${key}_new.txt")
+                val content = GithubUtils.fetchFileContent(cacheDir, commitInfo, fileInfo, parentSha)
 
-                    // 1. Cache and load Modified (new) content
-                    val newContent = if (fileInfo.status == "removed") {
-                        ""
-                    } else if (newCacheFile.exists() && newCacheFile.length() > 0) {
-                        newCacheFile.readText()
-                    } else {
-                        val rawNewUrl =
-                            "https://raw.githubusercontent.com/${commitInfo.owner}/${commitInfo.repo}/${commitInfo.commitSha}/${fileInfo.filename}"
-                        val fetched = fetchStringFromUrl(rawNewUrl)
-                        newCacheFile.writeText(fetched)
-                        fetched
-                    }
-
-                    // 2. Cache and load Original (old) content
-                    val oldContent = if (fileInfo.status == "added" || parentSha == null) {
-                        ""
-                    } else if (oldCacheFile.exists() && oldCacheFile.length() > 0) {
-                        oldCacheFile.readText()
-                    } else {
-                        val origPath = fileInfo.previousFilename ?: fileInfo.filename
-                        val rawOldUrl = "https://raw.githubusercontent.com/${commitInfo.owner}/${commitInfo.repo}/$parentSha/$origPath"
-                        val fetched = fetchStringFromUrl(rawOldUrl)
-                        oldCacheFile.writeText(fetched)
-                        fetched
-                    }
-
-                    Pair(oldContent, newContent)
+                binding.diffview.apply {
+                    setSyntaxHighlighter(SyntaxHighlighter.forFileName(fileInfo.filename))
+                    setContent(rawOriginal = content.originalText, rawModified = content.modifiedText)
+                    setTextNormalizer(null)
+                    setCommentContext(commitInfo.commitSha, fileInfo.filename)
                 }
-
-                //diffView.setHeaderTitles(
-                //    original = fileInfo.previousFilename ?: fileInfo.filename,
-                //    modified = fileInfo.filename
-                //)
-                diffView.setSyntaxHighlighter(SyntaxHighlighter.forFileName(fileInfo.filename))
-                diffView.setContent(rawOriginal = origText, rawModified = modText)
-                diffView.setTextNormalizer(null)
-                diffView.setCommentContext(commitInfo.commitSha, fileInfo.filename)
-                //diffView.expandAll()
-                setLoading(false, "Selected: ${fileInfo.filename}")
+                setLoading(false, getString(R.string.msg_selected_file, fileInfo.filename))
             } catch (e: Exception) {
                 e.printStackTrace()
-                setLoading(false, "File load error: ${e.message}")
-                Toast.makeText(this@MainActivity, "Failed to load file: ${e.message}", Toast.LENGTH_LONG).show()
+                val errorMsg = e.message ?: ""
+                setLoading(false, getString(R.string.msg_file_load_error, errorMsg))
+                Toast.makeText(this@MainActivity, getString(R.string.msg_failed_load_file, errorMsg), Toast.LENGTH_LONG).show()
             }
         }
     }
 
     private fun setLoading(loading: Boolean, message: String) {
-        progressBar.visibility = if (loading) View.VISIBLE else View.GONE
-        btnFetchCommit.isEnabled = !loading
-        tvStatus.text = message
+        binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        binding.btnFetchCommit.isEnabled = !loading
+        binding.tvStatus.text = message
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -504,26 +351,6 @@ index b61a540..27c4240 100644
 +        </main>
      );
  }"""
-
-        private val BINARY_EXTENSIONS = hashSetOf(
-            // Images
-            "png", "jpg", "jpeg", "gif", "webp", "ico", "bmp", "tiff", "tif", "heic", "heif", "psd", "ai", "raw", "svgz",
-            // Archives & Compressed
-            "zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar", "jar", "aar", "war", "apk", "aab", "ipa",
-            // Binaries & Libraries
-            "so", "dylib", "dll", "class", "exe", "bin", "o", "a", "lib", "obj", "elf", "dex",
-            // Documents & Fonts
-            "pdf", "ttf", "otf", "woff", "woff2", "eot", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-            // Media (Audio/Video)
-            "mp3", "wav", "ogg", "flac", "m4a", "aac", "mp4", "mov", "avi", "mkv", "webm", "flv", "3gp",
-            // Database & Box
-            "db", "sqlite", "sqlite3", "mdb"
-        )
-
-        fun isBinaryFile(filename: String): Boolean {
-            val ext = filename.substringAfterLast('.', "").lowercase()
-            return BINARY_EXTENSIONS.contains(ext)
-        }
     }
 
     val JSON_BEFORE = """{

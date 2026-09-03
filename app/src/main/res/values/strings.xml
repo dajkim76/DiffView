@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">DiffView Demo</string>
+    <string name="msg_invalid_commit_url">Please enter a valid GitHub commit URL.</string>
+    <string name="msg_fetching_commit">Fetching commit info...</string>
+    <string name="msg_commit_loaded">Commit loaded (%d files). Click \'Select File\'.</string>
+    <string name="msg_no_changed_files">No changed files in this commit.</string>
+    <string name="msg_failed_fetch_commit">Failed to fetch commit: %s</string>
+    <string name="msg_no_files_to_select">No files available to select.</string>
+    <string name="dialog_title_select_file">Select File (%d)</string>
+    <string name="btn_diff_view">DiffView</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="msg_loading_file">Loading \'%s\'...</string>
+    <string name="msg_selected_file">Selected: %s</string>
+    <string name="msg_file_load_error">File load error: %s</string>
+    <string name="msg_failed_load_file">Failed to load file: %s</string>
+    <string name="msg_diff_mode">모드: %s</string>
 </resources>
