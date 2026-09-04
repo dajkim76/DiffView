@@ -1,11 +1,13 @@
 package com.mdiwebma.diffviewer
 
-import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,14 +17,11 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
-import com.mdiwebma.diffview.SyntaxHighlighter
 import com.mdiwebma.diffviewer.box.AppBoxStore
 import com.mdiwebma.diffviewer.box.DiffEntity
 import com.mdiwebma.diffviewer.box.DiffEntity_
@@ -37,12 +36,8 @@ import com.mdiwebma.diffviewer.ui.AddDiffFragment
 import com.mdiwebma.diffviewer.ui.DiffPageFragment
 import com.mdiwebma.diffviewer.ui.EnterDiffGroupFragment
 import com.mdiwebma.diffviewer.ui.SettingsFragment
-import com.mdiwebma.diffviewer.utils.GithubUtils
 import com.mdiwebma.leetzsche.view.SimpleRecyclerAdapter
 import io.objectbox.Box
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class DiffViewerActivity : AppCompatActivity() {
 
@@ -60,7 +55,6 @@ class DiffViewerActivity : AppCompatActivity() {
     private var currentDiffs: MutableList<DiffEntity> = mutableListOf()
     private var pagerAdapter: DiffPagerAdapter? = null
     private var tabMediator: TabLayoutMediator? = null
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -167,7 +161,17 @@ class DiffViewerActivity : AppCompatActivity() {
         private val itemBinding = ItemDiffGroupBinding.bind(itemView)
 
         override fun onBind(item: DiffGroupEntity) {
-            itemBinding.tvGroupTitle.text = item.title
+            val titleBuilder = SpannableStringBuilder(item.title)
+            val countText = " (${item.diffCount})"
+            val start = titleBuilder.length
+            titleBuilder.append(countText)
+            val end = titleBuilder.length
+
+            titleBuilder.setSpan(RelativeSizeSpan(0.8f), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val countColor = ContextCompat.getColor(this@DiffViewerActivity, R.color.button_text_color)
+            titleBuilder.setSpan(ForegroundColorSpan(countColor), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+            itemBinding.tvGroupTitle.text = titleBuilder
 
             val isFavorite = item.favoriteTime > 0L
             itemBinding.ivFavorite.setImageResource(
@@ -350,9 +354,10 @@ class DiffViewerActivity : AppCompatActivity() {
             )
             diffBox.put(newDiff)
 
-            group.diffCount++
+            group.diffCount = group.diffs.size
             group.updatedTime = System.currentTimeMillis()
             diffGroupBox.put(group)
+            updateGroupItemInAdapter(group)
 
             loadCurrentGroup(group.id)
             binding.viewPager2.setCurrentItem(currentDiffs.size - 1, true)
@@ -406,10 +411,10 @@ class DiffViewerActivity : AppCompatActivity() {
                     diffBox.remove(item)
                     val group = currentGroup
                     if (group != null) {
-                        group.diffCount = maxOf(0, group.diffCount - 1)
+                        group.diffCount = group.diffs.size
                         group.updatedTime = System.currentTimeMillis()
                         diffGroupBox.put(group)
-                        diffGroupAdapter.notifyDataSetChanged()
+                        updateGroupItemInAdapter(group)
                         loadCurrentGroup(group.id)
                     }
                     tabsDialog?.updateList()
@@ -417,6 +422,18 @@ class DiffViewerActivity : AppCompatActivity() {
             }
         )
         tabsDialog.show()
+    }
+
+    private fun updateGroupItemInAdapter(group: DiffGroupEntity) {
+        val index = diffGroupAdapter.itemList.indexOfFirst { it.id == group.id }
+        if (index != -1) {
+            val item = diffGroupAdapter.getItem(index)
+            if (item != null) {
+                item.diffCount = group.diffCount
+                item.updatedTime = group.updatedTime
+                diffGroupAdapter.notifyItemChanged(index)
+            }
+        }
     }
 
     private fun showEnterDiffGroupFragment() {
