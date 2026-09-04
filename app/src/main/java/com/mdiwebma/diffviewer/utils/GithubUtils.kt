@@ -34,7 +34,7 @@ object GithubUtils {
         val modifiedText: String
     )
 
-    private val COMMIT_URL_REGEX = Regex("""github\.com/([^/]+)/([^/]+)/commit/([0-9a-fA-F]+)""")
+    private val COMMIT_URL_REGEX = Regex("""^(?:https?://)?(?:www\.)?github\.com/([^/]+)/([^/]+)/commit/([0-9a-fA-F]+)(?:[/?#].*)?$""")
 
     private val BINARY_EXTENSIONS = hashSetOf(
         // Images
@@ -52,7 +52,8 @@ object GithubUtils {
     )
 
     fun parseCommitUrl(rawUrl: String): CommitUrlInfo? {
-        val matchResult = COMMIT_URL_REGEX.find(rawUrl) ?: return null
+        val trimmed = rawUrl.trim()
+        val matchResult = COMMIT_URL_REGEX.find(trimmed) ?: return null
         val (owner, repo, commitSha) = matchResult.destructured
         return CommitUrlInfo(owner, repo, commitSha)
     }
@@ -77,8 +78,9 @@ object GithubUtils {
             connectTimeout = 10000
             readTimeout = 10000
             setRequestProperty("User-Agent", "Android-DiffView-App")
-            if (useAuth && apiKey.isNotBlank() && !isRawUrl) {
-                setRequestProperty("Authorization", "Bearer $apiKey")
+            if (useAuth && apiKey.isNotBlank()) {
+                val authHeader = if (isRawUrl) "token $apiKey" else "Bearer $apiKey"
+                setRequestProperty("Authorization", authHeader)
             }
         }
         val responseCode = connection.responseCode
