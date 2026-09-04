@@ -1,17 +1,13 @@
 package com.mdiwebma.diffviewer
 
-import android.content.ContentResolver
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.GravityCompat
@@ -31,12 +27,11 @@ import com.mdiwebma.diffviewer.box.DiffEntity_
 import com.mdiwebma.diffviewer.box.DiffGroupEntity
 import com.mdiwebma.diffviewer.box.DiffGroupEntity_
 import com.mdiwebma.diffviewer.databinding.ActivityDiffViewerBinding
-import com.mdiwebma.diffviewer.databinding.DialogAddDiffBinding
 import com.mdiwebma.diffviewer.databinding.ItemDiffGroupBinding
-import com.mdiwebma.diffviewer.dialog.AddDiffDialog
 import com.mdiwebma.diffviewer.dialog.ConfirmDeleteDialog
 import com.mdiwebma.diffviewer.dialog.DiffTabsDialog
 import com.mdiwebma.diffviewer.dialog.RenameDialog
+import com.mdiwebma.diffviewer.ui.AddDiffFragment
 import com.mdiwebma.diffviewer.ui.DiffPageFragment
 import com.mdiwebma.diffviewer.ui.EnterDiffGroupFragment
 import com.mdiwebma.diffviewer.ui.SettingsFragment
@@ -64,99 +59,7 @@ class DiffViewerActivity : AppCompatActivity() {
     private var pagerAdapter: DiffPagerAdapter? = null
     private var tabMediator: TabLayoutMediator? = null
 
-    private var currentAddDiffDialogBinding: DialogAddDiffBinding? = null
 
-    private fun readFileContent(uri: Uri): String? {
-        return contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
-    }
-
-    private fun queryFileName(uri: Uri): String? {
-        if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-            val cursor = contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
-            cursor?.use {
-                if (it.moveToFirst()) {
-                    val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    if (index != -1) return it.getString(index)
-                }
-            }
-        }
-        return uri.lastPathSegment
-    }
-
-    private fun checkTextFile(uri: Uri): Boolean {
-        val fileName = queryFileName(uri) ?: return true
-        if (GithubUtils.isBinaryFile(fileName)) {
-            Toast.makeText(this, getString(R.string.msg_binary_file_not_supported, fileName), Toast.LENGTH_SHORT).show()
-            return false
-        }
-        return true
-    }
-
-    private val pickDiffBeforeLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri ?: return@registerForActivityResult
-        if (!checkTextFile(uri)) return@registerForActivityResult
-        try {
-            val text = readFileContent(uri)
-            val dialogBinding = currentAddDiffDialogBinding ?: return@registerForActivityResult
-            if (text != null) {
-                dialogBinding.etDiffBefore.setText(text)
-                if (dialogBinding.etDiffTitle.text.isNullOrBlank()) {
-                    val name = queryFileName(uri)
-                    if (!name.isNullOrBlank()) dialogBinding.etDiffTitle.setText(name)
-                }
-            }
-        } catch (e: Exception) {
-            Toast.makeText(this, getString(R.string.msg_file_load_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private val pickDiffAfterLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri ?: return@registerForActivityResult
-        if (!checkTextFile(uri)) return@registerForActivityResult
-        try {
-            val text = readFileContent(uri)
-            val dialogBinding = currentAddDiffDialogBinding ?: return@registerForActivityResult
-            if (text != null) {
-                dialogBinding.etDiffAfter.setText(text)
-                if (dialogBinding.etDiffTitle.text.isNullOrBlank()) {
-                    val name = queryFileName(uri)
-                    if (!name.isNullOrBlank()) dialogBinding.etDiffTitle.setText(name)
-                }
-            }
-        } catch (e: Exception) {
-            Toast.makeText(this, getString(R.string.msg_file_load_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private val pickDiffTwoFilesLauncher = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris: List<Uri> ->
-        val dialogBinding = currentAddDiffDialogBinding ?: return@registerForActivityResult
-        val validUris = uris.filter { checkTextFile(it) }
-        if (validUris.size < 2) {
-            Toast.makeText(this, R.string.msg_need_two_files, Toast.LENGTH_SHORT).show()
-            if (validUris.size == 1) {
-                try {
-                    val text = readFileContent(validUris[0])
-                    if (text != null) dialogBinding.etDiffBefore.setText(text)
-                } catch (e: Exception) {
-                    Toast.makeText(this, getString(R.string.msg_file_load_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
-                }
-            }
-            return@registerForActivityResult
-        }
-        try {
-            val beforeText = readFileContent(validUris[0])
-            val afterText = readFileContent(validUris[1])
-            if (beforeText != null) dialogBinding.etDiffBefore.setText(beforeText)
-            if (afterText != null) dialogBinding.etDiffAfter.setText(afterText)
-            if (dialogBinding.etDiffTitle.text.isNullOrBlank()) {
-                val name1 = queryFileName(validUris[0]) ?: "File1"
-                val name2 = queryFileName(validUris[1]) ?: "File2"
-                dialogBinding.etDiffTitle.setText("$name1 vs $name2")
-            }
-        } catch (e: Exception) {
-            Toast.makeText(this, getString(R.string.msg_file_load_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -191,7 +94,7 @@ class DiffViewerActivity : AppCompatActivity() {
         })
 
         binding.btnAddDiff.setOnClickListener {
-            showAddDiffDialog()
+            showAddDiffFragment()
         }
 
         supportFragmentManager.addOnBackStackChangedListener {
@@ -420,7 +323,7 @@ class DiffViewerActivity : AppCompatActivity() {
         }
     }
 
-    private fun showAddDiffDialog() {
+    private fun showAddDiffFragment() {
         val group = currentGroup
         if (group == null) {
             Toast.makeText(this, R.string.msg_no_diff_groups, Toast.LENGTH_SHORT).show()
@@ -428,41 +331,28 @@ class DiffViewerActivity : AppCompatActivity() {
             return
         }
 
-        AddDiffDialog(
-            context = this,
-            onPickTwoFiles = { dialogBinding ->
-                currentAddDiffDialogBinding = dialogBinding
-                pickDiffTwoFilesLauncher.launch("*/*")
-            },
-            onPickBefore = { dialogBinding ->
-                currentAddDiffDialogBinding = dialogBinding
-                pickDiffBeforeLauncher.launch("*/*")
-            },
-            onPickAfter = { dialogBinding ->
-                currentAddDiffDialogBinding = dialogBinding
-                pickDiffAfterLauncher.launch("*/*")
-            },
-            onSave = { title, before, after ->
-                val newDiff = DiffEntity(
-                    historyId = group.id,
-                    title = title.ifBlank { "Diff ${currentDiffs.size + 1}" },
-                    originalText = before,
-                    modifiedText = after,
-                    status = 1
-                )
-                diffBox.put(newDiff)
+        val fragment = AddDiffFragment.newInstance()
+        fragment.onDiffCreatedListener = { title, before, after ->
+            val newDiff = DiffEntity(
+                historyId = group.id,
+                title = title.ifBlank { "Diff ${currentDiffs.size + 1}" },
+                originalText = before,
+                modifiedText = after,
+                status = 1
+            )
+            diffBox.put(newDiff)
 
-                group.diffCount++
-                group.updatedTime = System.currentTimeMillis()
-                diffGroupBox.put(group)
+            group.diffCount++
+            group.updatedTime = System.currentTimeMillis()
+            diffGroupBox.put(group)
 
-                loadCurrentGroup(group.id)
-                binding.viewPager2.setCurrentItem(currentDiffs.size - 1, true)
-            },
-            onDismiss = {
-                currentAddDiffDialogBinding = null
-            }
-        ).show()
+            loadCurrentGroup(group.id)
+            binding.viewPager2.setCurrentItem(currentDiffs.size - 1, true)
+        }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun showDiffTabsDialog() {
