@@ -487,7 +487,7 @@ class DiffView @JvmOverloads constructor(
         setContentGitPatch(targetPatch, autoUpdateHeaderTitles)
     }
 
-    fun setOnTextNormalizerChanged(normalizerChangedListener: (newNormalizer: TextNormalizer?) -> Unit) {
+    fun setOnTextNormalizerChangedListener(normalizerChangedListener: (newNormalizer: TextNormalizer?) -> Unit) {
         this.normalizerChangedListener = normalizerChangedListener
     }
 
@@ -1136,7 +1136,7 @@ class DiffView @JvmOverloads constructor(
         adapter.unifiedSyncGroup.reportContentWidth(unifiedWidthPx)
     }
 
-    fun setSyntaxHighlighterChangedListener(syntaxHighlighterChangedListener: ((syntaxHighlighter: SyntaxHighlighter?) -> Unit)?) {
+    fun setOnSyntaxHighlighterChangedListener(syntaxHighlighterChangedListener: ((syntaxHighlighter: SyntaxHighlighter?) -> Unit)?) {
         this.syntaxHighlighterChangedListener = syntaxHighlighterChangedListener
     }
 

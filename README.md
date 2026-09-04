@@ -240,6 +240,8 @@ diffView.setSyntaxHighlighter(KotlinSyntaxHighlighter)
 // diffView.setSyntaxHighlighter(JavaSyntaxHighlighter)
 // diffView.setSyntaxHighlighter(CppSyntaxHighlighter)
 // diffView.setSyntaxHighlighter(CSharpSyntaxHighlighter)
+diffView.setOnSyntaxHighlighterChangedListener { highlighter -> /* highlighter changed */ }
+diffView.setOnTextNormalizerChangedListener { normalizer -> /* normalizer changed */ }
 
 // 11. Customize UI labels and formatters (or override strings.xml)
 diffView.setDiffLabels(

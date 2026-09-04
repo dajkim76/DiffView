@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.mdiwebma.diffview.model.DiffGranularity
 import com.mdiwebma.diffview.model.DiffLongTabAction
@@ -149,7 +148,7 @@ object DiffSettingDialog {
             val sizeRow = createButtonRow()
             val currentSize = diffView.getTextSize()
             val btnMinus = createOptionButton("－ (A-)", false) {
-                val newSize = (diffView.getTextSize() - 1f).coerceAtLeast(8f)
+                val newSize = (diffView.getTextSize() - .5f).coerceAtLeast(8f)
                 diffView.setTextSize(newSize)
                 refreshUI?.invoke()
             }
@@ -162,7 +161,7 @@ object DiffSettingDialog {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
             }
             val btnPlus = createOptionButton("＋ (A+)", false) {
-                val newSize = (diffView.getTextSize() + 1f).coerceAtMost(32f)
+                val newSize = (diffView.getTextSize() + .5f).coerceAtMost(32f)
                 diffView.setTextSize(newSize)
                 refreshUI?.invoke()
             }
