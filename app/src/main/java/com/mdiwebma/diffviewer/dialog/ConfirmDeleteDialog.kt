@@ -9,11 +9,12 @@ object ConfirmDeleteDialog {
 
     fun show(
         context: Context,
+        title: CharSequence? = null,
         @StringRes messageRes: Int,
         onConfirm: () -> Unit
     ) {
         AlertDialog.Builder(context)
-            .setTitle(R.string.menu_delete)
+            .setTitle(title?.takeIf { it.isNotBlank() } ?: context.getString(R.string.menu_delete))
             .setMessage(messageRes)
             .setPositiveButton(R.string.btn_delete) { dialog, _ ->
                 onConfirm()

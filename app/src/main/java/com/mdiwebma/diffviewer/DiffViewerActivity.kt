@@ -321,7 +321,7 @@ class DiffViewerActivity : AppCompatActivity() {
     }
 
     private fun showDeleteConfirmDialog(item: DiffGroupEntity) {
-        ConfirmDeleteDialog.show(this, R.string.msg_confirm_delete_group) {
+        ConfirmDeleteDialog.show(this, title = item.title, messageRes = R.string.msg_confirm_delete_group) {
             diffBox.query(DiffEntity_.historyId.equal(item.id)).build().use { it.remove() }
             diffGroupBox.remove(item)
 
@@ -504,7 +504,7 @@ class DiffViewerActivity : AppCompatActivity() {
                 }
             },
             onDelete = { item, _ ->
-                ConfirmDeleteDialog.show(this, R.string.msg_confirm_delete_diff) {
+                ConfirmDeleteDialog.show(this, title = item.title, messageRes = R.string.msg_confirm_delete_diff) {
                     diffBox.remove(item)
                     val group = currentGroup
                     if (group != null) {

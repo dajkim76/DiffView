@@ -26,7 +26,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -86,7 +86,8 @@
             <LinearLayout
                 android:id="@+id/llSimpleLayout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
                 android:layout_marginTop="12dp"
                 android:orientation="vertical">
 
@@ -125,7 +126,9 @@
                 <EditText
                     android:id="@+id/etSimpleBefore"
                     android:layout_width="match_parent"
-                    android:layout_height="140dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:minHeight="140dp"
                     android:layout_marginTop="2dp"
                     android:hint="@string/hint_before_text"
                     android:gravity="top|start"
@@ -161,7 +164,9 @@
                 <EditText
                     android:id="@+id/etSimpleAfter"
                     android:layout_width="match_parent"
-                    android:layout_height="140dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:minHeight="140dp"
                     android:layout_marginTop="2dp"
                     android:hint="@string/hint_after_text"
                     android:gravity="top|start"
@@ -202,7 +207,8 @@
             <LinearLayout
                 android:id="@+id/llGitPatchLayout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
                 android:layout_marginTop="12dp"
                 android:orientation="vertical"
                 android:visibility="gone">
@@ -233,7 +239,9 @@
                 <EditText
                     android:id="@+id/etGitPatch"
                     android:layout_width="match_parent"
-                    android:layout_height="220dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:minHeight="220dp"
                     android:layout_marginTop="4dp"
                     android:hint="diff --git a/file b/file\n..."
                     android:gravity="top|start"
@@ -250,14 +258,6 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
                 android:visibility="gone" />
-
-            <Button
-                android:id="@+id/btnCompare"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="20dp"
-                android:text="@string/btn_compare"
-                android:textSize="16sp" />
 
         </LinearLayout>
     </ScrollView>

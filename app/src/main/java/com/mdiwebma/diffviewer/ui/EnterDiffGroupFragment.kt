@@ -163,6 +163,16 @@ class EnterDiffGroupFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
 
+        binding.toolbar.inflateMenu(R.menu.menu_enter_diff_group)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            if (menuItem.itemId == R.id.action_compare) {
+                handleCompare()
+                true
+            } else {
+                false
+            }
+        }
+
         binding.rgType.setOnCheckedChangeListener { _, checkedId ->
             binding.llSimpleLayout.visibility = if (checkedId == R.id.rbSimple) View.VISIBLE else View.GONE
             binding.llCommitUrlLayout.visibility = if (checkedId == R.id.rbCommitUrl) View.VISIBLE else View.GONE
@@ -183,10 +193,6 @@ class EnterDiffGroupFragment : Fragment() {
 
         binding.btnPickPatchFile.setOnClickListener {
             pickPatchFileLauncher.launch("*/*")
-        }
-
-        binding.btnCompare.setOnClickListener {
-            handleCompare()
         }
 
         setupEditTextScrolls()
@@ -226,6 +232,11 @@ class EnterDiffGroupFragment : Fragment() {
             R.id.rbSimple -> {
                 val before = binding.etSimpleBefore.text.toString()
                 val after = binding.etSimpleAfter.text.toString()
+
+                if (before.isEmpty() && after.isEmpty()) {
+                    Toast.makeText(requireContext(), R.string.msg_input_required, Toast.LENGTH_SHORT).show()
+                    return
+                }
 
                 val group = DiffGroupEntity(
                     title = title,
@@ -307,6 +318,10 @@ class EnterDiffGroupFragment : Fragment() {
 
             R.id.rbGitPatch -> {
                 val patch = binding.etGitPatch.text.toString()
+                if (patch.isBlank()) {
+                    Toast.makeText(requireContext(), R.string.msg_input_required, Toast.LENGTH_SHORT).show()
+                    return
+                }
                 val parsedFiles = GitPatchParser.parse(patch)
 
                 if (parsedFiles.isEmpty()) {
@@ -357,7 +372,7 @@ class EnterDiffGroupFragment : Fragment() {
 
     private fun setLoading(loading: Boolean) {
         binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
-        binding.btnCompare.isEnabled = !loading
+        binding.toolbar.menu.findItem(R.id.action_compare)?.isEnabled = !loading
     }
 
     private fun onSuccess(groupId: Long) {

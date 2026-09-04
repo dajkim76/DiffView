@@ -25,7 +25,7 @@
     <string name="btn_save">저장</string>
     <string name="btn_compare">비교</string>
     <string name="tab_simple">Simple</string>
-    <string name="tab_commit_url">Commit URL</string>
+    <string name="tab_commit_url">Github Commit URL</string>
     <string name="tab_git_patch">Git Patch</string>
     <string name="hint_group_title">그룹 타이틀</string>
     <string name="hint_before_text">Before 텍스트 입력</string>
@@ -65,4 +65,5 @@
     <string name="setting_github_token_desc">GitHub API 호출 제한(Rate Limit) 확장 및 Private 저장소 접근을 위해 사용됩니다.</string>
     <string name="setting_not_set">설정되지 않음</string>
     <string name="btn_ok">확인</string>
+    <string name="msg_input_required">비교할 내용을 입력해주세요.</string>
 </resources>
