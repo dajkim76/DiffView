@@ -24,4 +24,5 @@
     <color name="edit_box_stroke">#CCCCCC</color>
     <color name="icon_tint_primary">#FF333333</color>
     <color name="icon_tint_secondary">#FF757575</color>
+    <color name="list_divider_color">#E0E0E0</color>
 </resources>

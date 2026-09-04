@@ -10,11 +10,13 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -151,6 +153,12 @@ class DiffViewerActivity : AppCompatActivity() {
         }
 
         binding.rvDiffGroups.adapter = diffGroupAdapter
+
+        val divider = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+        ContextCompat.getDrawable(this, R.drawable.divider_list)?.let {
+            divider.setDrawable(it)
+        }
+        binding.rvDiffGroups.addItemDecoration(divider)
     }
 
     inner class DiffGroupViewHolder(itemView: View) :
@@ -177,9 +185,7 @@ class DiffViewerActivity : AppCompatActivity() {
             }
 
             val isSelected = item.id == AppSettings.diffGroupId.value
-            itemBinding.llItemGroupRoot.setBackgroundColor(
-                if (isSelected) getColor(R.color.selected_item_bg) else Color.TRANSPARENT
-            )
+            itemBinding.llItemGroupRoot.isActivated = isSelected
         }
     }
 
@@ -314,8 +320,10 @@ class DiffViewerActivity : AppCompatActivity() {
     }
 
     private fun updateFilePathHeader(position: Int) {
+        val isPathType = currentGroup?.type == DiffGroupEntity.TYPE_COMMIT_URL ||
+                currentGroup?.type == DiffGroupEntity.TYPE_GIT_PATCH
         val diff = currentDiffs.getOrNull(position)
-        if (diff != null && diff.title.isNotBlank()) {
+        if (isPathType && diff != null && diff.title.isNotBlank()) {
             binding.tvFilePathHeader.text = diff.title
             binding.tvFilePathHeader.visibility = View.VISIBLE
         } else {

@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mdiwebma.diffviewer.R
@@ -53,6 +55,12 @@ class DiffTabsDialog(
 
         binding.rvDiffTabs.layoutManager = LinearLayoutManager(context)
         binding.rvDiffTabs.adapter = tabsAdapter
+
+        val divider = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
+        ContextCompat.getDrawable(context, R.drawable.divider_list)?.let {
+            divider.setDrawable(it)
+        }
+        binding.rvDiffTabs.addItemDecoration(divider)
 
         updateList()
         dialog.show()
@@ -105,9 +113,7 @@ class DiffTabsDialog(
             }
 
             val isSelected = bindingAdapterPosition == getSelectedPosition()
-            itemBinding.llItemTabRoot.setBackgroundColor(
-                if (isSelected) context.getColor(R.color.selected_item_bg) else Color.TRANSPARENT
-            )
+            itemBinding.llItemTabRoot.isActivated = isSelected
 
             itemBinding.btnDelete.setOnClickListener {
                 val pos = bindingAdapterPosition
