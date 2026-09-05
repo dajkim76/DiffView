@@ -95,6 +95,14 @@ class DiffViewerActivity : AppCompatActivity() {
         binding.viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 updateFilePathHeader(position)
+                val diff = currentDiffs.getOrNull(position)
+                val group = currentGroup
+                if (group != null && diff != null && group.diffId != diff.id) {
+                    group.diffId = diff.id
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        diffGroupBox.put(group)
+                    }
+                }
             }
         })
 
@@ -322,6 +330,19 @@ class DiffViewerActivity : AppCompatActivity() {
 
             currentGroup = group
             updateDiffList(diffs)
+
+            if (diffs.isNotEmpty()) {
+                val targetDiffId = group?.diffId ?: 0L
+                val targetIndex = if (targetDiffId != 0L) {
+                    diffs.indexOfFirst { it.id == targetDiffId }.takeIf { it != -1 } ?: 0
+                } else {
+                    0
+                }
+                binding.viewPager2.setCurrentItem(targetIndex, false)
+                binding.tabLayout.getTabAt(targetIndex)?.select()
+                updateFilePathHeader(targetIndex)
+            }
+
             onLoaded?.invoke()
         }
     }
@@ -389,22 +410,31 @@ class DiffViewerActivity : AppCompatActivity() {
 
         val fragment = AddDiffFragment.newInstance()
         fragment.onDiffCreatedListener = { title, before, after ->
-            val newDiff = DiffEntity(
-                historyId = group.id,
-                title = title.ifBlank { "Diff ${currentDiffs.size + 1}" },
-                originalText = before,
-                modifiedText = after,
-                status = 1
-            )
-            diffBox.put(newDiff)
+            lifecycleScope.launch {
+                val newDiff = DiffEntity(
+                    historyId = group.id,
+                    title = title.ifBlank { "Diff ${currentDiffs.size + 1}" },
+                    originalText = before,
+                    modifiedText = after,
+                    status = 1
+                )
 
-            group.diffCount = group.diffs.size
-            group.updatedTime = System.currentTimeMillis()
-            diffGroupBox.put(group)
-            updateGroupItemInAdapter(group)
+                withContext(Dispatchers.IO) {
+                    diffBox.put(newDiff)
+                    group.diffId = newDiff.id
+                    group.diffCount = group.diffs.size
+                    group.updatedTime = System.currentTimeMillis()
+                    diffGroupBox.put(group)
+                }
 
-            loadCurrentGroup(group.id) {
-                binding.viewPager2.setCurrentItem(currentDiffs.size - 1, true)
+                updateGroupItemInAdapter(group)
+
+                val insertIndex = currentDiffs.size
+                currentDiffs.add(newDiff)
+                pagerAdapter?.notifyItemInserted(insertIndex)
+                renderDiffPages()
+
+                binding.viewPager2.setCurrentItem(insertIndex, true)
             }
         }
         supportFragmentManager.beginTransaction()
