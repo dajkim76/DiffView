@@ -21,7 +21,7 @@ data class DiffViewPreferences(
     val diffGranularity: DiffGranularity = DiffGranularity.WORD,
     val isLineWrap: Boolean = false,
     val showDiffSymbols: Boolean = true,
-    val longTabAction: DiffLongTabAction = DiffLongTabAction.NONE
+    val longTabAction: DiffLongTabAction = DiffLongTabAction.COMMENT
 ) {
     /**
      * 테마 설정값에 대응하는 [DiffColors]를 반환합니다.

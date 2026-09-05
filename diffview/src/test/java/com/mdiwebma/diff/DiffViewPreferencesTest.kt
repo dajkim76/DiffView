@@ -137,5 +137,6 @@ class DiffViewPreferencesTest {
         val defaultPrefs = DiffViewPreferences()
         assertEquals(DiffViewPreferences.THEME_AUTO, defaultPrefs.theme)
         assertEquals(DiffColors.Auto, defaultPrefs.getDiffColors())
+        assertEquals(DiffLongTabAction.COMMENT, defaultPrefs.longTabAction)
     }
 }

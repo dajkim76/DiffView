@@ -104,7 +104,7 @@ class DiffViewAdapter(
             }
         }
 
-    var longTabAction: DiffLongTabAction = DiffLongTabAction.NONE
+    var longTabAction: DiffLongTabAction = DiffLongTabAction.COMMENT
         set(value) {
             if (field != value) {
                 field = value

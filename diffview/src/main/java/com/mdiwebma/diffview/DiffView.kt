@@ -84,7 +84,7 @@ class DiffView @JvmOverloads constructor(
     private var diffGranularity: DiffGranularity = DiffGranularity.WORD
     private var isLineWrap: Boolean = false
     private var showDiffSymbols: Boolean = true
-    private var longTabAction: DiffLongTabAction = DiffLongTabAction.NONE
+    private var longTabAction: DiffLongTabAction = DiffLongTabAction.COMMENT
     private var gutterWidthDp: Int = 48
     private var isFoldingEnabled: Boolean = true
     private var contextLines: Int = 3
@@ -640,9 +640,9 @@ class DiffView @JvmOverloads constructor(
 
     /**
      * 코드 라인을 롱탭(Long-press)했을 때의 동작 옵션 설정.
-     * - [DiffLongTabAction.NONE]: 롱탭 동작 없음 (기본값)
+     * - [DiffLongTabAction.NONE]: 롱탭 동작 없음
      * - [DiffLongTabAction.TEXT_SELECTABLE]: 텍스트 드래그 및 복사 모드
-     * - [DiffLongTabAction.COMMENT]: 코드 라인 코멘트 추가/수정/삭제 모드
+     * - [DiffLongTabAction.COMMENT]: 코드 라인 코멘트 추가/수정/삭제 모드 (기본값)
      */
     fun setLongTabAction(action: DiffLongTabAction) {
         if (this.longTabAction != action) {
