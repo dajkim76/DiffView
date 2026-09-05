@@ -85,7 +85,7 @@ class DiffPageFragment : Fragment() {
         }
         diffView.setHeaderTitles(diff.originalName, diff.modifiedName)  // `서로 바꾸기` 했을경우에 수정본|원본 순으로 표시됨
 
-        val hasContent = diff.status == 1 || diff.originalText.isNotEmpty() || diff.modifiedText.isNotEmpty()
+        val hasContent = diff.loadingStatus == 1 || diff.originalText.isNotEmpty() || diff.modifiedText.isNotEmpty()
 
         if (group?.type == DiffGroupEntity.TYPE_COMMIT_URL && !hasContent && group.commitUrl != null) {
             val parsed = GithubUtils.parseCommitUrl(group.commitUrl!!)
@@ -106,7 +106,7 @@ class DiffPageFragment : Fragment() {
                             )
                             diff.originalText = content.originalText
                             diff.modifiedText = content.modifiedText
-                            diff.status = 1
+                            diff.loadingStatus = 1
                             diffBox.put(diff)
 
                             withContext(Dispatchers.Main) {
@@ -118,7 +118,7 @@ class DiffPageFragment : Fragment() {
                                 }
                             }
                         } else {
-                            diff.status = 2
+                            diff.loadingStatus = 2
                             diffBox.put(diff)
                             val notFoundMsg = getString(R.string.msg_file_not_found_in_commit)
                             withContext(Dispatchers.Main) {
@@ -129,7 +129,7 @@ class DiffPageFragment : Fragment() {
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        diff.status = 2
+                        diff.loadingStatus = 2
                         diffBox.put(diff)
                         val errorMsg = getString(
                             R.string.msg_failed_to_fetch_file,

@@ -304,7 +304,7 @@ class EnterDiffGroupFragment : Fragment() {
                                     modifiedName = requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
                                     originalText = "",
                                     modifiedText = "",
-                                    status = 0
+                                    loadingStatus = 0
                                 )
                             }
                             if (diffEntities.isNotEmpty()) {
@@ -355,7 +355,7 @@ class EnterDiffGroupFragment : Fragment() {
                                 title = title,
                                 originalText = patch,
                                 modifiedText = "",
-                                status = 1
+                                loadingStatus = 1
                             )
                             diffBox.put(diff)
                             group.id
@@ -379,7 +379,7 @@ class EnterDiffGroupFragment : Fragment() {
                                         ?: requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
                                     originalText = p.originalText,
                                     modifiedText = p.modifiedText,
-                                    status = 1
+                                    loadingStatus = 1
                                 )
                             }
                             diffBox.put(diffEntities)

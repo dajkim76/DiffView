@@ -360,7 +360,7 @@ class DiffViewerActivity : AppCompatActivity() {
                 val old = currentDiffs[oldItemPosition]
                 val new = newDiffs[newItemPosition]
                 return old.title == new.title &&
-                        old.status == new.status &&
+                        old.loadingStatus == new.loadingStatus &&
                         old.updatedTime == new.updatedTime &&
                         old.originalText == new.originalText &&
                         old.modifiedText == new.modifiedText
@@ -416,7 +416,7 @@ class DiffViewerActivity : AppCompatActivity() {
                     title = title.ifBlank { "Diff ${currentDiffs.size + 1}" },
                     originalText = before,
                     modifiedText = after,
-                    status = 1
+                    loadingStatus = 1
                 )
 
                 withContext(Dispatchers.IO) {
