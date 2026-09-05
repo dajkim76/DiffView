@@ -2,6 +2,7 @@ package com.mdiwebma.diffviewer.dialog
 
 import android.content.Context
 import android.widget.EditText
+import android.widget.LinearLayout
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import com.mdiwebma.diffviewer.R
@@ -16,15 +17,19 @@ object RenameDialog {
     ) {
         val density = context.resources.displayMetrics.density
         val padding = (10f * density).toInt()
+        val linearLayout = LinearLayout(context).apply {
+            setPadding(padding, padding, padding, padding)
+        }
         val editText = EditText(context).apply {
             setText(initialText)
             setSelection(initialText.length)
             setPadding(padding, padding / 2, padding, padding / 2)
             setBackgroundResource(R.drawable.bg_edit_box)
+            linearLayout.addView(this)
         }
         AlertDialog.Builder(context)
             .setTitle(titleRes)
-            .setView(editText)
+            .setView(linearLayout)
             .setPositiveButton(R.string.btn_save) { dialog, _ ->
                 val newTitle = editText.text.toString().trim()
                 if (newTitle.isNotEmpty()) {

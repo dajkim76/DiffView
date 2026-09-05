@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.mdiwebma.diffview.SyntaxHighlighter
@@ -52,6 +53,9 @@ class DiffPageFragment : Fragment() {
         val diff = diffBox.get(diffId) ?: return
         val targetGroupId = if (diffGroupId != 0L) diffGroupId else diff.historyId
         val group = diffGroupBox.get(targetGroupId)
+        // header view
+        binding.tvFilePathHeader.text = diff.title
+        binding.tvFilePathHeader.isVisible = (group.type != DiffGroupEntity.TYPE_TEXT)
 
         val diffView = binding.diffView
         diffView.loadPreferences()

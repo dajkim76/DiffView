@@ -60,21 +60,6 @@
                     android:contentDescription="@string/title_add_diff" />
             </LinearLayout>
 
-            <!-- Full File Path Below Tab Bar -->
-            <TextView
-                android:id="@+id/tvFilePathHeader"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/file_path_header_bg"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="6dp"
-                android:textSize="12sp"
-                android:textColor="?android:textColorSecondary"
-                android:fontFamily="monospace"
-                android:singleLine="true"
-                android:ellipsize="start"
-                android:visibility="gone" />
-
             <!-- ViewPager Container -->
             <FrameLayout
                 android:layout_width="match_parent"

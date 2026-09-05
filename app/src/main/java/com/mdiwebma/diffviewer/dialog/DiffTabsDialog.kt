@@ -14,6 +14,7 @@ import com.mdiwebma.diffviewer.box.DiffEntity
 import com.mdiwebma.diffviewer.box.DiffGroupEntity
 import com.mdiwebma.diffviewer.databinding.DialogDiffTabsBinding
 import com.mdiwebma.diffviewer.databinding.ItemDiffTabBinding
+import com.mdiwebma.diffviewer.model.ReviewStatus
 import com.mdiwebma.diffviewer.view.SimpleRecyclerAdapter
 
 class DiffTabsDialog(
@@ -24,7 +25,8 @@ class DiffTabsDialog(
     private val onTabSelected: (position: Int) -> Unit,
     private val onToggleFavorite: (item: DiffEntity, position: Int) -> Unit,
     private val onRename: (item: DiffEntity, position: Int) -> Unit,
-    private val onDelete: (item: DiffEntity, position: Int) -> Unit
+    private val onDelete: (item: DiffEntity, position: Int) -> Unit,
+    private val onStatusClick: ((item: DiffEntity, position: Int) -> Unit)? = null
 ) {
 
     private lateinit var dialog: AlertDialog
@@ -110,6 +112,15 @@ class DiffTabsDialog(
                 val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
                     onToggleFavorite(item, pos)
+                }
+            }
+
+            val reviewStatus = ReviewStatus.fromDbValue(item.reviewStatus)
+            itemBinding.tvReviewStatusIcon.text = reviewStatus.emoji
+            itemBinding.tvReviewStatusIcon.setOnClickListener {
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onStatusClick?.invoke(item, pos)
                 }
             }
 

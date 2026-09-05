@@ -1,11 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvFilePathHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/file_path_header_bg"
+        android:textSize="12sp"
+        android:textColor="?android:textColorSecondary"
+        android:fontFamily="monospace"
+        android:maxLines="2"
+        android:ellipsize="start"
+        android:paddingHorizontal="5dp"
+        android:paddingVertical="4dp" />
 
     <com.mdiwebma.diffview.DiffView
         android:id="@+id/diffView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-</FrameLayout>
+</LinearLayout>

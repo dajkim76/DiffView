@@ -31,9 +31,12 @@ import com.mdiwebma.diffviewer.box.DiffGroupEntity
 import com.mdiwebma.diffviewer.box.DiffGroupEntity_
 import com.mdiwebma.diffviewer.databinding.ActivityDiffViewerBinding
 import com.mdiwebma.diffviewer.databinding.ItemDiffGroupBinding
+import com.mdiwebma.diffviewer.databinding.ItemTabHeaderBinding
 import com.mdiwebma.diffviewer.dialog.ConfirmDeleteDialog
 import com.mdiwebma.diffviewer.dialog.DiffTabsDialog
 import com.mdiwebma.diffviewer.dialog.RenameDialog
+import com.mdiwebma.diffviewer.dialog.ReviewStatusDialog
+import com.mdiwebma.diffviewer.model.ReviewStatus
 import com.mdiwebma.diffviewer.ui.AddDiffFragment
 import com.mdiwebma.diffviewer.ui.DiffPageFragment
 import com.mdiwebma.diffviewer.ui.EnterDiffGroupFragment
@@ -94,7 +97,6 @@ class DiffViewerActivity : AppCompatActivity() {
         binding.viewPager2.offscreenPageLimit = ViewPager2.OFFSCREEN_PAGE_LIMIT_DEFAULT
         binding.viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                updateFilePathHeader(position)
                 val diff = currentDiffs.getOrNull(position)
                 val group = currentGroup
                 if (group != null && diff != null && group.diffId != diff.id) {
@@ -110,16 +112,9 @@ class DiffViewerActivity : AppCompatActivity() {
         binding.viewPager2.adapter = pagerAdapter
 
         tabMediator = TabLayoutMediator(binding.tabLayout, binding.viewPager2, true, false) { tab, position ->
-            val diff = currentDiffs.getOrNull(position)
-            val fullTitle = diff?.title.orEmpty()
-            val isPathType = currentGroup?.type == DiffGroupEntity.TYPE_COMMIT_URL ||
-                    currentGroup?.type == DiffGroupEntity.TYPE_GIT_PATCH
-            val displayName = if (isPathType) {
-                fullTitle.substringAfterLast('/')
-            } else {
-                fullTitle
-            }
-            tab.text = displayName.ifBlank { "Diff ${position + 1}" }
+            val tabBinding = ItemTabHeaderBinding.inflate(layoutInflater)
+            tab.customView = tabBinding.root
+            updateTabHeaderView(tabBinding, position)
         }
         tabMediator?.attach()
 
@@ -340,7 +335,6 @@ class DiffViewerActivity : AppCompatActivity() {
                 }
                 binding.viewPager2.setCurrentItem(targetIndex, false)
                 binding.tabLayout.getTabAt(targetIndex)?.select()
-                updateFilePathHeader(targetIndex)
             }
 
             onLoaded?.invoke()
@@ -360,6 +354,7 @@ class DiffViewerActivity : AppCompatActivity() {
                 val old = currentDiffs[oldItemPosition]
                 val new = newDiffs[newItemPosition]
                 return old.title == new.title &&
+                        old.reviewStatus == new.reviewStatus &&
                         old.loadingStatus == new.loadingStatus &&
                         old.updatedTime == new.updatedTime &&
                         old.originalText == new.originalText &&
@@ -378,26 +373,12 @@ class DiffViewerActivity : AppCompatActivity() {
         if (currentDiffs.isEmpty()) {
             binding.tvEmptyDiffs.visibility = View.VISIBLE
             binding.viewPager2.visibility = View.GONE
-            binding.tvFilePathHeader.visibility = View.GONE
         } else {
             binding.tvEmptyDiffs.visibility = View.GONE
             binding.viewPager2.visibility = View.VISIBLE
-            updateFilePathHeader(binding.viewPager2.currentItem)
         }
 
         supportActionBar?.title = currentGroup?.title ?: getString(R.string.app_name)
-    }
-
-    private fun updateFilePathHeader(position: Int) {
-        val isPathType = currentGroup?.type == DiffGroupEntity.TYPE_COMMIT_URL ||
-                currentGroup?.type == DiffGroupEntity.TYPE_GIT_PATCH
-        val diff = currentDiffs.getOrNull(position)
-        if (isPathType && diff != null && diff.title.isNotBlank()) {
-            binding.tvFilePathHeader.text = diff.title
-            binding.tvFilePathHeader.visibility = View.VISIBLE
-        } else {
-            binding.tvFilePathHeader.visibility = View.GONE
-        }
     }
 
     private fun showAddDiffFragment() {
@@ -453,7 +434,6 @@ class DiffViewerActivity : AppCompatActivity() {
             onTabSelected = { position ->
                 binding.viewPager2.setCurrentItem(position, false)
                 binding.tabLayout.getTabAt(position)?.select()
-                updateFilePathHeader(position)
             },
             onToggleFavorite = { item, _ ->
                 val wasFavorite = item.favoriteTime > 0L
@@ -479,7 +459,13 @@ class DiffViewerActivity : AppCompatActivity() {
                     item.updatedTime = System.currentTimeMillis()
                     diffBox.put(item)
                     tabsDialog?.notifyItemChanged(position)
-                    renderDiffPages()
+                    // Update tab icon, text
+                    val tab = binding.tabLayout.getTabAt(position)
+                    val customView = tab?.customView
+                    if (customView != null) {
+                        val tabBinding = ItemTabHeaderBinding.bind(customView)
+                        updateTabHeaderView(tabBinding, position)
+                    }
                 }
             },
             onDelete = { item, _ ->
@@ -498,9 +484,51 @@ class DiffViewerActivity : AppCompatActivity() {
                         tabsDialog?.updateList()
                     }
                 }
+            },
+            onStatusClick = { item, pos ->
+                val status = ReviewStatus.fromDbValue(item.reviewStatus)
+                ReviewStatusDialog.show(this@DiffViewerActivity, status) { newStatus ->
+                    if (status != newStatus) {
+                        updateDiffReviewStatus(item, newStatus)
+                        tabsDialog?.notifyItemChanged(pos)
+                    }
+                }
             }
         )
         tabsDialog.show()
+    }
+
+    private fun updateTabHeaderView(tabBinding: ItemTabHeaderBinding, position: Int) {
+        val diff = currentDiffs.getOrNull(position) ?: return
+        val status = ReviewStatus.fromDbValue(diff.reviewStatus)
+        tabBinding.tvTabStatusIcon.text = status.emoji
+        val fullTitle = diff.title.orEmpty()
+        val isPathType = currentGroup?.type == DiffGroupEntity.TYPE_COMMIT_URL ||
+                currentGroup?.type == DiffGroupEntity.TYPE_GIT_PATCH
+        val displayName = if (isPathType) fullTitle.substringAfterLast('/') else fullTitle
+        tabBinding.tvTabTitle.text = displayName.ifBlank { "Diff ${position + 1}" }
+        tabBinding.tvTabStatusIcon.setOnClickListener {
+            ReviewStatusDialog.show(this@DiffViewerActivity, status) { newStatus ->
+                if (status != newStatus) {
+                    updateDiffReviewStatus(diff, newStatus)
+                }
+            }
+        }
+    }
+
+    private fun updateDiffReviewStatus(diff: DiffEntity, newStatus: ReviewStatus) {
+        diff.reviewStatus = newStatus.dbValue
+        diffBox.put(diff)
+        val index = currentDiffs.indexOfFirst { it.id == diff.id }
+        if (index != -1) {
+            currentDiffs[index].reviewStatus = newStatus.dbValue
+            val tab = binding.tabLayout.getTabAt(index)
+            val customView = tab?.customView
+            if (customView != null) {
+                val tabBinding = ItemTabHeaderBinding.bind(customView)
+                updateTabHeaderView(tabBinding, index)
+            }
+        }
     }
 
     private fun updateGroupItemInAdapter(group: DiffGroupEntity) {
