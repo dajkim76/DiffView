@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Gson serialization rules
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn sun.misc.**
+
+# Keep comment data models serialized with Gson
+-keep class com.mdiwebma.diffview.comment.** { *; }
+-keepclassmembers class com.mdiwebma.diffview.comment.** { *; }
