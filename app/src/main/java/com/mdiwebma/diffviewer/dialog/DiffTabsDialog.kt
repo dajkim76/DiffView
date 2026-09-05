@@ -94,13 +94,7 @@ class DiffTabsDialog(
         private val itemBinding = ItemDiffTabBinding.bind(itemView)
 
         override fun onBind(item: DiffEntity) {
-            val isPathType = currentGroup?.type == DiffGroupEntity.TYPE_COMMIT_URL ||
-                    currentGroup?.type == DiffGroupEntity.TYPE_GIT_PATCH
-            val displayName = if (isPathType) {
-                item.title.substringAfterLast('/')
-            } else {
-                item.title
-            }
+            val displayName = item.title
             itemBinding.tvTabTitle.text = displayName.ifBlank { "Diff ${bindingAdapterPosition + 1}" }
 
             val isFavorite = item.favoriteTime > 0L

@@ -13,7 +13,7 @@ enum class ReviewStatus(
     REVIEWING(1, "👀", R.string.review_status_reviewing),
     PENDING(2, "\uD83D\uDFE1", R.string.review_status_pending),
     COMMENTED(3, "💬", R.string.review_status_commented),
-    APPROVED(4, "\uD83D\uDFE2", R.string.review_status_approved),
+    APPROVED(4, "✅", R.string.review_status_approved),
     CLOSED(5, "\uD83D\uDD34", R.string.review_status_closed),
     MERGED(6, "🟣", R.string.review_status_merged);
 

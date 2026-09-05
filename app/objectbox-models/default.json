@@ -31,7 +31,7 @@
     },
     {
       "id": "5:4358799510726138670",
-      "lastPropertyId": "23:2323603904850566446",
+      "lastPropertyId": "24:790584259790189691",
       "name": "DiffEntity",
       "properties": [
         {
@@ -107,6 +107,11 @@
           "id": "23:2323603904850566446",
           "name": "reviewStatus",
           "type": 5
+        },
+        {
+          "id": "24:790584259790189691",
+          "name": "filePath",
+          "type": 9
         }
       ],
       "relations": []

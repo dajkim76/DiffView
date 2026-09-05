@@ -8,7 +8,8 @@ import io.objectbox.relation.ToOne
 data class DiffEntity(
     @Id var id: Long = 0,
     var historyId: Long = 0,
-    var title: String = "",
+    var title: String = "", // filePath.substringAfterLast('/')
+    var filePath: String = "", //Git patch , Git commit의 아이템인 경우
     var originalName: String = "Original",
     var modifiedName: String = "Modified",
     var originalText: String = "",

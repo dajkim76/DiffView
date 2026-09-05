@@ -297,9 +297,12 @@ class EnterDiffGroupFragment : Fragment() {
                             diffGroupBox.put(group)
 
                             val diffEntities = detail.files.map { file ->
+                                val fullPath = file.filename
+                                val shortTitle = fullPath.substringAfterLast('/')
                                 DiffEntity(
                                     historyId = group.id,
-                                    title = file.filename,
+                                    title = shortTitle,
+                                    filePath = fullPath,
                                     originalName = requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_original),
                                     modifiedName = requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
                                     originalText = "",
@@ -370,9 +373,11 @@ class EnterDiffGroupFragment : Fragment() {
 
                             val diffEntities = parsedFiles.mapIndexed { index, p ->
                                 val fileName = p.modifiedFileName ?: p.originalFileName ?: "File ${index + 1}"
+                                val shortTitle = fileName.substringAfterLast('/')
                                 DiffEntity(
                                     historyId = group.id,
-                                    title = fileName,
+                                    title = shortTitle,
+                                    filePath = fileName,
                                     originalName = p.originalFileName?.takeIf { it != fileName }
                                         ?: requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_original),
                                     modifiedName = p.modifiedFileName?.takeIf { it != fileName }

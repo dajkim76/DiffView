@@ -54,8 +54,8 @@ class DiffPageFragment : Fragment() {
         val targetGroupId = if (diffGroupId != 0L) diffGroupId else diff.historyId
         val group = diffGroupBox.get(targetGroupId)
         // header view
-        binding.tvFilePathHeader.text = diff.title
-        binding.tvFilePathHeader.isVisible = (group.type != DiffGroupEntity.TYPE_TEXT)
+        binding.tvFilePathHeader.text = diff.filePath
+        binding.tvFilePathHeader.isVisible = diff.filePath.isNotEmpty()
 
         val diffView = binding.diffView
         diffView.loadPreferences()
@@ -100,7 +100,7 @@ class DiffPageFragment : Fragment() {
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
                         val commitDetail = GithubUtils.fetchCommit(requireContext().cacheDir, parsed)
-                        val fileInfo = commitDetail.files.find { it.filename == diff.title }
+                        val fileInfo = commitDetail.files.find { it.filename == diff.filePath }
                         if (fileInfo != null) {
                             val content = GithubUtils.fetchFileContent(
                                 requireContext().cacheDir,

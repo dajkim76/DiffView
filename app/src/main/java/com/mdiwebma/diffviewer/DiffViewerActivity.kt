@@ -354,6 +354,7 @@ class DiffViewerActivity : AppCompatActivity() {
                 val old = currentDiffs[oldItemPosition]
                 val new = newDiffs[newItemPosition]
                 return old.title == new.title &&
+                        old.filePath == new.filePath &&
                         old.reviewStatus == new.reviewStatus &&
                         old.loadingStatus == new.loadingStatus &&
                         old.updatedTime == new.updatedTime &&
@@ -502,11 +503,8 @@ class DiffViewerActivity : AppCompatActivity() {
         val diff = currentDiffs.getOrNull(position) ?: return
         val status = ReviewStatus.fromDbValue(diff.reviewStatus)
         tabBinding.tvTabStatusIcon.text = status.emoji
-        val fullTitle = diff.title.orEmpty()
-        val isPathType = currentGroup?.type == DiffGroupEntity.TYPE_COMMIT_URL ||
-                currentGroup?.type == DiffGroupEntity.TYPE_GIT_PATCH
-        val displayName = if (isPathType) fullTitle.substringAfterLast('/') else fullTitle
-        tabBinding.tvTabTitle.text = displayName.ifBlank { "Diff ${position + 1}" }
+        val title = diff.title
+        tabBinding.tvTabTitle.text = title.ifBlank { "Diff ${position + 1}" }
         tabBinding.tvTabStatusIcon.setOnClickListener {
             ReviewStatusDialog.show(this@DiffViewerActivity, status) { newStatus ->
                 if (status != newStatus) {

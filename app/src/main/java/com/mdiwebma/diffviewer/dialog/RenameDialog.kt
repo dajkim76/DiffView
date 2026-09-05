@@ -1,6 +1,7 @@
 package com.mdiwebma.diffviewer.dialog
 
 import android.content.Context
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.annotation.StringRes
@@ -18,9 +19,17 @@ object RenameDialog {
         val density = context.resources.displayMetrics.density
         val padding = (10f * density).toInt()
         val linearLayout = LinearLayout(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
             setPadding(padding, padding, padding, padding)
         }
         val editText = EditText(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
             setText(initialText)
             setSelection(initialText.length)
             setPadding(padding, padding / 2, padding, padding / 2)
