@@ -49,20 +49,29 @@ An Android Studio Diff Editor styled **Side-by-Side (Split) & Unified DiffView**
 11. **Adjustable Gutter (Line Number) Width**:
     - `setGutterWidthDp(50)` allows adjusting the line number gutter width (default: `42dp`).
 12. **Line Long-Press Action (None, Text Selection & Code Comments)**:
-    - Configure long-press interaction via `setLongTabAction(DiffLongTabAction.NONE)` (default: `NONE`).
-    - Options: `NONE`, `TEXT_SELECTABLE` (drag selection/copying), `COMMENT` (line comment dialog).
+    - Configure long-press interaction via `setLongTabAction(DiffLongTabAction.COMMENT)` (default: `COMMENT`).
+    - Options: `COMMENT` (line comment dialog, default), `TEXT_SELECTABLE` (drag selection/copying), `NONE`.
+    - ⚠️ **Note**: To use the code comment feature (`COMMENT`), you **must initialize** the comment context beforehand by calling `diffView.setCommentContext(groupId, compareId)` (e.g., Git commit hash / group ID and file path / diff ID).
 13. **Header Settings (⚙️) & More (⋮) Action Menus**:
     - **Settings (⚙️)**: Interactive modal dialog to adjust all DiffView configurations in real-time.
-    - **More (⋮)**: Popup menu for exporting diffs as images (**Visible Viewport** or **Full Diff**). Automatically provides **View** and **Share** dialog actions upon completion.
-    - Programmatically trigger via `showSettingsDialog()`, `showMoreMenu()`, or `executeImageCapture(isFull)`.
+    - **More (⋮)**: Popup menu for quick actions:
+      - **Expand All / Collapse All**: Batch unfold or collapse unchanged code blocks.
+      - **Swap Content (🔄)**: Instantly swap before (original) and after (modified) contents, headers, and recompute diff.
+      - **Syntax & Normalizer Selection**: Easily switch syntax highlighter or text normalizer on the fly.
+      - **Copy Git Patch**: Copy standard unified Git diff/patch to clipboard.
+      - **Save Images**: Export diff as images (**Visible Viewport** or **Full Diff**) with automatic **View** and **Share** actions.
+    - Programmatically trigger via `showSettingsDialog()`, `showMoreMenu()`, `swapContent()`, or `executeImageCapture(isFull)`.
     - Toggle header action buttons via `setSettingsButtonVisible(boolean)` or `setMoreButtonVisible(boolean)`.
-14. **Multi-language Presets & Customizable Labels (`DiffSettingLabels`, `DiffCommentLabels`)**:
+14. **Content Swapping (`swapContent`) & Callback Listener**:
+    - Swap original and modified texts and header titles seamlessly via `diffView.swapContent()`.
+    - Observe swap events using `diffView.setOnContentSwappedListener { newOriginal, newModified, newOriginalHeader, newModifiedHeader -> ... }` to persist changes.
+15. **Multi-language Presets & Customizable Labels (`DiffSettingLabels`, `DiffCommentLabels`)**:
     - Built-in localization presets for **17 languages**: English, Korean (`ko`), Japanese (`ja`), Simplified Chinese (`zh-CN`), Traditional Chinese (`zh-TW`), Spanish (`es`), French (`fr`), German (`de`), Portuguese (`pt`), Russian (`ru`), Italian (`it`), Indonesian (`in`), Vietnamese (`vi`), Thai (`th`), Hindi (`hi`), Arabic (`ar`), and Turkish (`tr`).
     - Fully customize all UI strings for settings, image exporting, and code comment dialogs via `DiffSettingLabels` and `DiffCommentLabels`.
-15. **Settings Persistence via SharedPreferences (`DiffViewPreferences`)**:
+16. **Settings Persistence via SharedPreferences (`DiffViewPreferences`)**:
     - Easily persist and restore all DiffView viewer configurations (diff mode, theme, text size, folding, whitespace, wrap, symbols, and long-press action) using `diffView.savePreferences()` and `diffView.loadPreferences()`.
     - Supports auto-saving directly from the settings dialog (`diffView.showSettingsDialog(autoSave = true)`).
-16. **Screenshots**
+17. **Screenshots**
 ![Screenshot1](screenshot1.jpg)
 ![Screenshot2](screenshot2.jpg)
 ![Screenshot3](screenshot3.jpg)
@@ -259,18 +268,24 @@ diffView.setShowDiffSymbols(true)
 // 13. Adjust line number gutter width (DP unit, default: 42dp)
 diffView.setGutterWidthDp(48)
 
-// 14. Configure line long-press action (NONE (default), TEXT_SELECTABLE, COMMENT)
-diffView.setLongTabAction(DiffLongTabAction.TEXT_SELECTABLE)
+// 14. Configure line long-press action (COMMENT (default), TEXT_SELECTABLE, NONE)
+diffView.setLongTabAction(DiffLongTabAction.COMMENT)
 
-// 15. Header Settings (⚙️) and More (⋮) Action Menus
+// 15. Swap content between original and modified (before <-> after)
+diffView.swapContent() // Programmatically swap content and headers
+diffView.setOnContentSwappedListener { newOriginal, newModified, newOriginalHeader, newModifiedHeader ->
+    // Persist swapped text and header labels or perform actions
+}
+
+// 16. Header Settings (⚙️) and More (⋮) Action Menus
 diffView.setSettingsButtonVisible(true) // Toggle top-right settings & more buttons (default: true)
 diffView.showSettingsDialog()          // Programmatically display settings modal
-diffView.showMoreMenu()                // Programmatically display export popup menu (Expand All, Collapse All, Syntax, Copy Git Patch, Save Images)
+diffView.showMoreMenu()                // Programmatically display popup menu (Expand, Collapse, Swap, Syntax, Normalizer, Git Patch, Save Images)
 diffView.copyGitPatch()                // Generate and copy standard Git Patch string to clipboard
 val gitPatchText = diffView.generateGitPatch() // Get standard Git Patch string programmatically
 diffView.executeImageCapture(isFull = true) // Capture full diff, save to gallery, and show View/Share dialog
 
-// 16. Customize Settings & Image Dialog UI labels (or override strings.xml)
+// 17. Customize Settings & Image Dialog UI labels (or override strings.xml)
 diffView.setSettingLabels(
     DiffSettingLabels(
         dialogTitle = "Diff Settings",
@@ -281,8 +296,9 @@ diffView.setSettingLabels(
     )
 )
 
-// 17. Code Comments (Context required before adding/saving comments)
-diffView.setCommentContext(commitHash = "commit_1234", filePath = "src/MainActivity.kt") // Required for comment persistence
+// 18. Code Comments (Initialization required before using comments!)
+// You MUST initialize the comment context with GroupID and CompareID (e.g. commitHash/groupId and filePath/diffId)
+diffView.setCommentContext(commitHash = "groupId_1234", filePath = "compareId_5678") // Required for comment persistence
 diffView.setCommentLabels(
     DiffCommentLabels(
         addTitle = "Add Code Comment",
@@ -295,7 +311,7 @@ diffView.setCommentDateTextSize(11f)   // Comment timestamp text size (SP, defau
 // diffView.setCommentTextSizes(14f, 10f) // Set both sizes at once
 diffView.setShowCommentDate(true)      // Toggle comment timestamp visibility (default: true)
 
-// 18. Persist & Restore Settings using SharedPreferences
+// 19. Persist & Restore Settings using SharedPreferences
 diffView.configurePreferences(prefsName = "my_diff_prefs", keyPrefix = "fileA_", autoSave = true)
 diffView.loadPreferences() // Loads settings using the configured prefsName & keyPrefix
 diffView.showSettingsDialog() // Automatically persists changes to the configured prefsName & keyPrefix
