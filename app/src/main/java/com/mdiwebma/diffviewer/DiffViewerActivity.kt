@@ -18,6 +18,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -40,6 +41,7 @@ import com.mdiwebma.diffviewer.ui.SettingsFragment
 import com.mdiwebma.diffviewer.view.SimpleRecyclerAdapter
 import io.objectbox.Box
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -59,10 +61,13 @@ class DiffViewerActivity : AppCompatActivity() {
     private var currentDiffs: MutableList<DiffEntity> = mutableListOf()
     private var pagerAdapter: DiffPagerAdapter? = null
     private var tabMediator: TabLayoutMediator? = null
+    private var loadCurrentGroupJob: Job? = null
+    private var loadDiffGroupsJob: Job? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MyApp.setAppContext(this)
         enableEdgeToEdge()
         binding = ActivityDiffViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -256,47 +261,56 @@ class DiffViewerActivity : AppCompatActivity() {
 
     private fun showDeleteConfirmDialog(item: DiffGroupEntity) {
         ConfirmDeleteDialog.show(this, title = item.title, messageRes = R.string.msg_confirm_delete_group) {
-            diffBox.query(DiffEntity_.historyId.equal(item.id)).build().use { it.remove() }
-            diffGroupBox.remove(item)
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    diffBox.query(DiffEntity_.historyId.equal(item.id)).build().use { it.remove() }
+                    diffGroupBox.remove(item)
+                }
 
-            if (AppSettings.diffGroupId.value == item.id) {
-                AppSettings.diffGroupId.value = 0L
+                if (AppSettings.diffGroupId.value == item.id) {
+                    AppSettings.diffGroupId.value = 0L
+                }
+                loadDiffGroups()
             }
-            loadDiffGroups()
         }
     }
 
     private fun loadDiffGroups() {
-        val groups = diffGroupBox.query()
-            .orderDesc(DiffGroupEntity_.favoriteTime)
-            .orderDesc(DiffGroupEntity_.createdTime)
-            .build()
-            .find()
-        diffGroupAdapter.clear()
-        diffGroupAdapter.addAll(groups)
+        loadDiffGroupsJob?.cancel()
+        loadDiffGroupsJob = lifecycleScope.launch {
+            val groups = withContext(Dispatchers.IO) {
+                diffGroupBox.query()
+                    .orderDesc(DiffGroupEntity_.favoriteTime)
+                    .orderDesc(DiffGroupEntity_.createdTime)
+                    .build()
+                    .find()
+            }
+            diffGroupAdapter.clear()
+            diffGroupAdapter.addAll(groups)
 
-        binding.tvEmptyGroups.visibility = if (groups.isEmpty()) View.VISIBLE else View.GONE
+            binding.tvEmptyGroups.visibility = if (groups.isEmpty()) View.VISIBLE else View.GONE
 
-        var targetId = AppSettings.diffGroupId.value
-        if (targetId == 0L && groups.isNotEmpty()) {
-            targetId = groups[0].id
-            AppSettings.diffGroupId.value = targetId
+            var targetId = AppSettings.diffGroupId.value
+            if (targetId == 0L && groups.isNotEmpty()) {
+                targetId = groups[0].id
+                AppSettings.diffGroupId.value = targetId
+            }
+
+            diffGroupAdapter.notifyDataSetChanged()
+            loadCurrentGroup(targetId)
         }
-
-        diffGroupAdapter.notifyDataSetChanged()
-        loadCurrentGroup(targetId)
     }
 
     private fun loadCurrentGroup(groupId: Long, onLoaded: (() -> Unit)? = null) {
+        loadCurrentGroupJob?.cancel()
         if (groupId == 0L) {
             currentGroup = null
-            currentDiffs.clear()
-            renderDiffPages()
+            updateDiffList(emptyList())
             onLoaded?.invoke()
             return
         }
 
-        lifecycleScope.launch {
+        loadCurrentGroupJob = lifecycleScope.launch {
             val group = withContext(Dispatchers.IO) { diffGroupBox.get(groupId) }
             val diffs = withContext(Dispatchers.IO) {
                 diffBox.query(DiffEntity_.historyId.equal(groupId))
@@ -307,12 +321,36 @@ class DiffViewerActivity : AppCompatActivity() {
             }
 
             currentGroup = group
-            currentDiffs.clear()
-            currentDiffs.addAll(diffs)
-
-            renderDiffPages()
+            updateDiffList(diffs)
             onLoaded?.invoke()
         }
+    }
+
+    private fun updateDiffList(newDiffs: List<DiffEntity>) {
+        val diffCallback = object : DiffUtil.Callback() {
+            override fun getOldListSize(): Int = currentDiffs.size
+            override fun getNewListSize(): Int = newDiffs.size
+
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return currentDiffs[oldItemPosition].id == newDiffs[newItemPosition].id
+            }
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = currentDiffs[oldItemPosition]
+                val new = newDiffs[newItemPosition]
+                return old.title == new.title &&
+                        old.status == new.status &&
+                        old.updatedTime == new.updatedTime &&
+                        old.originalText == new.originalText &&
+                        old.modifiedText == new.modifiedText
+            }
+        }
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        currentDiffs.clear()
+        currentDiffs.addAll(newDiffs)
+        pagerAdapter?.let { diffResult.dispatchUpdatesTo(it) }
+
+        renderDiffPages()
     }
 
     private fun renderDiffPages() {
@@ -327,7 +365,6 @@ class DiffViewerActivity : AppCompatActivity() {
         }
 
         supportActionBar?.title = currentGroup?.title ?: getString(R.string.app_name)
-        pagerAdapter?.notifyDataSetChanged()
     }
 
     private fun updateFilePathHeader(position: Int) {
@@ -474,11 +511,12 @@ class DiffViewerActivity : AppCompatActivity() {
 
         override fun createFragment(position: Int): Fragment {
             val groupId = currentGroup?.id ?: 0L
-            return DiffPageFragment.newInstance(currentDiffs[position].id, groupId)
+            val diffId = currentDiffs.getOrNull(position)?.id ?: 0L
+            return DiffPageFragment.newInstance(diffId, groupId)
         }
 
         override fun getItemId(position: Int): Long {
-            return currentDiffs[position].id
+            return currentDiffs.getOrNull(position)?.id ?: position.toLong()
         }
 
         override fun containsItem(itemId: Long): Boolean {

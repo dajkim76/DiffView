@@ -15,10 +15,11 @@ class SimpleRecyclerAdapter<T>(
 
     private val layoutInflater: LayoutInflater = LayoutInflater.from(mContext)
     protected val mObjects: MutableList<T> = ArrayList()
-    private val mLock = Any()
+    //private val mLock = Any() // 메인쓰레드에서 호출하는 것이 올바른 동작이므로 lock은 의마가 없다.
 
     var onItemClickListener: ((item: T, position: Int) -> Unit)? = null
     var onItemLongClickListener: ((item: T, position: Int) -> Boolean)? = null
+    var autoNotifyChanged = false //true로 하면 불필요한 notify가 생길 수 있어서 notify는 데이타 변경후 직접 호출한다.
 
     override fun getItemCount(): Int {
         return mObjects.size
@@ -40,10 +41,8 @@ class SimpleRecyclerAdapter<T>(
 
     fun setItem(position: Int, item: T): Boolean {
         if (position in 0 until mObjects.size) {
-            synchronized(mLock) {
-                mObjects[position] = item
-            }
-            notifyItemChanged(position)
+            mObjects[position] = item
+            if (autoNotifyChanged) notifyItemChanged(position)
             return true
         }
         return false
@@ -77,58 +76,51 @@ class SimpleRecyclerAdapter<T>(
     }
 
     fun add(objectItem: T) {
-        synchronized(mLock) {
-            mObjects.add(objectItem)
-        }
-        notifyItemInserted(mObjects.size - 1)
+        mObjects.add(objectItem)
+        if (autoNotifyChanged) notifyItemInserted(mObjects.size - 1)
     }
 
     fun addAll(collection: Collection<T>) {
+        if (collection.isEmpty()) return
         val start = mObjects.size
-        synchronized(mLock) {
-            mObjects.addAll(collection)
-        }
-        notifyItemRangeInserted(start, collection.size)
+        mObjects.addAll(collection)
+        if (autoNotifyChanged) notifyItemRangeInserted(start, collection.size)
     }
 
     fun insert(objectItem: T, index: Int) {
-        synchronized(mLock) {
-            mObjects.add(index, objectItem)
-        }
-        notifyItemInserted(index)
+        mObjects.add(index, objectItem)
+        if (autoNotifyChanged) notifyItemInserted(index)
     }
 
     fun remove(objectItem: T) {
         val index = mObjects.indexOf(objectItem)
         if (index != -1) {
-            synchronized(mLock) {
-                mObjects.removeAt(index)
-            }
-            notifyItemRemoved(index)
+            mObjects.removeAt(index)
+            if (autoNotifyChanged) notifyItemRemoved(index)
         }
     }
 
     fun clear() {
         val size = mObjects.size
-        synchronized(mLock) {
-            mObjects.clear()
-        }
-        notifyItemRangeRemoved(0, size)
+        if (size == 0) return
+        mObjects.clear()
+        if (autoNotifyChanged) notifyItemRangeRemoved(0, size)
     }
 
     fun swapItems(fromPosition: Int, toPosition: Int) {
-        synchronized(mLock) {
-            if (fromPosition < toPosition) {
-                for (i in fromPosition until toPosition) {
-                    Collections.swap(mObjects, i, i + 1)
-                }
-            } else {
-                for (i in fromPosition downTo toPosition + 1) {
-                    Collections.swap(mObjects, i, i - 1)
-                }
+        if (fromPosition == toPosition) return
+        if (fromPosition !in 0 until mObjects.size || toPosition !in 0 until mObjects.size) return
+        
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(mObjects, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(mObjects, i, i - 1)
             }
         }
-        notifyItemMoved(fromPosition, toPosition)
+        if (autoNotifyChanged) notifyItemMoved(fromPosition, toPosition)
     }
 
 

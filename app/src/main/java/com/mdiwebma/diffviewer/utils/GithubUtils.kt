@@ -83,17 +83,21 @@ object GithubUtils {
                 setRequestProperty("Authorization", authHeader)
             }
         }
-        val responseCode = connection.responseCode
-        if (responseCode !in 200..299) {
-            val errorBody = try {
-                connection.errorStream?.bufferedReader()?.use { it.readText() }
-            } catch (_: Exception) {
-                null
+        try {
+            val responseCode = connection.responseCode
+            if (responseCode !in 200..299) {
+                val errorBody = try {
+                    connection.errorStream?.bufferedReader()?.use { it.readText() }
+                } catch (_: Exception) {
+                    null
+                }
+                val errorMsg = errorBody ?: connection.responseMessage
+                throw Exception("HTTP $responseCode: $errorMsg")
             }
-            val errorMsg = errorBody ?: connection.responseMessage
-            throw Exception("HTTP $responseCode: $errorMsg")
+            return connection.inputStream.bufferedReader().use { it.readText() }
+        } finally {
+            connection.disconnect()
         }
-        return connection.inputStream.bufferedReader().use { it.readText() }
     }
 
     suspend fun fetchCommit(cacheDir: File, commitInfo: CommitUrlInfo): CommitDetail = withContext(Dispatchers.IO) {

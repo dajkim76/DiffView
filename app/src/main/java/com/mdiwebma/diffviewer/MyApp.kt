@@ -9,8 +9,8 @@ import androidx.appcompat.app.AppCompatDelegate
 class MyApp : Application() {
 
     override fun onCreate() {
-        instance = this
         super.onCreate()
+        instance = this
         applyTheme(AppSettings.appTheme.value)
     }
 

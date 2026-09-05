@@ -207,6 +207,7 @@ class AddDiffFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        onDiffCreatedListener = null
         _binding = null
     }
 

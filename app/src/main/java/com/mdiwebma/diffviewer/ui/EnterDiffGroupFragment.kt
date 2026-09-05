@@ -22,7 +22,9 @@ import com.mdiwebma.diffviewer.box.DiffGroupEntity
 import com.mdiwebma.diffviewer.databinding.FragmentEnterDiffGroupBinding
 import com.mdiwebma.diffviewer.utils.GithubUtils
 import io.objectbox.Box
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -238,22 +240,28 @@ class EnterDiffGroupFragment : Fragment() {
                     return
                 }
 
-                val group = DiffGroupEntity(
-                    title = title,
-                    type = DiffGroupEntity.Companion.TYPE_TEXT,
-                    diffCount = 1
-                )
-                diffGroupBox.put(group)
+                setLoading(true)
+                lifecycleScope.launch {
+                    val groupId = withContext(Dispatchers.IO) {
+                        val group = DiffGroupEntity(
+                            title = title,
+                            type = DiffGroupEntity.Companion.TYPE_TEXT,
+                            diffCount = 1
+                        )
+                        diffGroupBox.put(group)
 
-                val diff = DiffEntity(
-                    historyId = group.id,
-                    title = title,
-                    originalText = before,
-                    modifiedText = after
-                )
-                diffBox.put(diff)
-
-                onSuccess(group.id)
+                        val diff = DiffEntity(
+                            historyId = group.id,
+                            title = title,
+                            originalText = before,
+                            modifiedText = after
+                        )
+                        diffBox.put(diff)
+                        group.id
+                    }
+                    setLoading(false)
+                    onSuccess(groupId)
+                }
             }
 
             R.id.rbCommitUrl -> {
@@ -279,35 +287,38 @@ class EnterDiffGroupFragment : Fragment() {
                             else -> title
                         }
 
-                        val group = DiffGroupEntity(
-                            title = finalTitle,
-                            type = DiffGroupEntity.Companion.TYPE_COMMIT_URL,
-                            commitUrl = url,
-                            diffCount = detail.files.size
-                        )
-                        diffGroupBox.put(group)
-
-                        val diffEntities = detail.files.map { file ->
-                            DiffEntity(
-                                historyId = group.id,
-                                title = file.filename,
-                                originalText = "",
-                                modifiedText = "",
-                                status = 0
+                        val groupId = withContext(Dispatchers.IO) {
+                            val group = DiffGroupEntity(
+                                title = finalTitle,
+                                type = DiffGroupEntity.Companion.TYPE_COMMIT_URL,
+                                commitUrl = url,
+                                diffCount = detail.files.size
                             )
-                        }
-                        if (diffEntities.isNotEmpty()) {
-                            diffBox.put(diffEntities)
+                            diffGroupBox.put(group)
+
+                            val diffEntities = detail.files.map { file ->
+                                DiffEntity(
+                                    historyId = group.id,
+                                    title = file.filename,
+                                    originalText = "",
+                                    modifiedText = "",
+                                    status = 0
+                                )
+                            }
+                            if (diffEntities.isNotEmpty()) {
+                                diffBox.put(diffEntities)
+                            }
+                            group.id
                         }
 
-                        onSuccess(group.id)
+                        onSuccess(groupId)
                     } catch (e: Exception) {
                         e.printStackTrace()
                         val errorMsg = e.message ?: ""
                         context?.let { ctx ->
                             Toast.makeText(
                                 ctx,
-                                getString(R.string.msg_failed_fetch_commit, errorMsg),
+                                ctx.getString(R.string.msg_failed_fetch_commit, errorMsg),
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -323,49 +334,56 @@ class EnterDiffGroupFragment : Fragment() {
                     Toast.makeText(requireContext(), R.string.msg_input_required, Toast.LENGTH_SHORT).show()
                     return
                 }
-                val parsedFiles = GitPatchParser.parse(patch)
 
-                if (parsedFiles.isEmpty()) {
-                    val group = DiffGroupEntity(
-                        title = title,
-                        type = DiffGroupEntity.Companion.TYPE_GIT_PATCH,
-                        data = patch,
-                        diffCount = 1
-                    )
-                    diffGroupBox.put(group)
+                setLoading(true)
+                lifecycleScope.launch {
+                    val groupId = withContext(Dispatchers.IO) {
+                        val parsedFiles = GitPatchParser.parse(patch)
+                        if (parsedFiles.isEmpty()) {
+                            val group = DiffGroupEntity(
+                                title = title,
+                                type = DiffGroupEntity.Companion.TYPE_GIT_PATCH,
+                                data = patch,
+                                diffCount = 1
+                            )
+                            diffGroupBox.put(group)
 
-                    val diff = DiffEntity(
-                        historyId = group.id,
-                        title = title,
-                        originalText = patch,
-                        modifiedText = "",
-                        status = 1
-                    )
-                    diffBox.put(diff)
-                    onSuccess(group.id)
-                } else {
-                    val group = DiffGroupEntity(
-                        title = title,
-                        type = DiffGroupEntity.Companion.TYPE_GIT_PATCH,
-                        data = patch,
-                        diffCount = parsedFiles.size
-                    )
-                    diffGroupBox.put(group)
+                            val diff = DiffEntity(
+                                historyId = group.id,
+                                title = title,
+                                originalText = patch,
+                                modifiedText = "",
+                                status = 1
+                            )
+                            diffBox.put(diff)
+                            group.id
+                        } else {
+                            val group = DiffGroupEntity(
+                                title = title,
+                                type = DiffGroupEntity.Companion.TYPE_GIT_PATCH,
+                                data = patch,
+                                diffCount = parsedFiles.size
+                            )
+                            diffGroupBox.put(group)
 
-                    val diffEntities = parsedFiles.mapIndexed { index, p ->
-                        val fileName = p.modifiedFileName ?: p.originalFileName ?: "File ${index + 1}"
-                        DiffEntity(
-                            historyId = group.id,
-                            title = fileName,
-                            originalName = p.originalFileName ?: "Original",
-                            modifiedName = p.modifiedFileName ?: "Modified",
-                            originalText = p.originalText,
-                            modifiedText = p.modifiedText,
-                            status = 1
-                        )
+                            val diffEntities = parsedFiles.mapIndexed { index, p ->
+                                val fileName = p.modifiedFileName ?: p.originalFileName ?: "File ${index + 1}"
+                                DiffEntity(
+                                    historyId = group.id,
+                                    title = fileName,
+                                    originalName = p.originalFileName ?: "Original",
+                                    modifiedName = p.modifiedFileName ?: "Modified",
+                                    originalText = p.originalText,
+                                    modifiedText = p.modifiedText,
+                                    status = 1
+                                )
+                            }
+                            diffBox.put(diffEntities)
+                            group.id
+                        }
                     }
-                    diffBox.put(diffEntities)
-                    onSuccess(group.id)
+                    setLoading(false)
+                    onSuccess(groupId)
                 }
             }
         }
@@ -405,6 +423,7 @@ class EnterDiffGroupFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        onGroupCreatedListener = null
         _binding = null
     }
 

@@ -61,11 +61,12 @@ class DiffTabsDialog(
         }
         binding.rvDiffTabs.addItemDecoration(divider)
 
-        updateList()
         dialog.show()
+        updateList()
     }
 
     fun updateList() {
+        if (!::dialog.isInitialized || !dialog.isShowing) return
         val currentList = getDiffs()
         tabsAdapter.clear()
         tabsAdapter.addAll(currentList)
@@ -75,6 +76,7 @@ class DiffTabsDialog(
     }
 
     fun notifyItemChanged(position: Int) {
+        if (!::dialog.isInitialized || !dialog.isShowing) return
         tabsAdapter.notifyItemChanged(position)
     }
 
