@@ -71,6 +71,15 @@
     <string name="setting_open_source_desc">GitHub リポジトリ</string>
     <string name="setting_play_store">Playストアで評価</string>
     <string name="setting_app_version">バージョン: %s</string>
-    <string name="setting_app_icon_credit">App Icon</string>
     <string name="setting_app_icon_credit_desc">Compare icons created by Magnific - Flaticon</string>
+
+    <!-- Review Status -->
+    <string name="review_status_dialog_title">レビューステータス</string>
+    <string name="review_status_open">オープン</string>
+    <string name="review_status_reviewing">レビュー中</string>
+    <string name="review_status_pending">保留中</string>
+    <string name="review_status_commented">コメント済</string>
+    <string name="review_status_approved">承認済</string>
+    <string name="review_status_closed">クローズ</string>
+    <string name="review_status_merged">マージ済</string>
 </resources>

@@ -77,11 +77,11 @@
 
     <!-- Review Status -->
     <string name="review_status_dialog_title">리뷰 상태</string>
-    <string name="review_status_open">열림 (Open)</string>
-    <string name="review_status_reviewing">리뷰 중 (Reviewing)</string>
-    <string name="review_status_pending">대기 중 (Pending)</string>
-    <string name="review_status_commented">코멘트 남김 (Commented)</string>
-    <string name="review_status_approved">승인됨 (Approved)</string>
-    <string name="review_status_closed">닫힘 (Closed)</string>
-    <string name="review_status_merged">병합됨 (Merged)</string>
+    <string name="review_status_open">열림</string>
+    <string name="review_status_reviewing">리뷰 중</string>
+    <string name="review_status_pending">대기 중</string>
+    <string name="review_status_commented">코멘트</string>
+    <string name="review_status_approved">승인</string>
+    <string name="review_status_closed">닫힘</string>
+    <string name="review_status_merged">병합</string>
 </resources>

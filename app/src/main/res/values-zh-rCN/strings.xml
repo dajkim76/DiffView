@@ -71,6 +71,15 @@
     <string name="setting_open_source_desc">GitHub 仓库</string>
     <string name="setting_play_store">在Play商店评价</string>
     <string name="setting_app_version">版本: %s</string>
-    <string name="setting_app_icon_credit">App Icon</string>
     <string name="setting_app_icon_credit_desc">Compare icons created by Magnific - Flaticon</string>
+
+    <!-- Review Status -->
+    <string name="review_status_dialog_title">评审状态</string>
+    <string name="review_status_open">开启</string>
+    <string name="review_status_reviewing">评审中</string>
+    <string name="review_status_pending">等待中</string>
+    <string name="review_status_commented">已评论</string>
+    <string name="review_status_approved">已批准</string>
+    <string name="review_status_closed">已关闭</string>
+    <string name="review_status_merged">已合并</string>
 </resources>

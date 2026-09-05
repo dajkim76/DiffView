@@ -65,6 +65,15 @@
     <string name="setting_github_token_title">GitHub PAT</string>
     <string name="setting_github_token_desc">Used for private repos and API limits.</string>
     <string name="setting_not_set">Not set</string>
-    <string name="btn_ok">OK</string>
     <string name="msg_input_required">Enter content to compare.</string>
+
+    <!-- Review Status -->
+    <string name="review_status_dialog_title">Review Status</string>
+    <string name="review_status_open">Open</string>
+    <string name="review_status_reviewing">Reviewing</string>
+    <string name="review_status_pending">Pending</string>
+    <string name="review_status_commented">Commented</string>
+    <string name="review_status_approved">Approved</string>
+    <string name="review_status_closed">Closed</string>
+    <string name="review_status_merged">Merged</string>
 </resources>
