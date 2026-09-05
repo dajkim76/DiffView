@@ -66,7 +66,7 @@ object JsonTextNormalize : TextNormalizer("JSON", "JSON", arrayOf("json")) {
 }
 
 object XmlTextNormalizer : TextNormalizer("XML", "XML", arrayOf("xml")) {
-    private const val INTENT_SPACES: Int = 2
+    private const val INTENT_SPACES: Int = 4
 
     override fun normalize(rawText: String): String {
         return runCatching {
@@ -80,7 +80,34 @@ object XmlTextNormalizer : TextNormalizer("XML", "XML", arrayOf("xml")) {
             }
 
             transformer.transform(src, out)
-            out.writer.toString().trim()
+            var result = out.writer.toString().trim()
+
+            // 1. <?xml ...?> 뒤에 강제로 개행을 1줄 추가
+            result = result.replace(Regex("^(<\\?xml[^>]*\\?>)\\s*"), "$1\n")
+
+            // 2. 태그 내부의 속성(Attribute)을 한 줄씩 분리
+            // \n\n이 생기는 문제를 막기 위해 들여쓰기 캡처에 줄바꿈이 포함되지 않도록 [ \t]* 사용
+            val tagRegex = Regex("^([ \\t]*)<([a-zA-Z0-9_:\\.-]+)(\\s+[^>]+?)(/?)>", RegexOption.MULTILINE)
+            val attrRegex = Regex("([a-zA-Z0-9_:\\.-]+=(?:\"[^\"]*\"|'[^']*'))")
+
+            result = tagRegex.replace(result) { match ->
+                val indent = match.groupValues[1]
+                val tagName = match.groupValues[2]
+                val attrsStr = match.groupValues[3]
+                val closing = match.groupValues[4]
+
+                val attrs = attrRegex.findAll(attrsStr).map { it.value }.toList()
+                if (attrs.isNotEmpty()) {
+                    val attrIndent = indent + " ".repeat(INTENT_SPACES)
+                    val formattedAttrs = attrs.joinToString("\n$attrIndent")
+                    val closingStr = if (closing == "/") " />" else ">"
+                    "$indent<$tagName\n$attrIndent$formattedAttrs$closingStr"
+                } else {
+                    match.value
+                }
+            }
+
+            result
         }.getOrDefault(rawText) // 파싱 실패 시 원본 반환
     }
 }
