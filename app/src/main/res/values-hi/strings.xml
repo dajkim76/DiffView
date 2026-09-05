@@ -28,6 +28,7 @@
     <string name="tab_simple">सरल</string>
     <string name="tab_commit_url">GitHub Commit</string>
     <string name="tab_git_patch">Git Patch</string>
+    <string name="label_select_type">प्रकार चुनें</string>
     <string name="hint_group_title">शीर्षक</string>
     <string name="hint_before_text">मूल पाठ</string>
     <string name="hint_after_text">संशोधित पाठ</string>

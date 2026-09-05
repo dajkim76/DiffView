@@ -28,6 +28,7 @@
     <string name="tab_simple">简单</string>
     <string name="tab_commit_url">GitHub提交</string>
     <string name="tab_git_patch">Git补丁</string>
+    <string name="label_select_type">选择类型</string>
     <string name="hint_group_title">分组名称</string>
     <string name="hint_before_text">修改前文本</string>
     <string name="hint_after_text">修改后文本</string>

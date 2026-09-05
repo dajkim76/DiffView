@@ -28,6 +28,7 @@
     <string name="tab_simple">심플</string>
     <string name="tab_commit_url">GitHub 커밋</string>
     <string name="tab_git_patch">Git 패치</string>
+    <string name="label_select_type">유형 선택</string>
     <string name="hint_group_title">그룹 이름</string>
     <string name="hint_before_text">변경 전 텍스트</string>
     <string name="hint_after_text">변경 후 텍스트</string>

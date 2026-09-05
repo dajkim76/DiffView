@@ -28,6 +28,7 @@
     <string name="tab_simple">Simple</string>
     <string name="tab_commit_url">GitHub Commit</string>
     <string name="tab_git_patch">Git Patch</string>
+    <string name="label_select_type">Select Type</string>
     <string name="hint_group_title">Group Title</string>
     <string name="hint_before_text">Original Text</string>
     <string name="hint_after_text">Modified Text</string>

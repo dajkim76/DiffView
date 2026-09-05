@@ -28,6 +28,7 @@
     <string name="tab_simple">بسيط</string>
     <string name="tab_commit_url">GitHub Commit</string>
     <string name="tab_git_patch">Git Patch</string>
+    <string name="label_select_type">اختر النوع</string>
     <string name="hint_group_title">العنوان</string>
     <string name="hint_before_text">النص الأصلي</string>
     <string name="hint_after_text">النص المعدل</string>
