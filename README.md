@@ -72,10 +72,12 @@ An Android Studio Diff Editor styled **Side-by-Side (Split) & Unified DiffView**
     - Easily persist and restore all DiffView viewer configurations (diff mode, theme, text size, folding, whitespace, wrap, symbols, and long-press action) using `diffView.savePreferences()` and `diffView.loadPreferences()`.
     - Supports auto-saving directly from the settings dialog (`diffView.showSettingsDialog(autoSave = true)`).
 17. **Screenshots**
+
+DiffView Custom View
 ![Screenshot1](screenshot1.jpg)
+
+DiffViewer Android App  https://play.google.com/store/apps/details?id=com.mdiwebma.diffviewer
 ![Screenshot2](screenshot2.jpg)
-![Screenshot3](screenshot3.jpg)
-![Screenshot4](screenshot4.jpg)
 
 ---
 
