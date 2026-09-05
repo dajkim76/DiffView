@@ -80,8 +80,11 @@ class DiffPageFragment : Fragment() {
             diff.originalName = diff.modifiedName
             diff.modifiedName = tempName
             diff.updatedTime = System.currentTimeMillis()
-            diffBox.put(diff)
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                diffBox.put(diff)
+            }
         }
+        diffView.setHeaderTitles(diff.originalName, diff.modifiedName)  // `서로 바꾸기` 했을경우에 수정본|원본 순으로 표시됨
 
         val hasContent = diff.status == 1 || diff.originalText.isNotEmpty() || diff.modifiedText.isNotEmpty()
 

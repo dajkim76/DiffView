@@ -515,13 +515,16 @@ class DiffView @JvmOverloads constructor(
      * 원본과 수정본 소스코드를 설정하고 비동기로 Diff를 계산합니다.
      */
     private fun setInnerContent(originalRaw: String, modifiedRaw: String, needsNormalization: Boolean = false) {
-        diffJob?.cancel()
+        val prevJob = diffJob
+        diffJob = null
+        prevJob?.cancel()
+
         expandedFoldMap.clear()
         adapter.resetScrollGroups()
         recyclerView.scrollToPosition(0)
         progressBar.visibility = VISIBLE
 
-        diffJob = viewScope.launch {
+        val currentJob = viewScope.launch {
             try {
                 val (original, modified) = if (needsNormalization && textNormalizer != null) {
                     withContext(Dispatchers.Default) {
@@ -551,9 +554,13 @@ class DiffView @JvmOverloads constructor(
                 reloadComments()
                 updateDisplayItems()
             } finally {
-                progressBar.visibility = GONE
+                // 현재 Job이 최신 작업인 경우에만 프로그레스바를 숨김 (이전 취소된 작업의 finally가 새 작업의 프로그레스바를 건드리지 않도록 방어)
+                if (diffJob == null || diffJob === coroutineContext[Job]) {
+                    progressBar.visibility = GONE
+                }
             }
         }
+        diffJob = currentJob
     }
 
     /**

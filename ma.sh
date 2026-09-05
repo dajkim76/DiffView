@@ -1,1 +1,1 @@
-./gradlew clean bundleStoreRelease
+./gradlew clean assembleRelease bundleRelease

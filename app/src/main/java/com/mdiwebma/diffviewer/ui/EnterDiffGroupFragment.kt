@@ -300,6 +300,8 @@ class EnterDiffGroupFragment : Fragment() {
                                 DiffEntity(
                                     historyId = group.id,
                                     title = file.filename,
+                                    originalName = requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_original),
+                                    modifiedName = requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
                                     originalText = "",
                                     modifiedText = "",
                                     status = 0
@@ -371,8 +373,10 @@ class EnterDiffGroupFragment : Fragment() {
                                 DiffEntity(
                                     historyId = group.id,
                                     title = fileName,
-                                    originalName = p.originalFileName ?: "Original",
-                                    modifiedName = p.modifiedFileName ?: "Modified",
+                                    originalName = p.originalFileName?.takeIf { it != fileName }
+                                        ?: requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_original),
+                                    modifiedName = p.modifiedFileName?.takeIf { it != fileName }
+                                        ?: requireContext().getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
                                     originalText = p.originalText,
                                     modifiedText = p.modifiedText,
                                     status = 1
