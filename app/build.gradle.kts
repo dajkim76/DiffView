@@ -55,6 +55,15 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
+    applicationVariants.all {
+        if (buildType.name == "release") {
+            outputs.all {
+                val outputImpl = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
+                outputImpl?.outputFileName = "DiffViewer-v${defaultConfig.versionName}(${defaultConfig.versionCode})-release.apk"
+            }
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
