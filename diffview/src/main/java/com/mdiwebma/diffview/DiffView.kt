@@ -99,7 +99,7 @@ class DiffView @JvmOverloads constructor(
     private var textNormalizer: TextNormalizer? = null
     private var normalizerChangedListener: ((newNormalizer: TextNormalizer?) -> Unit)? = null
     private var syntaxHighlighterChangedListener: ((syntaxHighlighter: SyntaxHighlighter?) -> Unit)? = null
-    private var onContentSwappedListener: ((newOriginal: String, newModified: String) -> Unit)? = null
+    private var onContentSwappedListener: ((newOriginal: String, newModified: String, newOriginalHeader: String, newModifiedHeader: String) -> Unit)? = null
     private var currentOriginalText: String = ""
     private var currentModifiedText: String = ""
     private var currentDiffResult: DiffResult? = null
@@ -1297,10 +1297,17 @@ class DiffView @JvmOverloads constructor(
         adapter.diffLabels = diffLabels
 
         setInnerContent(rawOriginalText, rawModifiedText, true)
-        onContentSwappedListener?.invoke(rawOriginalText, rawModifiedText)
+        onContentSwappedListener?.invoke(
+            rawOriginalText,
+            rawModifiedText,
+            diffLabels.originalHeader,
+            diffLabels.modifiedHeader
+        )
     }
 
-    fun setOnContentSwappedListener(listener: ((newOriginal: String, newModified: String) -> Unit)?) {
+    fun setOnContentSwappedListener(
+        listener: ((newOriginal: String, newModified: String, newOriginalHeader: String, newModifiedHeader: String) -> Unit)?
+    ) {
         this.onContentSwappedListener = listener
     }
 

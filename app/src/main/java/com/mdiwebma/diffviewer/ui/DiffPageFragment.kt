@@ -73,12 +73,11 @@ class DiffPageFragment : Fragment() {
             diff.syntaxHighlighterKey = highlighter?.key
             diffBox.put(diff)
         }
-        diffView.setOnContentSwappedListener { newOriginal, newModified ->
+        diffView.setOnContentSwappedListener { newOriginal, newModified, newOriginalHeader, newModifiedHeader ->
             diff.originalText = newOriginal
             diff.modifiedText = newModified
-            val tempName = diff.originalName
-            diff.originalName = diff.modifiedName
-            diff.modifiedName = tempName
+            diff.originalName = newOriginalHeader
+            diff.modifiedName = newModifiedHeader
             diff.updatedTime = System.currentTimeMillis()
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                 diffBox.put(diff)
