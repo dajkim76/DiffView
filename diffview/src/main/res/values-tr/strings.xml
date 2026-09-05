@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">Tüm kod blokları daraltıldı.</string>
     <string name="diffview_more_copy_git_patch">Git Patch\'i Kopyala</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch panoya kopyalandı.</string>
+    <string name="diffview_more_swap_content">Öncesini/Sonrasını Değiştir</string>
+    <string name="diffview_msg_swap_content_success">Öncesi ve sonrası yer değiştirdi.</string>
 </resources>

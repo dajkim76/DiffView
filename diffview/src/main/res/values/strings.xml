@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">All code blocks collapsed.</string>
     <string name="diffview_more_copy_git_patch">Copy Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch copied to clipboard.</string>
+    <string name="diffview_more_swap_content">Swap Before/After</string>
+    <string name="diffview_msg_swap_content_success">Swapped before and after.</string>
 </resources>

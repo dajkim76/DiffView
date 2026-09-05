@@ -99,6 +99,7 @@ class DiffView @JvmOverloads constructor(
     private var textNormalizer: TextNormalizer? = null
     private var normalizerChangedListener: ((newNormalizer: TextNormalizer?) -> Unit)? = null
     private var syntaxHighlighterChangedListener: ((syntaxHighlighter: SyntaxHighlighter?) -> Unit)? = null
+    private var onContentSwappedListener: ((newOriginal: String, newModified: String) -> Unit)? = null
     private var currentOriginalText: String = ""
     private var currentModifiedText: String = ""
     private var currentDiffResult: DiffResult? = null
@@ -727,11 +728,12 @@ class DiffView @JvmOverloads constructor(
         popup.menu.add(0, 11, 1, "➖ ${settingLabels.collapseAll}").apply {
             isEnabled = isFolding
         }
-        popup.menu.add(0, 12, 2, "🎨 ${settingLabels.syntaxTitle}")
-        popup.menu.add(0, 14, 3, "📄 ${settingLabels.normalizerTitle}")
-        popup.menu.add(0, 13, 4, "📋 ${settingLabels.menuCopyGitPatch}")
-        popup.menu.add(0, 1, 5, settingLabels.menuSaveVisibleImage)
-        popup.menu.add(0, 2, 6, settingLabels.menuSaveFullImage)
+        popup.menu.add(0, 15, 2, "🔄 ${settingLabels.menuSwapContent}")
+        popup.menu.add(0, 12, 3, "🎨 ${settingLabels.syntaxTitle}")
+        popup.menu.add(0, 14, 4, "📄 ${settingLabels.normalizerTitle}")
+        popup.menu.add(0, 13, 5, "📋 ${settingLabels.menuCopyGitPatch}")
+        popup.menu.add(0, 1, 6, settingLabels.menuSaveVisibleImage)
+        popup.menu.add(0, 2, 7, settingLabels.menuSaveFullImage)
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -744,6 +746,12 @@ class DiffView @JvmOverloads constructor(
                 11 -> {
                     collapseAll()
                     Toast.makeText(context, settingLabels.collapseAllSuccess, Toast.LENGTH_SHORT).show()
+                    true
+                }
+
+                15 -> {
+                    swapContent()
+                    Toast.makeText(context, settingLabels.swapContentSuccess, Toast.LENGTH_SHORT).show()
                     true
                 }
 
@@ -1262,6 +1270,31 @@ class DiffView @JvmOverloads constructor(
     fun collapseAll() {
         expandedFoldMap.clear()
         updateDisplayItems()
+    }
+
+    /**
+     * before(원본)와 after(수정본) 텍스트를 서로 교체합니다.
+     */
+    fun swapContent() {
+        val tempRaw = rawOriginalText
+        rawOriginalText = rawModifiedText
+        rawModifiedText = tempRaw
+
+        val tempHeader = diffLabels.originalHeader
+        diffLabels = diffLabels.copy(
+            originalHeader = diffLabels.modifiedHeader,
+            modifiedHeader = tempHeader
+        )
+        leftHeaderTitle.text = diffLabels.originalHeader
+        rightHeaderTitle.text = diffLabels.modifiedHeader
+        adapter.diffLabels = diffLabels
+
+        setInnerContent(rawOriginalText, rawModifiedText, true)
+        onContentSwappedListener?.invoke(rawOriginalText, rawModifiedText)
+    }
+
+    fun setOnContentSwappedListener(listener: ((newOriginal: String, newModified: String) -> Unit)?) {
+        this.onContentSwappedListener = listener
     }
 
     private fun updateDisplayItems() {

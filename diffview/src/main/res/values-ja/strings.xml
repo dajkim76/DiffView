@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">すべてのコードブロックを折りたたみました。</string>
     <string name="diffview_more_copy_git_patch">Git Patchをコピー</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patchをクリップボードにコピーしました。</string>
+    <string name="diffview_more_swap_content">前後を入れ替え</string>
+    <string name="diffview_msg_swap_content_success">beforeとafterを入れ替えました。</string>
 </resources>

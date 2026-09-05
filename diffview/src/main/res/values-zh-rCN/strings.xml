@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">已折叠所有代码块。</string>
     <string name="diffview_more_copy_git_patch">复制Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch已复制到剪贴板。</string>
+    <string name="diffview_more_swap_content">前后互换</string>
+    <string name="diffview_msg_swap_content_success">已互换变更前与变更后内容。</string>
 </resources>

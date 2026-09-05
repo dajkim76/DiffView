@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">Alle Codeblöcke eingeklappt.</string>
     <string name="diffview_more_copy_git_patch">Git Patch kopieren</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch in die Zwischenablage kopiert.</string>
+    <string name="diffview_more_swap_content">Vorher/Nachher tauschen</string>
+    <string name="diffview_msg_swap_content_success">Vorher und Nachher vertauscht.</string>
 </resources>

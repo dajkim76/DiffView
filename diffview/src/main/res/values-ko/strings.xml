@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">모든 코드 블록을 접었습니다.</string>
     <string name="diffview_more_copy_git_patch">Git 패치 복사</string>
     <string name="diffview_msg_copy_git_patch_success">Git 패치가 클립보드에 복사되었습니다.</string>
+    <string name="diffview_more_swap_content">서로 바꾸기</string>
+    <string name="diffview_msg_swap_content_success">before와 after를 서로 바꾸었습니다.</string>
 </resources>

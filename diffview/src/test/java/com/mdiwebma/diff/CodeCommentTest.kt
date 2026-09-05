@@ -194,6 +194,8 @@ class CodeCommentTest {
         assertEquals("All code blocks collapsed.", labels.collapseAllSuccess)
         assertEquals("Copy Git Patch", labels.menuCopyGitPatch)
         assertEquals("Git Patch copied to clipboard.", labels.copyGitPatchSuccess)
+        assertEquals("Swap Before/After", labels.menuSwapContent)
+        assertEquals("Swapped before and after.", labels.swapContentSuccess)
         assertEquals("File Format Normalization", labels.normalizerTitle)
     }
 

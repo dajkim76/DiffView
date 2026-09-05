@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">Semua blok kode telah diciutkan.</string>
     <string name="diffview_more_copy_git_patch">Salin Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch disalin ke papan klip.</string>
+    <string name="diffview_more_swap_content">Tukar Sebelum/Sesudah</string>
+    <string name="diffview_msg_swap_content_success">Sebelum dan sesudah berhasil ditukar.</string>
 </resources>

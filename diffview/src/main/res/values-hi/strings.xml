@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">सभी कोड ब्लॉक संक्षिप्त कर दिए गए हैं।</string>
     <string name="diffview_more_copy_git_patch">Git Patch कॉपी करें</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch क्लिपबोर्ड पर कॉपी किया गया।</string>
+    <string name="diffview_more_swap_content">पहले/बाद में बदलें</string>
+    <string name="diffview_msg_swap_content_success">पहले और बाद की सामग्री आपस में बदल दी गई है।</string>
 </resources>

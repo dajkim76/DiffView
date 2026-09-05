@@ -73,6 +73,15 @@ class DiffPageFragment : Fragment() {
             diff.syntaxHighlighterKey = highlighter?.key
             diffBox.put(diff)
         }
+        diffView.setOnContentSwappedListener { newOriginal, newModified ->
+            diff.originalText = newOriginal
+            diff.modifiedText = newModified
+            val tempName = diff.originalName
+            diff.originalName = diff.modifiedName
+            diff.modifiedName = tempName
+            diff.updatedTime = System.currentTimeMillis()
+            diffBox.put(diff)
+        }
 
         val hasContent = diff.status == 1 || diff.originalText.isNotEmpty() || diff.modifiedText.isNotEmpty()
 

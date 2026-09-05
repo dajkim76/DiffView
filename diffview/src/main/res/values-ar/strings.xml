@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">تم طي كافة كتل التعليمات البرمجية.</string>
     <string name="diffview_more_copy_git_patch">نسخ Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">تم نسخ Git Patch إلى الحافظة.</string>
+    <string name="diffview_more_swap_content">تبديل قبل/بعد</string>
+    <string name="diffview_msg_swap_content_success">تم تبديل المحتوى قبل وبعد.</string>
 </resources>

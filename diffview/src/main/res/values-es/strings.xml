@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">Se han colapsado todos los bloques de código.</string>
     <string name="diffview_more_copy_git_patch">Copiar Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch copiado al portapapeles.</string>
+    <string name="diffview_more_swap_content">Intercambiar antes/después</string>
+    <string name="diffview_msg_swap_content_success">Se han intercambiado antes y después.</string>
 </resources>

@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">Đã thu gọn tất cả các khối mã.</string>
     <string name="diffview_more_copy_git_patch">Sao chép Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">Đã sao chép Git Patch vào khay nhớ tạm.</string>
+    <string name="diffview_more_swap_content">Hoán đổi trước/sau</string>
+    <string name="diffview_msg_swap_content_success">Đã hoán đổi trước và sau.</string>
 </resources>

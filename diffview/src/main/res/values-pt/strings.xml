@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">Todos os blocos de código foram recolhidos.</string>
     <string name="diffview_more_copy_git_patch">Copiar Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch copiado para a área de transferência.</string>
+    <string name="diffview_more_swap_content">Trocar antes/depois</string>
+    <string name="diffview_msg_swap_content_success">Antes e depois trocados.</string>
 </resources>

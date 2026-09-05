@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">Tutti i blocchi di codice sono stati compressi.</string>
     <string name="diffview_more_copy_git_patch">Copia Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">Git Patch copiato negli appunti.</string>
+    <string name="diffview_more_swap_content">Scambia prima/dopo</string>
+    <string name="diffview_msg_swap_content_success">Prima e dopo scambiati.</string>
 </resources>

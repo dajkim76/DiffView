@@ -72,4 +72,6 @@
     <string name="diffview_collapse_all_success">ยุบบล็อกโค้ดทั้งหมดแล้ว</string>
     <string name="diffview_more_copy_git_patch">คัดลอก Git Patch</string>
     <string name="diffview_msg_copy_git_patch_success">คัดลอก Git Patch ไปยังคลิปบอร์ดแล้ว</string>
+    <string name="diffview_more_swap_content">สลับก่อนหน้า/หลัง</string>
+    <string name="diffview_msg_swap_content_success">สลับก่อนหน้าและหลังแล้ว</string>
 </resources>
