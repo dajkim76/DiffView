@@ -64,7 +64,7 @@ class DiffPageFragment : Fragment() {
         } ?: run {
             diffView.setSyntaxHighlighter(SyntaxHighlighter.forFileName(diff.title))
         }
-        diffView.setCommentContext(diffGroupId.toString(), diffId.toString())
+        diffView.setCommentContext(targetGroupId.toString(), diffId.toString())
         diffView.setOnTextNormalizerChangedListener { normalizer ->
             diff.textNormalizerKey = normalizer?.key
             diffBox.put(diff)

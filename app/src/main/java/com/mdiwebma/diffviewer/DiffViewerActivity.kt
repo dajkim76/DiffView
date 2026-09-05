@@ -17,6 +17,7 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -38,6 +39,9 @@ import com.mdiwebma.diffviewer.ui.EnterDiffGroupFragment
 import com.mdiwebma.diffviewer.ui.SettingsFragment
 import com.mdiwebma.leetzsche.view.SimpleRecyclerAdapter
 import io.objectbox.Box
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DiffViewerActivity : AppCompatActivity() {
 
@@ -82,12 +86,29 @@ class DiffViewerActivity : AppCompatActivity() {
         setupDrawerRecyclerView()
 
         binding.viewPager2.isUserInputEnabled = false
-        binding.viewPager2.offscreenPageLimit = 1
+        binding.viewPager2.offscreenPageLimit = ViewPager2.OFFSCREEN_PAGE_LIMIT_DEFAULT
         binding.viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 updateFilePathHeader(position)
             }
         })
+
+        pagerAdapter = DiffPagerAdapter(this)
+        binding.viewPager2.adapter = pagerAdapter
+
+        tabMediator = TabLayoutMediator(binding.tabLayout, binding.viewPager2, true, false) { tab, position ->
+            val diff = currentDiffs.getOrNull(position)
+            val fullTitle = diff?.title.orEmpty()
+            val isPathType = currentGroup?.type == DiffGroupEntity.TYPE_COMMIT_URL ||
+                    currentGroup?.type == DiffGroupEntity.TYPE_GIT_PATCH
+            val displayName = if (isPathType) {
+                fullTitle.substringAfterLast('/')
+            } else {
+                fullTitle
+            }
+            tab.text = displayName.ifBlank { "Diff ${position + 1}" }
+        }
+        tabMediator?.attach()
 
         binding.btnAddDiff.setOnClickListener {
             showAddDiffFragment()
@@ -266,61 +287,47 @@ class DiffViewerActivity : AppCompatActivity() {
         loadCurrentGroup(targetId)
     }
 
-    private fun loadCurrentGroup(groupId: Long) {
+    private fun loadCurrentGroup(groupId: Long, onLoaded: (() -> Unit)? = null) {
         if (groupId == 0L) {
             currentGroup = null
             currentDiffs.clear()
             renderDiffPages()
+            onLoaded?.invoke()
             return
         }
 
-        currentGroup = diffGroupBox.get(groupId)
-        currentDiffs = diffBox.query(DiffEntity_.historyId.equal(groupId))
-            .orderDesc(DiffEntity_.favoriteTime)
-            .order(DiffEntity_.createdTime)
-            .build()
-            .find()
+        lifecycleScope.launch {
+            val group = withContext(Dispatchers.IO) { diffGroupBox.get(groupId) }
+            val diffs = withContext(Dispatchers.IO) {
+                diffBox.query(DiffEntity_.historyId.equal(groupId))
+                    .orderDesc(DiffEntity_.favoriteTime)
+                    .order(DiffEntity_.createdTime)
+                    .build()
+                    .find()
+            }
 
-        renderDiffPages()
+            currentGroup = group
+            currentDiffs.clear()
+            currentDiffs.addAll(diffs)
+
+            renderDiffPages()
+            onLoaded?.invoke()
+        }
     }
 
     private fun renderDiffPages() {
-        tabMediator?.detach()
-        tabMediator = null
-        binding.tabLayout.removeAllTabs()
-
         if (currentDiffs.isEmpty()) {
-            binding.viewPager2.adapter = null
-            pagerAdapter = null
             binding.tvEmptyDiffs.visibility = View.VISIBLE
             binding.viewPager2.visibility = View.GONE
             binding.tvFilePathHeader.visibility = View.GONE
-            supportActionBar?.title = currentGroup?.title ?: getString(R.string.app_name)
-            return
+        } else {
+            binding.tvEmptyDiffs.visibility = View.GONE
+            binding.viewPager2.visibility = View.VISIBLE
+            updateFilePathHeader(binding.viewPager2.currentItem)
         }
 
-        binding.tvEmptyDiffs.visibility = View.GONE
-        binding.viewPager2.visibility = View.VISIBLE
         supportActionBar?.title = currentGroup?.title ?: getString(R.string.app_name)
-
-        pagerAdapter = DiffPagerAdapter(this)
-        binding.viewPager2.adapter = pagerAdapter
-
-        tabMediator = TabLayoutMediator(binding.tabLayout, binding.viewPager2, true, false) { tab, position ->
-            val diff = currentDiffs.getOrNull(position)
-            val fullTitle = diff?.title.orEmpty()
-            val isPathType = currentGroup?.type == DiffGroupEntity.TYPE_COMMIT_URL ||
-                    currentGroup?.type == DiffGroupEntity.TYPE_GIT_PATCH
-            val displayName = if (isPathType) {
-                fullTitle.substringAfterLast('/')
-            } else {
-                fullTitle
-            }
-            tab.text = displayName.ifBlank { "Diff ${position + 1}" }
-        }
-        tabMediator?.attach()
-
-        updateFilePathHeader(binding.viewPager2.currentItem)
+        pagerAdapter?.notifyDataSetChanged()
     }
 
     private fun updateFilePathHeader(position: Int) {
@@ -359,8 +366,9 @@ class DiffViewerActivity : AppCompatActivity() {
             diffGroupBox.put(group)
             updateGroupItemInAdapter(group)
 
-            loadCurrentGroup(group.id)
-            binding.viewPager2.setCurrentItem(currentDiffs.size - 1, true)
+            loadCurrentGroup(group.id) {
+                binding.viewPager2.setCurrentItem(currentDiffs.size - 1, true)
+            }
         }
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
@@ -387,12 +395,13 @@ class DiffViewerActivity : AppCompatActivity() {
                 val currentGroupId = currentGroup?.id ?: 0L
                 if (currentGroupId != 0L) {
                     val currentSelectedDiffId = currentDiffs.getOrNull(binding.viewPager2.currentItem)?.id
-                    loadCurrentGroup(currentGroupId)
-                    tabsDialog?.updateList()
-                    if (currentSelectedDiffId != null) {
-                        val newIndex = currentDiffs.indexOfFirst { it.id == currentSelectedDiffId }
-                        if (newIndex != -1) {
-                            binding.viewPager2.setCurrentItem(newIndex, false)
+                    loadCurrentGroup(currentGroupId) {
+                        tabsDialog?.updateList()
+                        if (currentSelectedDiffId != null) {
+                            val newIndex = currentDiffs.indexOfFirst { it.id == currentSelectedDiffId }
+                            if (newIndex != -1) {
+                                binding.viewPager2.setCurrentItem(newIndex, false)
+                            }
                         }
                     }
                 }
@@ -415,9 +424,12 @@ class DiffViewerActivity : AppCompatActivity() {
                         group.updatedTime = System.currentTimeMillis()
                         diffGroupBox.put(group)
                         updateGroupItemInAdapter(group)
-                        loadCurrentGroup(group.id)
+                        loadCurrentGroup(group.id) {
+                            tabsDialog?.updateList()
+                        }
+                    } else {
+                        tabsDialog?.updateList()
                     }
-                    tabsDialog?.updateList()
                 }
             }
         )

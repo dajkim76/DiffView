@@ -496,9 +496,7 @@ class DiffView @JvmOverloads constructor(
             return
         }
         this.textNormalizer = textNormalizer
-        val original = textNormalizer?.normalize(rawOriginalText) ?: rawOriginalText
-        val modified = textNormalizer?.normalize(rawModifiedText) ?: rawModifiedText
-        setInnerContent(original, modified)
+        setInnerContent(rawOriginalText, rawModifiedText, true)
         normalizerChangedListener?.invoke(textNormalizer)
     }
 
@@ -509,26 +507,35 @@ class DiffView @JvmOverloads constructor(
     fun setContent(rawOriginal: String, rawModified: String) {
         this.rawOriginalText = rawOriginal
         this.rawModifiedText = rawModified
-        val original = textNormalizer?.normalize(rawOriginalText) ?: rawOriginalText
-        val modified = textNormalizer?.normalize(rawModifiedText) ?: rawModifiedText
-        setInnerContent(original, modified)
+        setInnerContent(rawOriginal, rawModified, true)
     }
 
     /**
      * 원본과 수정본 소스코드를 설정하고 비동기로 Diff를 계산합니다.
      */
-    private fun setInnerContent(original: String, modified: String) {
-        currentOriginalText = original
-        currentModifiedText = modified
+    private fun setInnerContent(originalRaw: String, modifiedRaw: String, needsNormalization: Boolean = false) {
         diffJob?.cancel()
         expandedFoldMap.clear()
         adapter.resetScrollGroups()
-        estimateAndPreloadContentWidths()
         recyclerView.scrollToPosition(0)
         progressBar.visibility = VISIBLE
 
         diffJob = viewScope.launch {
             try {
+                val (original, modified) = if (needsNormalization && textNormalizer != null) {
+                    withContext(Dispatchers.Default) {
+                        val normOrig = textNormalizer?.normalize(originalRaw) ?: originalRaw
+                        val normMod = textNormalizer?.normalize(modifiedRaw) ?: modifiedRaw
+                        normOrig to normMod
+                    }
+                } else {
+                    originalRaw to modifiedRaw
+                }
+
+                currentOriginalText = original
+                currentModifiedText = modified
+                estimateAndPreloadContentWidths()
+
                 val result = withContext(Dispatchers.Default) {
                     diffEngine.calculateDiff(
                         oldText = original,
@@ -540,7 +547,6 @@ class DiffView @JvmOverloads constructor(
                 }
                 currentDiffResult = result
                 updateStats(result)
-                estimateAndPreloadContentWidths()
                 reloadComments()
                 updateDisplayItems()
             } finally {
@@ -1124,8 +1130,8 @@ class DiffView @JvmOverloads constructor(
         val charWidth = paint.measureText("M")
         val paddingPx = (16 * density).toInt()
 
-        val origMaxLen = currentOriginalText.lineSequence().maxOfOrNull { it.length } ?: 0
-        val modMaxLen = currentModifiedText.lineSequence().maxOfOrNull { it.length } ?: 0
+        val origMaxLen = findMaxLineLength(currentOriginalText)
+        val modMaxLen = findMaxLineLength(currentModifiedText)
 
         val leftWidthPx = (origMaxLen * charWidth + paddingPx).toInt()
         val rightWidthPx = (modMaxLen * charWidth + paddingPx).toInt()
@@ -1134,6 +1140,21 @@ class DiffView @JvmOverloads constructor(
         adapter.leftSyncGroup.reportContentWidth(leftWidthPx)
         adapter.rightSyncGroup.reportContentWidth(rightWidthPx)
         adapter.unifiedSyncGroup.reportContentWidth(unifiedWidthPx)
+    }
+
+    private fun findMaxLineLength(text: String): Int {
+        var maxLen = 0
+        var currentLen = 0
+        for (i in text.indices) {
+            if (text[i] == '\n') {
+                if (currentLen > maxLen) maxLen = currentLen
+                currentLen = 0
+            } else {
+                currentLen++
+            }
+        }
+        if (currentLen > maxLen) maxLen = currentLen
+        return maxLen
     }
 
     fun setOnSyntaxHighlighterChangedListener(syntaxHighlighterChangedListener: ((syntaxHighlighter: SyntaxHighlighter?) -> Unit)?) {
