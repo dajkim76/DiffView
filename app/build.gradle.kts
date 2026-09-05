@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -23,9 +26,32 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(FileInputStream(localPropertiesFile))
+    }
+
+    val signPassword = localProperties.getProperty("sign.password") ?: ""
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("diffviewer-app.jks")
+            storePassword = signPassword
+            keyAlias = "diffviewer"
+            keyPassword = signPassword
+        }
+    }
+
     buildTypes {
+        debug {
+            //signingConfig = signingConfigs.getByName("release")
+        }
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -58,6 +84,7 @@ dependencies {
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    releaseImplementation(libs.objectbox.android)
     debugImplementation(libs.objectbox.android.objectbrowser)
 
     testImplementation(libs.junit)

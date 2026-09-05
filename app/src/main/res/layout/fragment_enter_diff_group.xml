@@ -197,8 +197,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="https://github.com/dajkim76/Simple-Music-Player/commit/891dd9032fb7b6264563c67722b91f9d77beaba5"
-                    android:hint="https://github.com/owner/repo/commit/sha"
+                    android:hint="https://github.com/dajkim76/Simple-Music-Player/commit/891dd9032fb7b6264563c67722b91f9d77beaba5"
                     android:singleLine="true"
                     android:textSize="13sp" />
             </LinearLayout>

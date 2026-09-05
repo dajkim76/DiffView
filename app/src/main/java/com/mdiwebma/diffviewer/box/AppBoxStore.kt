@@ -5,7 +5,6 @@ import android.util.Log
 import com.mdiwebma.diffviewer.BuildConfig
 import io.objectbox.Box
 import io.objectbox.BoxStore
-import io.objectbox.android.Admin
 import io.objectbox.converter.PropertyConverter
 
 /**
@@ -31,7 +30,12 @@ class AppBoxStore private constructor(applicationContext: Context) {
                  *   👉 http://localhost:8090/index.html
                  */
                 try {
-                    val started = Admin(it).start(applicationContext)
+                    // release 모드에서 컴파일 오류를 피하기 위해 리플렉션 사용
+                    val adminClass = Class.forName("io.objectbox.android.Admin")
+                    val constructor = adminClass.getConstructor(BoxStore::class.java)
+                    val adminInstance = constructor.newInstance(it)
+                    val startMethod = adminClass.getMethod("start", android.content.Context::class.java)
+                    val started = startMethod.invoke(adminInstance, applicationContext) as? Boolean ?: false
                     Log.d(TAG, "ObjectBox Admin (Object Browser) started: $started (port: 8090)")
                 } catch (e: Throwable) {
                     Log.w(TAG, "Failed to start ObjectBox Admin: ${e.message}")
