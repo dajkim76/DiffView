@@ -15,13 +15,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import com.mdiwebma.base.helper.Lx
 import com.mdiwebma.diffview.SyntaxHighlighter
 import com.mdiwebma.diffview.model.DiffMode
 import com.mdiwebma.diffviewer.box.AppBoxStore
 import com.mdiwebma.diffviewer.box.DiffEntity
 import com.mdiwebma.diffviewer.box.DiffGroupEntity
-import com.mdiwebma.diffviewer.box.DiffGroupEntity_
 import com.mdiwebma.diffviewer.databinding.MainBinding
 import com.mdiwebma.diffviewer.utils.GithubUtils
 import io.objectbox.Box
@@ -85,18 +83,18 @@ class MainActivity : AppCompatActivity() {
         val diffGroupEntity = DiffGroupEntity(title = "title 1", type = 0)
         diffGroupBox.put(diffGroupEntity)
 
-        diffGroupBox.query().equal(DiffGroupEntity_.id, 1).build().use {
-            it.findFirst()?.let { diffGroup ->
-                val diff1 = DiffEntity(title = "diff 3")
-                val diff2 = DiffEntity(title = "diff 4")
-                diffGroup.diffs.add(diff1)
-                diffGroup.diffs.add(diff2)
-                diffGroupBox.put(diffGroup)
-                Lx("new  Id1 = " + diff1.id)
-                Lx("new  Id2 = " + diff2.id)
-                Lx("history .. diff size=" + diffGroup.diffs.size)
-            }
-        }
+//        diffGroupBox.query().equal(DiffGroupEntity_.id, 1).build().use {
+//            it.findFirst()?.let { diffGroup ->
+//                val diff1 = DiffEntity(title = "diff 3")
+//                val diff2 = DiffEntity(title = "diff 4")
+//                diffGroup.diffs.add(diff1)
+//                diffGroup.diffs.add(diff2)
+//                diffGroupBox.put(diffGroup)
+//                Lx("new  Id1 = " + diff1.id)
+//                Lx("new  Id2 = " + diff2.id)
+//                Lx("history .. diff size=" + diffGroup.diffs.size)
+//            }
+//        }
 
         AppSettings.runCount.value++
     }

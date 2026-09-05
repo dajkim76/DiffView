@@ -1,7 +1,6 @@
 package com.mdiwebma.diffviewer.dialog
 
 import android.content.Context
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AlertDialog
@@ -15,7 +14,7 @@ import com.mdiwebma.diffviewer.box.DiffEntity
 import com.mdiwebma.diffviewer.box.DiffGroupEntity
 import com.mdiwebma.diffviewer.databinding.DialogDiffTabsBinding
 import com.mdiwebma.diffviewer.databinding.ItemDiffTabBinding
-import com.mdiwebma.leetzsche.view.SimpleRecyclerAdapter
+import com.mdiwebma.diffviewer.view.SimpleRecyclerAdapter
 
 class DiffTabsDialog(
     private val context: Context,
@@ -139,14 +138,17 @@ class DiffTabsDialog(
                         onRename(item, position)
                         true
                     }
+
                     R.id.menu_favorite -> {
                         onToggleFavorite(item, position)
                         true
                     }
+
                     R.id.menu_delete -> {
                         onDelete(item, position)
                         true
                     }
+
                     else -> false
                 }
             }

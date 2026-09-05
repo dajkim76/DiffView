@@ -1,4 +1,4 @@
-package com.mdiwebma.leetzsche.view
+package com.mdiwebma.diffviewer.view
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -130,7 +130,6 @@ class SimpleRecyclerAdapter<T>(
         }
         notifyItemMoved(fromPosition, toPosition)
     }
-
 
 
     abstract class SimpleViewHolder<T>(itemView: View) : RecyclerView.ViewHolder(itemView) {

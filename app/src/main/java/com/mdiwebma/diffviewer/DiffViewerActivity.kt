@@ -37,7 +37,7 @@ import com.mdiwebma.diffviewer.ui.AddDiffFragment
 import com.mdiwebma.diffviewer.ui.DiffPageFragment
 import com.mdiwebma.diffviewer.ui.EnterDiffGroupFragment
 import com.mdiwebma.diffviewer.ui.SettingsFragment
-import com.mdiwebma.leetzsche.view.SimpleRecyclerAdapter
+import com.mdiwebma.diffviewer.view.SimpleRecyclerAdapter
 import io.objectbox.Box
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
