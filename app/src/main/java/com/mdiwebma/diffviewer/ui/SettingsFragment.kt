@@ -1,5 +1,9 @@
 package com.mdiwebma.diffviewer.ui
 
+import com.mdiwebma.diffviewer.BuildConfig
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -35,13 +39,30 @@ class SettingsFragment : Fragment() {
 
         updateThemeDisplay()
         updateGithubTokenDisplay()
+        
+        binding.tvAppVersion.text = getString(R.string.setting_app_version, BuildConfig.VERSION_NAME)
 
         binding.layoutSettingTheme.setOnClickListener {
             showThemeSelectionDialog()
         }
 
+
         binding.layoutSettingGithubToken.setOnClickListener {
             showGithubTokenDialog()
+        }
+
+        binding.layoutSettingOpenSource.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/dajkim76/DiffView"))
+            startActivity(intent)
+        }
+
+        binding.layoutSettingPlayStore.setOnClickListener {
+            val appPackageName = requireContext().packageName
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName")))
+            } catch (e: ActivityNotFoundException) {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")))
+            }
         }
     }
 

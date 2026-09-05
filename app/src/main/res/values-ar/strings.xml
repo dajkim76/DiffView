@@ -67,4 +67,8 @@
     <string name="setting_not_set">غير معين</string>
     <string name="btn_ok">موافق</string>
     <string name="msg_input_required">أدخل النص.</string>
+    <string name="setting_open_source">مفتوح المصدر</string>
+    <string name="setting_open_source_desc">مستودع GitHub</string>
+    <string name="setting_play_store">التقييم في Play Store</string>
+    <string name="setting_app_version">الإصدار: %s</string>
 </resources>

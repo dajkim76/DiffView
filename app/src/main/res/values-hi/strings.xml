@@ -67,4 +67,8 @@
     <string name="setting_not_set">सेट नहीं है</string>
     <string name="btn_ok">ठीक है</string>
     <string name="msg_input_required">पाठ दर्ज करें।</string>
+    <string name="setting_open_source">ओपन सोर्स</string>
+    <string name="setting_open_source_desc">GitHub रिपॉजिटरी</string>
+    <string name="setting_play_store">Play Store पर रेट करें</string>
+    <string name="setting_app_version">संस्करण: %s</string>
 </resources>

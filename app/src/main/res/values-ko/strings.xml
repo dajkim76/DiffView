@@ -67,4 +67,9 @@
     <string name="setting_not_set">미설정</string>
     <string name="btn_ok">확인</string>
     <string name="msg_input_required">비교할 텍스트를 입력해주세요.</string>
+
+    <string name="setting_open_source">오픈소스</string>
+    <string name="setting_open_source_desc">GitHub 저장소</string>
+    <string name="setting_play_store">플레이스토어 앱 평가</string>
+    <string name="setting_app_version">현재 버전: %s</string>
 </resources>

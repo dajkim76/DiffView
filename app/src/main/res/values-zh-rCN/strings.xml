@@ -67,4 +67,8 @@
     <string name="setting_not_set">未设置</string>
     <string name="btn_ok">确定</string>
     <string name="msg_input_required">请输入要对比的内容。</string>
+    <string name="setting_open_source">开源</string>
+    <string name="setting_open_source_desc">GitHub 仓库</string>
+    <string name="setting_play_store">在Play商店评价</string>
+    <string name="setting_app_version">版本: %s</string>
 </resources>

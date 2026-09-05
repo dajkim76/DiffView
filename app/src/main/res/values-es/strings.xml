@@ -67,4 +67,8 @@
     <string name="setting_not_set">No config.</string>
     <string name="btn_ok">OK</string>
     <string name="msg_input_required">Ingresa contenido.</string>
+    <string name="setting_open_source">Código abierto</string>
+    <string name="setting_open_source_desc">Repositorio de GitHub</string>
+    <string name="setting_play_store">Calificar en Play Store</string>
+    <string name="setting_app_version">Versión: %s</string>
 </resources>

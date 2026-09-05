@@ -67,4 +67,9 @@
     <string name="setting_not_set">Not set</string>
     <string name="btn_ok">OK</string>
     <string name="msg_input_required">Enter content to compare.</string>
+
+    <string name="setting_open_source">Open Source</string>
+    <string name="setting_open_source_desc">GitHub Repository</string>
+    <string name="setting_play_store">Rate on Play Store</string>
+    <string name="setting_app_version">Version: %s</string>
 </resources>

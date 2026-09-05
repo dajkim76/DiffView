@@ -14,9 +14,13 @@ object RenameDialog {
         initialText: String,
         onConfirm: (newName: String) -> Unit
     ) {
+        val density = context.resources.displayMetrics.density
+        val padding = (10f * density).toInt()
         val editText = EditText(context).apply {
             setText(initialText)
             setSelection(initialText.length)
+            setPadding(padding, padding / 2, padding, padding / 2)
+            setBackgroundResource(R.drawable.bg_edit_box)
         }
         AlertDialog.Builder(context)
             .setTitle(titleRes)

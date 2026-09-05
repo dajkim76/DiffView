@@ -67,4 +67,8 @@
     <string name="setting_not_set">Belum diatur</string>
     <string name="btn_ok">OK</string>
     <string name="msg_input_required">Masukkan konten.</string>
+    <string name="setting_open_source">Sumber Terbuka</string>
+    <string name="setting_open_source_desc">Repositori GitHub</string>
+    <string name="setting_play_store">Nilai di Play Store</string>
+    <string name="setting_app_version">Versi: %s</string>
 </resources>

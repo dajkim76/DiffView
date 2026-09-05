@@ -67,4 +67,8 @@
     <string name="setting_not_set">Ayarlanmadı</string>
     <string name="btn_ok">Tamam</string>
     <string name="msg_input_required">İçerik girin.</string>
+    <string name="setting_open_source">Açık Kaynak</string>
+    <string name="setting_open_source_desc">GitHub Deposu</string>
+    <string name="setting_play_store">Play Store\'da Değerlendir</string>
+    <string name="setting_app_version">Sürüm: %s</string>
 </resources>

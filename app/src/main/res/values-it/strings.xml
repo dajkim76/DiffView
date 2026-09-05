@@ -67,4 +67,8 @@
     <string name="setting_not_set">Non impostato</string>
     <string name="btn_ok">OK</string>
     <string name="msg_input_required">Inserisci testo.</string>
+    <string name="setting_open_source">Open Source</string>
+    <string name="setting_open_source_desc">Repository GitHub</string>
+    <string name="setting_play_store">Valuta sul Play Store</string>
+    <string name="setting_app_version">Versione: %s</string>
 </resources>

@@ -67,4 +67,8 @@
     <string name="setting_not_set">未設定</string>
     <string name="btn_ok">OK</string>
     <string name="msg_input_required">比較する内容を入力してください。</string>
+    <string name="setting_open_source">オープンソース</string>
+    <string name="setting_open_source_desc">GitHub リポジトリ</string>
+    <string name="setting_play_store">Playストアで評価</string>
+    <string name="setting_app_version">バージョン: %s</string>
 </resources>
