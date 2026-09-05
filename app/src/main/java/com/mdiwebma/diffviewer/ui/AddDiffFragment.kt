@@ -21,7 +21,7 @@ class AddDiffFragment : Fragment() {
     private var _binding: FragmentAddDiffBinding? = null
     private val binding get() = _binding!!
 
-    var onDiffCreatedListener: ((title: String, before: String, after: String) -> Unit)? = null
+    var onDiffCreatedListener: ((title: String, before: String, after: String, beforeTitle: String, afterTitle: String) -> Unit)? = null
 
     private fun readFileContent(uri: Uri): String? {
         return requireContext().contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
@@ -193,6 +193,8 @@ class AddDiffFragment : Fragment() {
 
     private fun handleSave() {
         val title = binding.etDiffTitle.text.toString().trim()
+        val beforeTitle = binding.beforeTitle.text.toString().trim()
+        val afterTitle = binding.afterTitle.text.toString().trim()
         val before = binding.etDiffBefore.text.toString()
         val after = binding.etDiffAfter.text.toString()
 
@@ -201,7 +203,7 @@ class AddDiffFragment : Fragment() {
             return
         }
 
-        onDiffCreatedListener?.invoke(title, before, after)
+        onDiffCreatedListener?.invoke(title, before, after, beforeTitle, afterTitle)
         parentFragmentManager.popBackStack()
     }
 

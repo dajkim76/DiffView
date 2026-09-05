@@ -232,6 +232,8 @@ class EnterDiffGroupFragment : Fragment() {
 
         when (binding.rgType.checkedRadioButtonId) {
             R.id.rbSimple -> {
+                val beforeTitle = binding.beforeTitle.text.toString().trim()
+                val afterTitle = binding.afterTitle.text.toString().trim()
                 val before = binding.etSimpleBefore.text.toString()
                 val after = binding.etSimpleAfter.text.toString()
 
@@ -245,7 +247,7 @@ class EnterDiffGroupFragment : Fragment() {
                     val groupId = withContext(Dispatchers.IO) {
                         val group = DiffGroupEntity(
                             title = title,
-                            type = DiffGroupEntity.Companion.TYPE_TEXT,
+                            type = DiffGroupEntity.TYPE_TEXT,
                             diffCount = 1
                         )
                         diffGroupBox.put(group)
@@ -254,7 +256,11 @@ class EnterDiffGroupFragment : Fragment() {
                             historyId = group.id,
                             title = title,
                             originalText = before,
-                            modifiedText = after
+                            modifiedText = after,
+                            originalName = beforeTitle.takeIf { it.isNotBlank() }
+                                ?: getString(com.mdiwebma.diffview.R.string.diffview_header_original),
+                            modifiedName = afterTitle.takeIf { it.isNotBlank() }
+                                ?: getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
                         )
                         diffBox.put(diff)
                         group.id

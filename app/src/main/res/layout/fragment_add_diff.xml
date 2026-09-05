@@ -67,12 +67,13 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <TextView
+                    <EditText
+                        android:id="@+id/beforeTitle"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
+                        android:singleLine="true"
                         android:text="@string/label_before"
-                        android:textStyle="bold"
                         android:textSize="13sp" />
 
                     <Button
@@ -105,12 +106,13 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <TextView
+                    <EditText
+                        android:id="@+id/afterTitle"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
+                        android:singleLine="true"
                         android:text="@string/label_after"
-                        android:textStyle="bold"
                         android:textSize="13sp" />
 
                     <Button

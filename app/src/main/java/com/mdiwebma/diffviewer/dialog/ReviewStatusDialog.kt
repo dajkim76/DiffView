@@ -8,6 +8,7 @@ import com.mdiwebma.diffviewer.model.ReviewStatus
 object ReviewStatusDialog {
     fun show(
         context: Context,
+        title: String,
         currentStatus: ReviewStatus,
         onStatusSelected: (ReviewStatus) -> Unit
     ) {
@@ -16,7 +17,7 @@ object ReviewStatusDialog {
         val currentIndex = statuses.indexOf(currentStatus).takeIf { it >= 0 } ?: 0
 
         AlertDialog.Builder(context)
-            .setTitle(R.string.review_status_dialog_title)
+            .setTitle(context.getString(R.string.review_status_dialog_title) + ": " + title)
             .setSingleChoiceItems(items, currentIndex) { dialog, which ->
                 val selected = statuses[which]
                 onStatusSelected(selected)

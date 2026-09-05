@@ -391,15 +391,15 @@ class DiffViewerActivity : AppCompatActivity() {
         }
 
         val fragment = AddDiffFragment.newInstance()
-        fragment.onDiffCreatedListener = { title, before, after ->
+        fragment.onDiffCreatedListener = { title, before, after, beforeTitle, afterTitle ->
             lifecycleScope.launch {
                 val newDiff = DiffEntity(
                     historyId = group.id,
                     title = title.ifBlank { "Diff ${currentDiffs.size + 1}" },
                     originalText = before,
                     modifiedText = after,
-                    originalName = getString(com.mdiwebma.diffview.R.string.diffview_header_original),
-                    modifiedName = getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
+                    originalName = beforeTitle.takeIf { it.isNotBlank() } ?: getString(com.mdiwebma.diffview.R.string.diffview_header_original),
+                    modifiedName = afterTitle.takeIf { it.isNotBlank() } ?: getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
                     loadingStatus = 1
                 )
 
@@ -495,7 +495,7 @@ class DiffViewerActivity : AppCompatActivity() {
             },
             onStatusClick = { item, pos ->
                 val status = ReviewStatus.fromDbValue(item.reviewStatus)
-                ReviewStatusDialog.show(this@DiffViewerActivity, status) { newStatus ->
+                ReviewStatusDialog.show(this@DiffViewerActivity, item.title, status) { newStatus ->
                     if (status != newStatus) {
                         updateDiffReviewStatus(item, newStatus)
                         tabsDialog?.notifyItemChanged(pos)
@@ -513,7 +513,7 @@ class DiffViewerActivity : AppCompatActivity() {
         val title = diff.title
         tabBinding.tvTabTitle.text = title.ifBlank { "Diff ${position + 1}" }
         tabBinding.tvTabStatusIcon.setOnClickListener {
-            ReviewStatusDialog.show(this@DiffViewerActivity, status) { newStatus ->
+            ReviewStatusDialog.show(this@DiffViewerActivity, diff.title, status) { newStatus ->
                 if (status != newStatus) {
                     updateDiffReviewStatus(diff, newStatus)
                 }
