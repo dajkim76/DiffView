@@ -2,7 +2,6 @@ package com.mdiwebma.diffview
 
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Color
 import androidx.annotation.ColorInt
 
 /**

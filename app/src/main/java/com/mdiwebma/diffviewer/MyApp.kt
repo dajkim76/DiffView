@@ -23,6 +23,7 @@ class MyApp : Application() {
             }
             AppCompatDelegate.setDefaultNightMode(mode)
         }
+
         @SuppressLint("StaticFieldLeak")
         private var instance: Context? = null
 

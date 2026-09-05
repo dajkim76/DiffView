@@ -1,6 +1,5 @@
 package com.mdiwebma.diffviewer.ui
 
-import com.mdiwebma.diffviewer.BuildConfig
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -11,6 +10,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.mdiwebma.diffviewer.AppSettings
+import com.mdiwebma.diffviewer.BuildConfig
 import com.mdiwebma.diffviewer.MyApp
 import com.mdiwebma.diffviewer.R
 import com.mdiwebma.diffviewer.databinding.DialogSettingInputBinding
@@ -39,7 +39,7 @@ class SettingsFragment : Fragment() {
 
         updateThemeDisplay()
         updateGithubTokenDisplay()
-        
+
         binding.tvAppVersion.text = getString(R.string.setting_app_version, BuildConfig.VERSION_NAME)
 
         binding.layoutSettingTheme.setOnClickListener {

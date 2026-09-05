@@ -14,7 +14,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.mdiwebma.diffview.DiffColors
-import com.mdiwebma.diffview.R
 import java.util.Date
 
 /**

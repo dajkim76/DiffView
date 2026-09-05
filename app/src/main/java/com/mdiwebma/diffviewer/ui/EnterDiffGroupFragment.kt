@@ -275,6 +275,7 @@ class EnterDiffGroupFragment : Fragment() {
                                 binding.etGroupTitle.setText(commitTitle)
                                 commitTitle
                             }
+
                             else -> title
                         }
 
