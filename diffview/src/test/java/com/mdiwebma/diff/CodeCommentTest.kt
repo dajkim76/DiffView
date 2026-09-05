@@ -150,6 +150,36 @@ class CodeCommentTest {
     }
 
     @Test
+    fun testCodeCommentManager_SwapComments() = runTest {
+        val commit = "commitSwap123"
+        val filePath = "src/main/SwapTest.kt"
+        val origKey = LineKey(leftLine = 10, rightLine = null)
+        val modKey = LineKey(leftLine = null, rightLine = 20)
+        val unchangedKey = LineKey(leftLine = 30, rightLine = 35)
+
+        commentManager.saveComment(commit, filePath, origKey, "Comment on Original 10")
+        commentManager.saveComment(commit, filePath, modKey, "Comment on Modified 20")
+        commentManager.saveComment(commit, filePath, unchangedKey, "Comment on Unchanged")
+
+        val swapped = commentManager.swapComments(commit, filePath)
+
+        val expectedSwappedOrigKey = LineKey(leftLine = null, rightLine = 10)
+        val expectedSwappedModKey = LineKey(leftLine = 20, rightLine = null)
+        val expectedSwappedUnchangedKey = LineKey(leftLine = 35, rightLine = 30)
+
+        assertEquals("Comment on Original 10", swapped[expectedSwappedOrigKey]?.text)
+        assertEquals("Comment on Modified 20", swapped[expectedSwappedModKey]?.text)
+        assertEquals("Comment on Unchanged", swapped[expectedSwappedUnchangedKey]?.text)
+
+        // Persistence check across new manager instance
+        val newManager = CodeCommentManager(storageDir)
+        val loaded = newManager.loadComments(commit, filePath)
+        assertEquals("Comment on Original 10", loaded[expectedSwappedOrigKey]?.text)
+        assertEquals("Comment on Modified 20", loaded[expectedSwappedModKey]?.text)
+        assertEquals("Comment on Unchanged", loaded[expectedSwappedUnchangedKey]?.text)
+    }
+
+    @Test
     fun testDiffLongTabAction_EnumValues() {
         val none = com.mdiwebma.diffview.model.DiffLongTabAction.NONE
         val textSelectable = com.mdiwebma.diffview.model.DiffLongTabAction.TEXT_SELECTABLE

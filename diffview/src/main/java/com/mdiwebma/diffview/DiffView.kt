@@ -1296,6 +1296,15 @@ class DiffView @JvmOverloads constructor(
         rightHeaderTitle.text = diffLabels.modifiedHeader
         adapter.diffLabels = diffLabels
 
+        val commit = currentCommitHash
+        val path = currentFilePath
+        if (commit != null && path != null) {
+            viewScope.launch {
+                val swapped = commentManager.swapComments(commit, path)
+                adapter.comments = swapped
+            }
+        }
+
         setInnerContent(rawOriginalText, rawModifiedText, true)
         onContentSwappedListener?.invoke(
             rawOriginalText,

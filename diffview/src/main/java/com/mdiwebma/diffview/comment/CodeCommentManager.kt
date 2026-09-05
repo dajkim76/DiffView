@@ -102,6 +102,25 @@ class CodeCommentManager(private val baseDir: File) {
     }
 
     /**
+     * Swaps left and right line numbers in comments for given commit and file,
+     * updates memory cache, and persists the swapped comments to disk.
+     */
+    suspend fun swapComments(commitHash: String, filePath: String): Map<LineKey, CodeComment> {
+        val cacheKey = getCacheKey(commitHash, filePath)
+        val swappedMap = mutableMapOf<LineKey, CodeComment>()
+        synchronized(memoryCache) {
+            val currentMap = memoryCache[cacheKey] ?: mutableMapOf()
+            currentMap.forEach { (oldKey, comment) ->
+                val swappedKey = LineKey(leftLine = oldKey.rightLine, rightLine = oldKey.leftLine)
+                swappedMap[swappedKey] = comment
+            }
+            memoryCache[cacheKey] = swappedMap
+        }
+        persistToFile(commitHash, filePath)
+        return swappedMap
+    }
+
+    /**
      * Deletes a comment for a given line.
      */
     suspend fun deleteComment(commitHash: String, filePath: String, key: LineKey) {
