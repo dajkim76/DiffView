@@ -71,4 +71,6 @@
     <string name="setting_open_source_desc">GitHub Deposu</string>
     <string name="setting_play_store">Play Store\'da Değerlendir</string>
     <string name="setting_app_version">Sürüm: %s</string>
+    <string name="setting_app_icon_credit">App Icon</string>
+    <string name="setting_app_icon_credit_desc">Compare icons created by Magnific - Flaticon</string>
 </resources>

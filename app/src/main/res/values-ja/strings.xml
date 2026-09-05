@@ -71,4 +71,6 @@
     <string name="setting_open_source_desc">GitHub リポジトリ</string>
     <string name="setting_play_store">Playストアで評価</string>
     <string name="setting_app_version">バージョン: %s</string>
+    <string name="setting_app_icon_credit">App Icon</string>
+    <string name="setting_app_icon_credit_desc">Compare icons created by Magnific - Flaticon</string>
 </resources>

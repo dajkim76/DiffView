@@ -72,4 +72,6 @@
     <string name="setting_open_source_desc">GitHub 저장소</string>
     <string name="setting_play_store">플레이스토어 앱 평가</string>
     <string name="setting_app_version">현재 버전: %s</string>
+    <string name="setting_app_icon_credit">앱 아이콘</string>
+    <string name="setting_app_icon_credit_desc">Compare icons created by Magnific - Flaticon</string>
 </resources>

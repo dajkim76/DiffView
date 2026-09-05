@@ -56,6 +56,12 @@ class SettingsFragment : Fragment() {
             startActivity(intent)
         }
 
+
+        binding.layoutSettingAppIconCredit.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.flaticon.com/free-icons/compare"))
+            startActivity(intent)
+        }
+
         binding.layoutSettingPlayStore.setOnClickListener {
             val appPackageName = requireContext().packageName
             try {
