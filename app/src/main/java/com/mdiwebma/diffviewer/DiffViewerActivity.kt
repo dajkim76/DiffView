@@ -367,10 +367,10 @@ class DiffViewerActivity : AppCompatActivity() {
         currentDiffs.addAll(newDiffs)
         pagerAdapter?.let { diffResult.dispatchUpdatesTo(it) }
 
-        renderDiffPages()
+        updateEmptyLayout()
     }
 
-    private fun renderDiffPages() {
+    private fun updateEmptyLayout() {
         if (currentDiffs.isEmpty()) {
             binding.tvEmptyDiffs.visibility = View.VISIBLE
             binding.viewPager2.visibility = View.GONE
@@ -398,6 +398,8 @@ class DiffViewerActivity : AppCompatActivity() {
                     title = title.ifBlank { "Diff ${currentDiffs.size + 1}" },
                     originalText = before,
                     modifiedText = after,
+                    originalName = getString(com.mdiwebma.diffview.R.string.diffview_header_original),
+                    modifiedName = getString(com.mdiwebma.diffview.R.string.diffview_header_modified),
                     loadingStatus = 1
                 )
 
@@ -414,9 +416,14 @@ class DiffViewerActivity : AppCompatActivity() {
                 val insertIndex = currentDiffs.size
                 currentDiffs.add(newDiff)
                 pagerAdapter?.notifyItemInserted(insertIndex)
-                renderDiffPages()
+                updateEmptyLayout()
 
-                binding.viewPager2.setCurrentItem(insertIndex, true)
+                binding.viewPager2.setCurrentItem(insertIndex, false)
+                binding.tabLayout.post {
+                    val tab = binding.tabLayout.getTabAt(insertIndex)
+                    tab?.select()
+                    binding.tabLayout.setScrollPosition(insertIndex, 0f, true)
+                }
             }
         }
         supportFragmentManager.beginTransaction()
