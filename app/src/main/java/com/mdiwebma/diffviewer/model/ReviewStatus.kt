@@ -9,12 +9,12 @@ enum class ReviewStatus(
     val emoji: String,
     @StringRes val labelRes: Int
 ) {
-    OPEN(0, "🟢", R.string.review_status_open),
+    OPEN(0, "\uD83D\uDD39", R.string.review_status_open),
     REVIEWING(1, "👀", R.string.review_status_reviewing),
-    PENDING(2, "⏳", R.string.review_status_pending),
+    PENDING(2, "\uD83D\uDFE1", R.string.review_status_pending),
     COMMENTED(3, "💬", R.string.review_status_commented),
-    APPROVED(4, "✅", R.string.review_status_approved),
-    CLOSED(5, "❌", R.string.review_status_closed),
+    APPROVED(4, "\uD83D\uDFE2", R.string.review_status_approved),
+    CLOSED(5, "\uD83D\uDD34", R.string.review_status_closed),
     MERGED(6, "🟣", R.string.review_status_merged);
 
     fun getDisplayName(context: Context): String {
