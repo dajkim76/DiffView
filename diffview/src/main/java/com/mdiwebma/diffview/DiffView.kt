@@ -49,6 +49,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
@@ -72,7 +73,7 @@ class DiffView @JvmOverloads constructor(
     var onCommentClickListener: ((LineKey, CodeComment) -> Unit)? = null
 
     private var diffEngine: DiffEngine = KotlinDiffEngine()
-    private val viewScope = CoroutineScope(Dispatchers.Main + Job())
+    private var viewScope = CoroutineScope(Dispatchers.Main + Job())
 
     private var diffMode: DiffMode = DiffMode.SIDE_BY_SIDE
     private var configuredDiffColors: DiffColors = DiffColors.Auto
@@ -515,16 +516,13 @@ class DiffView @JvmOverloads constructor(
      * 원본과 수정본 소스코드를 설정하고 비동기로 Diff를 계산합니다.
      */
     private fun setInnerContent(originalRaw: String, modifiedRaw: String, needsNormalization: Boolean = false) {
-        val prevJob = diffJob
-        diffJob = null
-        prevJob?.cancel()
-
+        diffJob?.cancel()
         expandedFoldMap.clear()
         adapter.resetScrollGroups()
         recyclerView.scrollToPosition(0)
         progressBar.visibility = VISIBLE
 
-        val currentJob = viewScope.launch {
+        diffJob = viewScope.launch {
             try {
                 val (original, modified) = if (needsNormalization && textNormalizer != null) {
                     withContext(Dispatchers.Default) {
@@ -554,13 +552,9 @@ class DiffView @JvmOverloads constructor(
                 reloadComments()
                 updateDisplayItems()
             } finally {
-                // 현재 Job이 최신 작업인 경우에만 프로그레스바를 숨김 (이전 취소된 작업의 finally가 새 작업의 프로그레스바를 건드리지 않도록 방어)
-                if (diffJob == null || diffJob === coroutineContext[Job]) {
-                    progressBar.visibility = GONE
-                }
+                progressBar.visibility = GONE
             }
         }
-        diffJob = currentJob
     }
 
     /**
@@ -1584,6 +1578,13 @@ class DiffView @JvmOverloads constructor(
             } catch (_: Exception) {
             }
             null
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        if (!viewScope.isActive) {
+            viewScope = CoroutineScope(Dispatchers.Main + Job())
         }
     }
 
