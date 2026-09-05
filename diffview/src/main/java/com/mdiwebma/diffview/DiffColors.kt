@@ -43,7 +43,7 @@ data class DiffColors(
             unchangedBackground = 0xFFFFFFFF.toInt(),
             noneTextBackground = 0xFFEAEAEA.toInt(),
             lineNumberBackground = 0xFFF5F5F7.toInt(),
-            lineNumberTextColor = 0xFF9E9E9E.toInt(),
+            lineNumberTextColor = 0xFF6E7781.toInt(),
             dividerColor = 0xFFD4D4D8.toInt(),
             headerBackground = 0xFFF1F3F5.toInt(),
             headerTextColor = 0xFF333333.toInt(),
