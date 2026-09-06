@@ -17,6 +17,7 @@ objectbox = "5.4.2"
 google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 google-material = { group = "com.google.android.material", name = "material", version = "1.12.0" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

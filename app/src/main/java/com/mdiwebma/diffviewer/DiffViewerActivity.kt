@@ -1,10 +1,6 @@
 package com.mdiwebma.diffviewer
 
 import android.os.Bundle
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -190,17 +186,8 @@ class DiffViewerActivity : AppCompatActivity() {
         private val itemBinding = ItemDiffGroupBinding.bind(itemView)
 
         override fun onBind(item: DiffGroupEntity) {
-            val titleBuilder = SpannableStringBuilder(item.title)
-            val countText = " (${item.diffCount})"
-            val start = titleBuilder.length
-            titleBuilder.append(countText)
-            val end = titleBuilder.length
-
-            titleBuilder.setSpan(RelativeSizeSpan(0.8f), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            val countColor = ContextCompat.getColor(this@DiffViewerActivity, R.color.button_text_color)
-            titleBuilder.setSpan(ForegroundColorSpan(countColor), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-            itemBinding.tvGroupTitle.text = titleBuilder
+            itemBinding.tvGroupTitle.text = item.title
+            itemBinding.tvDiffCount.text = "(${item.diffCount})"
 
             val isFavorite = item.favoriteTime > 0L
             itemBinding.ivFavorite.setImageResource(
