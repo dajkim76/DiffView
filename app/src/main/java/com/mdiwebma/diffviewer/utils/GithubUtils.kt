@@ -38,15 +38,15 @@ object GithubUtils {
 
     private val BINARY_EXTENSIONS = hashSetOf(
         // Images
-        "png", "jpg", "jpeg", "gif", "webp", "ico", "bmp", "tiff", "tif", "heic", "heif", "psd", "ai", "raw", "svgz",
+        "png", "jpg", "jpeg", "gif", "webp", "ico", "bmp", "tiff", "tif", "heic", "heif", "psd", "ai", "raw", "svgz", "avif", "jxl",
         // Archives & Compressed
-        "zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar", "jar", "aar", "war", "apk", "aab", "ipa",
+        "zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar", "jar", "aar", "war", "apk", "aab", "ipa", "aab",
         // Binaries & Libraries
         "so", "dylib", "dll", "class", "exe", "bin", "o", "a", "lib", "obj", "elf", "dex",
         // Documents & Fonts
-        "pdf", "ttf", "otf", "woff", "woff2", "eot", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+        "pdf", "ttf", "otf", "woff", "woff2", "eot", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "hwp", "hwpx",
         // Media (Audio/Video)
-        "mp3", "wav", "ogg", "flac", "m4a", "aac", "mp4", "mov", "avi", "mkv", "webm", "flv", "3gp",
+        "mp3", "wav", "ogg", "flac", "m4a", "aac", "mp4", "mov", "avi", "mkv", "webm", "flv", "3gp", "opus", "m4b",
         // Database & Box
         "db", "sqlite", "sqlite3", "mdb"
     )
