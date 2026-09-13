@@ -79,6 +79,11 @@ DiffView Custom View
 DiffViewer Android App  https://play.google.com/store/apps/details?id=com.mdiwebma.diffviewer
 ![Screenshot2](screenshot2.jpg)
 
+Demo video
+
+[![Demo Video](https://img.youtube.com/vi/mg9oXLKzun4/0.jpg)](https://youtube.com/shorts/mg9oXLKzun4)
+
+
 ---
 
 ## 📦 Installation (JitPack)
