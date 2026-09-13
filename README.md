@@ -83,6 +83,8 @@ Demo video
 
 [![Demo Video](https://img.youtube.com/vi/mg9oXLKzun4/0.jpg)](https://youtube.com/shorts/mg9oXLKzun4)
 
+Install Demo app from Google PlayStore : https://play.google.com/store/apps/details?id=com.mdiwebma.diffviewer
+
 
 ---
 
@@ -324,6 +326,51 @@ diffView.loadPreferences() // Loads settings using the configured prefsName & ke
 diffView.showSettingsDialog() // Automatically persists changes to the configured prefsName & keyPrefix
 diffView.savePreferences() // Explicit save with configured defaults
 ```
+
+
+AppCompat theme가 필요함. 
+```
+  1. **libs.versions.toml**
+      • appcompat = "1.7.0" 버전 및 androidx-appcompat 라이브러리 항목 추가
+  2. **build.gradle.kts**
+      • dependencies 블록에 implementation(libs.androidx.appcompat) 추가
+````
+
+AppCompat 호환성 확보하기 방법 1 : AppTheme를 AppCompat을 이용하기..
+```
+<style name="Theme.MyApplication1" parent="Theme.AppCompat.DayNight.NoActionBar" />
+```
+
+AppCompat 호환성 확보하기 방법 2 : context를 Wrap한다.
+```
+import android.content.Context
+import android.util.AttributeSet
+import androidx.appcompat.view.ContextThemeWrapper
+import com.mdiwebma.diffview.DiffView
+
+class AppThemedDiffView @JvmOverloads constructor(
+context: Context,
+attrs: AttributeSet? = null,
+defStyleAttr: Int = 0
+) : DiffView(
+ContextThemeWrapper(context, androidx.appcompat.R.style.Theme_AppCompat_DayNight_NoActionBar),
+attrs,
+defStyleAttr
+)
+```
+
+AppCompat 호환성 확보하기 방법 3: Compose를 사용하는 경우도 context를 Wrap한다.
+```
+AndroidView(
+
+factory = { ctx ->
+val themedContext = androidx.appcompat.view.ContextThemeWrapper(
+ctx,
+androidx.appcompat.R.style.Theme_AppCompat_DayNight_NoActionBar
+)
+DiffView(themedContext).apply {
+```
+
 
 ---
 
