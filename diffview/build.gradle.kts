@@ -67,7 +67,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.dajkim76"
                 artifactId = "DiffView"
-                version = "1.0.4"
+                version = "1.0.5"
             }
         }
     }
