@@ -20,7 +20,8 @@
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
+                android:layout_height="wrap_content"
+                android:minHeight="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
@@ -100,30 +101,29 @@
         android:layout_width="320dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:orientation="vertical"
-        android:background="?android:colorBackground">
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/actionBarSize"
             android:text="@string/nav_header_diff_groups"
-            android:textSize="18sp"
+            android:textSize="14sp"
             android:textStyle="bold"
+            android:gravity="center_vertical"
             android:textColor="@android:color/white"
             android:background="?attr/colorPrimary"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="20dp" />
+            android:paddingHorizontal="16dp" />
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="?android:colorBackground">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvDiffGroups"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingVertical="4dp" />
+                android:clipToPadding="false" />
 
             <TextView
                 android:id="@+id/tvEmptyGroups"

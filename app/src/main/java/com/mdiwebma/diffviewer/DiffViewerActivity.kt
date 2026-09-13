@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
@@ -72,17 +73,21 @@ class DiffViewerActivity : AppCompatActivity() {
         binding = ActivityDiffViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.toolbar.setPadding(0, systemBars.top, 0, 0) // Toolbar extends to status bar
+            insets
+        }
         ViewCompat.setOnApplyWindowInsetsListener(binding.drawerLayout) { _, insets ->
-            val systemBars = insets.getInsets(
-                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
-            )
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             val bottomInset = maxOf(systemBars.bottom, ime.bottom)
-            binding.mainContentPane.setPadding(systemBars.left, systemBars.top, systemBars.right, bottomInset)
+            binding.mainContentPane.setPadding(systemBars.left, 0, systemBars.right, bottomInset)
             binding.drawerPane.setPadding(0, systemBars.top, 0, systemBars.bottom)
             binding.fragmentContainer.setPadding(systemBars.left, systemBars.top, systemBars.right, bottomInset)
             insets
         }
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
