@@ -34,13 +34,16 @@ android {
     }
 
     val signPassword = localProperties.getProperty("sign.password") ?: ""
+    val hasSigning = signPassword.isNotEmpty() && file("diffviewer-app.jks").exists()
 
     signingConfigs {
-        create("release") {
-            storeFile = file("diffviewer-app.jks")
-            storePassword = signPassword
-            keyAlias = "diffviewer"
-            keyPassword = signPassword
+        if (hasSigning) {
+            create("release") {
+                storeFile = file("diffviewer-app.jks")
+                storePassword = signPassword
+                keyAlias = "diffviewer"
+                keyPassword = signPassword
+            }
         }
     }
 
@@ -49,7 +52,9 @@ android {
             //signingConfig = signingConfigs.getByName("release")
         }
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (hasSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

@@ -2,3 +2,6 @@ jdk:
   - openjdk17
 before_install:
   - ./gradlew --version
+install:
+  - ./gradlew :diffview:publishToMavenLocal
+
